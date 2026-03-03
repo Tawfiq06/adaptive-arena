@@ -1,0 +1,13 @@
+# Build output
+build/
+*.o
+*.elf
+*.map
+*.bin
+
+# VSCode settings
+.vscode/
+
+# OS junk
+.DS_Store
+Thumbs.db
