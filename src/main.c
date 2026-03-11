@@ -16,7 +16,6 @@ int main(void){
 
         if(frame_flag){
             frame_flag = 0;
-
             update_game();
             draw_game();
             

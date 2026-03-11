@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "player.h"
 #include "sprite.h"
+#include "renderer.h"
 
 Entity entities[MAX_ENTITIES];
 

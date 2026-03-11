@@ -4,6 +4,6 @@
 #define PLAYER_W 16
 #define PLAYER_H 16
 
-extern const int player_sprite[PLAYER_W * PLAYER_H];
+extern const short player_sprite[PLAYER_W * PLAYER_H];
 
 #endif
