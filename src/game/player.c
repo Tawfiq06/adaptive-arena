@@ -1,5 +1,8 @@
 #include "player.h"
 #include "vga.h"
+#include "keyboard.h"
+
+#define PLAYER_SPEED 2
 
 void player_init(Entity *p, SpriteID sprite, short _colour){
     p->x = SCREEN_WIDTH / 2;
@@ -29,13 +32,34 @@ void player_init(Entity *p, SpriteID sprite, short _colour){
 }
 
 void player_update(Entity *p){
+    p->dx = 0;
+    p->dy = 0;
+
+    if (key_pressed(KEY_W) || key_pressed(KEY_UP)) {
+        p->dy = -PLAYER_SPEED;
+        p->facing = 'n';
+    }
+    if(key_pressed(KEY_S) || key_pressed(KEY_DOWN)){
+        p->dy = PLAYER_SPEED;
+        p->facing = 's';
+    }
+    if (key_pressed(KEY_A) || key_pressed(KEY_LEFT))  { 
+        p->dx = -PLAYER_SPEED;
+        p->facing = 'w'; 
+    }
+    if (key_pressed(KEY_D) || key_pressed(KEY_RIGHT)) { 
+        p->dx =  PLAYER_SPEED; 
+        p->facing = 'e'; 
+    }
+
     p->x += p->dx;
     p->y += p->dy;
 
-    if(p->x < 0){
+    /*Now clamp*/
+    if (p->x < 0){
         p->x = 0;
-    }
-    if(p->y < 0){
+    }                       
+    if (p->y < 0){
         p->y = 0;
     }
 

@@ -1,79 +1,42 @@
-/*This is file is the combination of all the other files into 1 .c*/
-/*This is used to test the code on CPulator*/
 /*
  * adaptive-arena — flattened single file for CPulator
- * Target: DE1-SoC (RISC-V), VGA 320x240, 60 FPS timer
+ * Target: DE1-SoC (RISC-V RV32), VGA 320x240, 60 FPS timer interrupt
  */
 
-/*
- * ===========================================================================
- * EXCEPTION / INTERRUPT ENTRY POINT
- * CPUlator jumps here on every interrupt/exception.
- * Must live in the .exceptions section (placed at 0x00000000 by linker).
- *
- * RISC-V does NOT save registers on interrupt entry — we must do it manually.
- * __attribute__((naked)) prevents the compiler emitting any prologue/epilogue.
- * We save/restore all caller-saved regs (ra, t0-t6, a0-a7) so the interrupted
- * code is completely unaffected.
- * ===========================================================================
- */
+/* ===========================================================================
+ * EXCEPTION HANDLER — must be first so linker places it at 0x00000000
+ * naked = no compiler prologue/epilogue; we save/restore manually.
+ * =========================================================================*/
 void __attribute__((section(".exceptions"), naked)) exception_handler(void) {
     asm volatile(
-        /* save all caller-saved registers onto the stack */
         "addi sp, sp, -64\n"
-        "sw   ra,  0(sp)\n"
-        "sw   t0,  4(sp)\n"
-        "sw   t1,  8(sp)\n"
-        "sw   t2, 12(sp)\n"
-        "sw   a0, 16(sp)\n"
-        "sw   a1, 20(sp)\n"
-        "sw   a2, 24(sp)\n"
-        "sw   a3, 28(sp)\n"
-        "sw   a4, 32(sp)\n"
-        "sw   a5, 36(sp)\n"
-        "sw   a6, 40(sp)\n"
-        "sw   a7, 44(sp)\n"
-        "sw   t3, 48(sp)\n"
-        "sw   t4, 52(sp)\n"
-        "sw   t5, 56(sp)\n"
+        "sw   ra,  0(sp)\n" "sw   t0,  4(sp)\n" "sw   t1,  8(sp)\n"
+        "sw   t2, 12(sp)\n" "sw   a0, 16(sp)\n" "sw   a1, 20(sp)\n"
+        "sw   a2, 24(sp)\n" "sw   a3, 28(sp)\n" "sw   a4, 32(sp)\n"
+        "sw   a5, 36(sp)\n" "sw   a6, 40(sp)\n" "sw   a7, 44(sp)\n"
+        "sw   t3, 48(sp)\n" "sw   t4, 52(sp)\n" "sw   t5, 56(sp)\n"
         "sw   t6, 60(sp)\n"
 
-        /* read mcause; bit 31 set means it is an interrupt */
         "csrr t0, mcause\n"
-        "bgez t0, 1f\n"
+        "bgez t0, 1f\n"           /* bit 31 clear = exception, not interrupt */
 
-        /* mask off interrupt bit to get IRQ number */
-        "slli t0, t0, 1\n"
+        "slli t0, t0, 1\n"        /* strip bit 31, leaving IRQ number */
         "srli t0, t0, 1\n"
-        "li   t1, 16\n"
+        "li   t1, 16\n"           /* IRQ 16 = interval timer */
         "bne  t0, t1, 1f\n"
 
-        /* timer IRQ: clear TO bit */
-        "lui  t2, 0xFF202\n"
+        "lui  t2, 0xFF202\n"      /* TIMER_BASE — clear TO bit */
         "li   t3, 1\n"
         "sw   t3, 0(t2)\n"
-
-        /* set frame_flag = 1 */
-        "la   t2, frame_flag\n"
+        "la   t2, frame_flag\n"   /* frame_flag = 1 */
         "sw   t3, 0(t2)\n"
 
         "1:\n"
-        /* restore all caller-saved registers */
-        "lw   ra,  0(sp)\n"
-        "lw   t0,  4(sp)\n"
-        "lw   t1,  8(sp)\n"
-        "lw   t2, 12(sp)\n"
-        "lw   a0, 16(sp)\n"
-        "lw   a1, 20(sp)\n"
-        "lw   a2, 24(sp)\n"
-        "lw   a3, 28(sp)\n"
-        "lw   a4, 32(sp)\n"
-        "lw   a5, 36(sp)\n"
-        "lw   a6, 40(sp)\n"
-        "lw   a7, 44(sp)\n"
-        "lw   t3, 48(sp)\n"
-        "lw   t4, 52(sp)\n"
-        "lw   t5, 56(sp)\n"
+        "lw   ra,  0(sp)\n" "lw   t0,  4(sp)\n" "lw   t1,  8(sp)\n"
+        "lw   t2, 12(sp)\n" "lw   a0, 16(sp)\n" "lw   a1, 20(sp)\n"
+        "lw   a2, 24(sp)\n" "lw   a3, 28(sp)\n" "lw   a4, 32(sp)\n"
+        "lw   a5, 36(sp)\n" "lw   a6, 40(sp)\n" "lw   a7, 44(sp)\n"
+        "lw   t3, 48(sp)\n" "lw   t4, 52(sp)\n" "lw   t5, 56(sp)\n"
         "lw   t6, 60(sp)\n"
         "addi sp, sp, 64\n"
         "mret\n"
@@ -82,15 +45,13 @@ void __attribute__((section(".exceptions"), naked)) exception_handler(void) {
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
 
 /* ===========================================================================
  * ADDRESS MAP
  * =========================================================================*/
-#define FPGA_PIXEL_BUF_BASE     0x08000000
-#define PIXEL_BUF_CTRL_BASE     0xFF203020
-#define TIMER_BASE              0xFF202000
-#define PS2_BASE                0xFF200100
+#define PIXEL_BUF_CTRL_BASE  0xFF203020
+#define TIMER_BASE           0xFF202000
+#define PS2_BASE             0xFF200100
 
 /* ===========================================================================
  * VGA
@@ -103,71 +64,54 @@ volatile int pixel_buffer_start;
 short int Buffer1[SCREEN_HEIGHT][BUFFER_WIDTH];
 short int Buffer2[SCREEN_HEIGHT][BUFFER_WIDTH];
 
-static void _swap(int* a, int* b) { int t = *a; *a = *b; *b = t; }
+static void _swap(int *a, int *b) { int t = *a; *a = *b; *b = t; }
 
 void wait_for_vsync() {
-    volatile int *pixel_ctrl_ptr = (volatile int *)PIXEL_BUF_CTRL_BASE;
-    *pixel_ctrl_ptr = 1;
-    while (*(pixel_ctrl_ptr + 3) & 0x1);
-	pixel_buffer_start = *(pixel_ctrl_ptr + 1);
+    volatile int *ctrl = (volatile int *)PIXEL_BUF_CTRL_BASE;
+    *ctrl = 1;                          /* request buffer swap */
+    while (*(ctrl + 3) & 0x1);         /* wait for S bit to clear */
+    pixel_buffer_start = *(ctrl + 1);  /* update back-buffer pointer */
 }
 
 void vga_init() {
-    volatile int *pixel_ctrl_ptr = (volatile int *)PIXEL_BUF_CTRL_BASE;
-    *pixel_ctrl_ptr = 0;
-    *(pixel_ctrl_ptr + 1) = (int)&Buffer1;
+    volatile int *ctrl = (volatile int *)PIXEL_BUF_CTRL_BASE;
+    *ctrl = 0;
+    *(ctrl + 1) = (int)Buffer1;
     wait_for_vsync();
-    pixel_buffer_start = *pixel_ctrl_ptr;
-    // clear front
+    pixel_buffer_start = *ctrl;
     for (int y = 0; y < SCREEN_HEIGHT; y++) {
         volatile short *row = (volatile short *)(pixel_buffer_start + (y << 10));
         for (int x = 0; x < SCREEN_WIDTH; x++) row[x] = 0;
     }
-    *(pixel_ctrl_ptr + 1) = (int)&Buffer2;
-    pixel_buffer_start = *(pixel_ctrl_ptr + 1);
-    // clear back
+    *(ctrl + 1) = (int)Buffer2;
+    pixel_buffer_start = *(ctrl + 1);
     for (int y = 0; y < SCREEN_HEIGHT; y++) {
         volatile short *row = (volatile short *)(pixel_buffer_start + (y << 10));
         for (int x = 0; x < SCREEN_WIDTH; x++) row[x] = 0;
     }
 }
 
-void plot_pixel(int x, int y, short int colour) {
-    volatile short int *addr =
-        (volatile short int *)(pixel_buffer_start + (y << 10) + (x << 1));
+void plot_pixel(int x, int y, short colour) {
+    volatile short *addr = (volatile short *)(pixel_buffer_start + (y << 10) + (x << 1));
     *addr = colour;
 }
 
-void clear_screen() {
-    for (int y = 0; y < SCREEN_HEIGHT; y++) {
-        volatile short *row = (volatile short *)(pixel_buffer_start + (y << 10));
-        for (int x = 0; x < SCREEN_WIDTH; x++) row[x] = 0x0000;
-    }
-}
-
-void fill_screen(short colour) {
-    for (int y = 0; y < SCREEN_HEIGHT; y++) {
-        volatile short *row = (volatile short *)(pixel_buffer_start + (y << 10));
-        for (int x = 0; x < SCREEN_WIDTH; x++) row[x] = colour;
-    }
-}
-
-void draw_rect(int x, int y, int width, int height, short colour) {
-    int x1 = x + width, y1 = y + height;
-    if (x  < 0)            x  = 0;
-    if (y  < 0)            y  = 0;
-    if (x1 > SCREEN_WIDTH) x1 = SCREEN_WIDTH;
-    if (y1 > SCREEN_HEIGHT)y1 = SCREEN_HEIGHT;
+void draw_rect(int x, int y, int w, int h, short colour) {
+    int x1 = x + w, y1 = y + h;
+    if (x  < 0)             x  = 0;
+    if (y  < 0)             y  = 0;
+    if (x1 > SCREEN_WIDTH)  x1 = SCREEN_WIDTH;
+    if (y1 > SCREEN_HEIGHT) y1 = SCREEN_HEIGHT;
     for (int row = y; row < y1; row++) {
         volatile short *rp = (volatile short *)(pixel_buffer_start + (row << 10));
         for (int col = x; col < x1; col++) rp[col] = colour;
     }
 }
 
-void draw_line(int x0, int y0, int x1, int y1, short int colour) {
-    bool steep = abs(y1 - y0) > abs(x1 - x0);
-    if (steep)  { _swap(&x0,&y0); _swap(&x1,&y1); }
-    if (x0 > x1){ _swap(&x0,&x1); _swap(&y0,&y1); }
+void draw_line(int x0, int y0, int x1, int y1, short colour) {
+    bool steep = abs(y1-y0) > abs(x1-x0);
+    if (steep)   { _swap(&x0,&y0); _swap(&x1,&y1); }
+    if (x0 > x1) { _swap(&x0,&x1); _swap(&y0,&y1); }
     int dx = x1-x0, dy = abs(y1-y0), err = -(dx/2);
     int y = y0, ystep = (y0 < y1) ? 1 : -1;
     for (int x = x0; x <= x1; x++) {
@@ -189,23 +133,81 @@ static volatile unsigned int *timer_ptr = (volatile unsigned int *)TIMER_BASE;
 
 void timer_init() {
     unsigned int period = TIMER_FREQ / FPS;
-    timer_ptr[0] = 1;          // clear TO
-    timer_ptr[1] = 0x8;        // stop
+    timer_ptr[0] = 1;               /* clear any pending TO */
+    timer_ptr[1] = 0x8;             /* stop timer */
     timer_ptr[2] = period & 0xFFFF;
     timer_ptr[3] = period >> 16;
-    asm volatile("csrs mie, %0" : : "r"(0x10000)); // enable IRQ16
-    timer_ptr[1] = 0b111;      // START | CONT | ITO
+    asm volatile("csrs mie, %0" : : "r"(0x10000)); /* enable IRQ16 in mie */
+    timer_ptr[1] = 0x7;             /* START | CONT | ITO */
 }
 
-void timer_irq() {
-    timer_ptr[0] = 1;
-    frame_flag = 1;
+/* ===========================================================================
+ * KEYBOARD  (PS/2 Set 2 scancodes, memory-mapped polling)
+ *
+ * Register layout (from Intel PS/2 Core datasheet):
+ *   offset 0 (data reg):    [31:16] RAVAIL  [15] RVALID  [7:0] DATA
+ *   offset 4 (control reg): [10] CE  [8] RI  [0] RE
+ *
+ * CRITICAL: each read of the data register pops one byte from the FIFO.
+ * Always read into a local variable first — never read twice in one expression.
+ *
+ * Extended keys (arrows, etc.) send a 0xE0 prefix byte before their scancode.
+ * We store extended scancodes with bit 7 set so make and break codes both
+ * resolve to the same value and don't collide with normal scancodes.
+ *   e.g.  Arrow Up   raw=0x75  →  stored as 0xF5  (0x75 | 0x80)
+ *         Arrow Down  raw=0x72  →  stored as 0xF2
+ *         Arrow Left  raw=0x6B  →  stored as 0xEB
+ *         Arrow Right raw=0x74  →  stored as 0xF4
+ * =========================================================================*/
+#define KEY_W     0x1D
+#define KEY_A     0x1C
+#define KEY_S     0x1B
+#define KEY_D     0x23
+#define KEY_SPACE 0x29
+#define KEY_ESC   0x76
+#define KEY_UP    0xF5
+#define KEY_DOWN  0xF2
+#define KEY_LEFT  0xEB
+#define KEY_RIGHT 0xF4
+
+static volatile int *ps2_ptr = (volatile int *)PS2_BASE;
+static unsigned char key_state[256 / 8]; /* 1 bit per scancode */
+
+static void key_set(unsigned char code, int down) {
+    if (down) key_state[code >> 3] |=  (1 << (code & 7));
+    else      key_state[code >> 3] &= ~(1 << (code & 7));
+}
+
+int key_pressed(unsigned char scancode) {
+    return (key_state[scancode >> 3] >> (scancode & 7)) & 1;
+}
+
+void keyboard_update() {
+    static int break_next = 0; /* next scancode byte is a key-release */
+    static int extended   = 0; /* previous byte was 0xE0 prefix       */
+
+    int data;
+    /* Read register ONCE per iteration into a local — avoids double-pop bug */
+    while ((data = ps2_ptr[0]) & 0x8000) { /* RVALID = bit 15 */
+        unsigned char byte = (unsigned char)(data & 0xFF);
+
+        if (byte == 0xE0) {
+            extended = 1;
+        } else if (byte == 0xF0) {
+            break_next = 1;
+        } else {
+            unsigned char code = extended ? (byte | 0x80) : byte;
+            key_set(code, !break_next);
+            break_next = 0;
+            extended   = 0;
+        }
+    }
 }
 
 /* ===========================================================================
  * SPRITES
  * =========================================================================*/
-#define TRANSPARENT  0xF81F   // magenta = transparent key
+#define TRANSPARENT  (short)0xF81F   /* magenta = transparent key colour */
 #define PLAYER_W     16
 #define PLAYER_H     16
 #define TILE_W       16
@@ -223,13 +225,10 @@ typedef enum {
 } SpriteID;
 
 typedef struct {
-    int width;
-    int height;
+    int width, height;
     const short *data;
 } Sprite;
 
-/* --- Sprite pixel data --- */
-/* short casts silence overflow warnings for 16-bit colour values */
 #define SP (short)
 static const short player_sprite[PLAYER_W * PLAYER_H] = {
     SP(0xF81F),SP(0xF81F),SP(0xF81F),SP(0xF81F),SP(0xF81F),SP(0xFFFF),SP(0xFFFF),SP(0xFFFF),SP(0xFFFF),SP(0xFFFF),SP(0xFFFF),SP(0xF81F),SP(0xF81F),SP(0xF81F),SP(0xF81F),SP(0xF81F),
@@ -251,23 +250,15 @@ static const short player_sprite[PLAYER_W * PLAYER_H] = {
 };
 #undef SP
 
-static const short grass_sprite[TILE_W * TILE_H] = {
-    [0 ... 255] = (short)0x03E0
-};
-static const short dirt_sprite[TILE_W * TILE_H] = {
-    [0 ... 255] = (short)0x8400
-};
-static const short stone_sprite[TILE_W * TILE_H] = {
-    [0 ... 255] = (short)0x7BEF
-};
-static const short water_sprite[TILE_W * TILE_H] = {
-    [0 ... 255] = (short)0x001F
-};
+static const short grass_sprite[TILE_W * TILE_H] = { [0 ... 255] = (short)0x03E0 };
+static const short dirt_sprite [TILE_W * TILE_H] = { [0 ... 255] = (short)0x8400 };
+static const short stone_sprite[TILE_W * TILE_H] = { [0 ... 255] = (short)0x7BEF };
+static const short water_sprite[TILE_W * TILE_H] = { [0 ... 255] = (short)0x001F };
 
 Sprite sprites[SPRITE_COUNT] = {
     [SPRITE_PLAYER]     = {PLAYER_W, PLAYER_H, player_sprite},
-    [SPRITE_ENEMY]      = {PLAYER_W, PLAYER_H, player_sprite},  // placeholder
-    [SPRITE_PROJECTILE] = {4,        4,        player_sprite},  // placeholder
+    [SPRITE_ENEMY]      = {PLAYER_W, PLAYER_H, player_sprite},  /* placeholder */
+    [SPRITE_PROJECTILE] = {4,        4,        player_sprite},  /* placeholder */
     [SPRITE_TILE_GRASS] = {TILE_W,   TILE_H,   grass_sprite},
     [SPRITE_TILE_DIRT]  = {TILE_W,   TILE_H,   dirt_sprite},
     [SPRITE_TILE_STONE] = {TILE_W,   TILE_H,   stone_sprite},
@@ -364,6 +355,7 @@ void draw_background() {
  * =========================================================================*/
 #define MAX_ENTITIES 64
 #define HEALTH       100
+#define PLAYER_SPEED 2
 
 typedef enum {
     ENTITY_NONE,
@@ -419,10 +411,8 @@ void entity_update_all() {
 }
 
 void entity_draw_all() {
-    for (int i = 0; i < MAX_ENTITIES; i++) {
-        if (entities[i].active)
-            draw_entity(&entities[i]);
-    }
+    for (int i = 0; i < MAX_ENTITIES; i++)
+        if (entities[i].active) draw_entity(&entities[i]);
 }
 
 /* ===========================================================================
@@ -433,14 +423,11 @@ void player_init(Entity *p, SpriteID sprite, short colour) {
     p->y = SCREEN_HEIGHT / 2;
     p->width  = PLAYER_W;
     p->height = PLAYER_H;
-    p->dx = 0;
-    p->dy = 0;
+    p->dx = 0; p->dy = 0;
     p->health = HEALTH;
     p->facing = 'n';
-    p->hitbox_offset_x = 0;
-    p->hitbox_offset_y = 0;
-    p->hitbox_w  = p->width;
-    p->hitbox_h  = p->height;
+    p->hitbox_offset_x = 0; p->hitbox_offset_y = 0;
+    p->hitbox_w = p->width; p->hitbox_h = p->height;
     p->sprite_id = (int)sprite;
     p->colour    = colour;
     p->type      = ENTITY_PLAYER;
@@ -448,16 +435,20 @@ void player_init(Entity *p, SpriteID sprite, short colour) {
 }
 
 void player_update(Entity *p) {
+    p->dx = 0; p->dy = 0;
+
+    if (key_pressed(KEY_W) || key_pressed(KEY_UP))    { p->dy = -PLAYER_SPEED; p->facing = 'n'; }
+    if (key_pressed(KEY_S) || key_pressed(KEY_DOWN))  { p->dy =  PLAYER_SPEED; p->facing = 's'; }
+    if (key_pressed(KEY_A) || key_pressed(KEY_LEFT))  { p->dx = -PLAYER_SPEED; p->facing = 'w'; }
+    if (key_pressed(KEY_D) || key_pressed(KEY_RIGHT)) { p->dx =  PLAYER_SPEED; p->facing = 'e'; }
+
     p->x += p->dx;
     p->y += p->dy;
-    if (p->x < 0)                       p->x = 0;
-    if (p->y < 0)                       p->y = 0;
+
+    if (p->x < 0)                         p->x = 0;
+    if (p->y < 0)                         p->y = 0;
     if (p->x + p->width  > SCREEN_WIDTH)  p->x = SCREEN_WIDTH  - p->width;
     if (p->y + p->height > SCREEN_HEIGHT) p->y = SCREEN_HEIGHT - p->height;
-}
-
-void player_draw(const Entity *p) {
-    draw_rect(p->x, p->y, p->width, p->height, p->colour);
 }
 
 /* ===========================================================================
@@ -475,6 +466,7 @@ void game_init() {
 }
 
 void update_game() {
+    keyboard_update();
     entity_update_all();
 }
 
@@ -491,19 +483,15 @@ int main(void) {
     timer_init();
     game_init();
 
-    /* Point mtvec at our exception handler so the CPU knows where to jump */
-    extern void exception_handler(void);
     asm volatile("csrw mtvec, %0" : : "r"(exception_handler));
-
-    /* Enable global interrupts (mstatus.MIE = bit 3) */
-    asm volatile("csrs mstatus, %0" : : "r"(0x8));
+    asm volatile("csrs mstatus, %0" : : "r"(0x8)); /* set MIE bit */
 
     while (1) {
         if (frame_flag) {
             frame_flag = 0;
             update_game();
             draw_game();
-			wait_for_vsync();
+            wait_for_vsync();
         }
     }
 

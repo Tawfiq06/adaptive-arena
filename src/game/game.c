@@ -4,6 +4,7 @@
 #include "player.h"
 #include "entity.h"
 #include <stdlib.h>
+#include "keyboard.h"
 
 Entity entities[MAX_ENTITIES];
 
@@ -13,6 +14,7 @@ void game_init(){
 }
 
 void update_game(){
+    keyboard_update();
     entity_update_all();
 }
 
