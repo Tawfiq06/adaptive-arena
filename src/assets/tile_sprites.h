@@ -7,4 +7,5 @@
 extern const int grass_sprite[TILE_H*TILE_W];
 extern const int stone_sprite[TILE_H*TILE_W];
 extern const int water_sprite[TILE_H*TILE_W];
+static const short dirt_sprite[TILE_W * TILE_H];
 #endif

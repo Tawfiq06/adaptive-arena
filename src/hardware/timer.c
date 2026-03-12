@@ -6,7 +6,7 @@
 
 volatile int frame_flag = 0;
 
-static volatile unsigned int *timer_ptr = (unsigned int*)TIMER_BASE;
+static volatile unsigned int *timer_ptr = (volatile unsigned int*)TIMER_BASE;
 
 void timer_init(){
     // 60 - FPS -> 100MHz / 60
@@ -16,7 +16,7 @@ void timer_init(){
     timer_ptr[1] = 0x8; // stop timer
 
     //load low bits
-    timer_ptr[2] = period;
+    timer_ptr[2] = period & 0xFFFF;
     
     //load high bits
     timer_ptr[3] = (period >> 16);

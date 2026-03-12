@@ -40,18 +40,11 @@ static const unsigned char map_2[MAP_HEIGHT][MAP_WIDTH] = {
     {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE}
 };
 void map_init(int map_index){
-    const unsigned char (*source)[MAP_WIDTH];
-
-    if (map_index == 1){
-        source = map_1;
-    }
-    else{
-        source = map_2;
-    }
+    const unsigned char (*src)[MAP_WIDTH] = (map_index == 2) ? map_2 : map_1;
 
     for (int row = 0; row < MAP_HEIGHT; row++){
         for(int col = 0; col < MAP_WIDTH; col++){
-            current_map[row][col] = source[row][col];
+            current_map[row][col] = src[row][col];
         }
     }
 }

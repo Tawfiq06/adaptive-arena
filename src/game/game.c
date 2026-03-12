@@ -1,22 +1,22 @@
 #include "vga.h"
 #include "renderer.h"
+#include "map.h"
+#include "player.h"
+#include "entity.h"
+#include <stdlib.h>
 
-int x = 50;
-int dx = 2;
+Entity entities[MAX_ENTITIES];
 
 void game_init(){
-
+    map_init(1);
+    player_init(&entities[0], SPRITE_PLAYER, (short) 0xDC14);
 }
 
 void update_game(){
-    x += dx;
-
-    if (x < 0 || x > 300){
-        dx = -dx;
-    }
+    entity_update_all();
 }
 
 void draw_game(){
-    fill_screen(0xFFFF);
-    draw_rect(x, 100, 20, 20, 0xF800);
+    draw_background();
+    entity_draw_all();
 }

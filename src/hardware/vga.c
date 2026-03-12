@@ -47,6 +47,13 @@ void clear_screen() {
   }
 }
 
+void fill_screen(short colour) {
+    for (int y = 0; y < SCREEN_HEIGHT; y++) {
+        volatile short *row = (volatile short *)(pixel_buffer_start + (y << 10));
+        for (int x = 0; x < SCREEN_WIDTH; x++) row[x] = colour;
+    }
+}
+
 void draw_rect(int x, int y, int width, int height, short colour){
     int x_end = x + width;
     int y_end = y + height;
@@ -105,4 +112,5 @@ void wait_for_vsync() {
     volatile int * pixel_ctrl_ptr = (int *)PIXEL_BUF_CTRL_BASE;
     *pixel_ctrl_ptr = 1;                  // request swap
     while (*(pixel_ctrl_ptr + 3) & 0x1);  // wait for S bit to go to
+    pixel_buffer_start = *(pixel_ctrl_ptr + 1);//update start
 }

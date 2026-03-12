@@ -2,6 +2,9 @@
 #define PLAYER_H
 
 #define HEALTH 100
+#define PLAYER_W 10
+#define PLAYER_H 10
+
 #include "entity.h"
 #include "sprite.h"
 void player_init(Entity *p, SpriteID sprite, short _colour);

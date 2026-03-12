@@ -7,19 +7,19 @@
 #define SPRITE_COUNT 7
 typedef enum {
     //Player
-    SPRITE_PLAYER,
+    SPRITE_PLAYER = 0,
 
     //Enemies
-    SPRITE_ENEMY,
+    SPRITE_ENEMY = 1,
 
     //Projectiles
-    SPRITE_PROJECTILE,
+    SPRITE_PROJECTILE = 2,
 
     //Background tiles
-    SPRITE_TILE_GRASS,
-    SPRITE_TILE_DIRT,
-    SPRITE_TILE_STONE,
-    SPRITE_TILE_WATER
+    SPRITE_TILE_GRASS = 3,
+    SPRITE_TILE_DIRT  = 4,
+    SPRITE_TILE_STONE = 5,
+    SPRITE_TILE_WATER = 6
 } SpriteID;
 
 typedef struct{

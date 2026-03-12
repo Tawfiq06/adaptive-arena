@@ -1,20 +1,14 @@
 #include "tile_sprites.h"
 
-const short grass_sprite[16*16] = {
-    0x03E0, 0x03E0, 0x03E0, 0x0420, 0x03E0, 0x03E0, 0x03E0, 0x03E0,
-    0x03E0, 0x0420, 0x03E0, 0x03E0, 0x03E0, 0x03E0, 0x0420, 0x03E0,
-    // ... (Repeating patterns to fill 256 elements)
-    [0 ... 255] = 0x03E0 // This is a GCC shorthand to fill the rest with Green
+static const short grass_sprite[TILE_W * TILE_H] = {
+    [0 ... 255] = (short)0x03E0
 };
-
-const short stone_sprite[16 * 16] = {
-    0x7BEF, 0x7BEF, 0x7BEF, 0x0000, 0x7BEF, 0x7BEF, 0x7BEF, 0x7BEF,
-    0x7BEF, 0x0000, 0x7BEF, 0x7BEF, 0x7BEF, 0x7BEF, 0x0000, 0x7BEF,
-    [0 ... 255] = 0x7BEF // Gray
+static const short dirt_sprite[TILE_W * TILE_H] = {
+    [0 ... 255] = (short)0x8400
 };
-
-const short water_sprite[16 * 16] = {
-    0x001F, 0x001F, 0x001F, 0xFFFF, 0x001F, 0x001F, 0x001F, 0x001F,
-    0x001F, 0xFFFF, 0x001F, 0x001F, 0x001F, 0x001F, 0xFFFF, 0x001F,
-    [0 ... 255] = 0x001F // Blue
+static const short stone_sprite[TILE_W * TILE_H] = {
+    [0 ... 255] = (short)0x7BEF
+};
+static const short water_sprite[TILE_W * TILE_H] = {
+    [0 ... 255] = (short)0x001F
 };

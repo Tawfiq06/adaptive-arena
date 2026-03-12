@@ -1,16 +1,19 @@
 #include "player.h"
 #include "vga.h"
+
 void player_init(Entity *p, SpriteID sprite, short _colour){
     p->x = SCREEN_WIDTH / 2;
     p->y = SCREEN_HEIGHT / 2;
 
-    p->width = 10;
-    p->height = 10;
+    p->width = PLAYER_W;
+    p->height = PLAYER_H;
 
     p->dx = 0;
     p->dy = 0;
 
     p->health = HEALTH;
+
+    p->facing = 'n';  //n for north (up), s for south(dowm), e for east(right), w for west (left)
 
     p->hitbox_offset_x = 0;
     p->hitbox_offset_y = 0;
@@ -18,10 +21,11 @@ void player_init(Entity *p, SpriteID sprite, short _colour){
     p->hitbox_w = p->width;
     p->hitbox_h = p->height;
 
-    p->sprite_id = sprite;
+    p->sprite_id = (int)sprite;
     p->colour = _colour; //white
 
     p->type = ENTITY_PLAYER;
+    p->active = 1;
 }
 
 void player_update(Entity *p){

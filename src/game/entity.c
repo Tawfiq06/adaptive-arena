@@ -42,10 +42,8 @@ void entity_draw_all()
 {
     for(int i = 0; i < MAX_ENTITIES; i++)
     {
-        if(!entities[i].active)
-            continue;
-
-        draw_entity(&entities[i]);
+        if(entities[i].active)
+            draw_entity(&entities[i]);
     }
 }
 
