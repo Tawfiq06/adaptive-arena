@@ -7,7 +7,9 @@
 
 #include "entity.h"
 #include "sprite.h"
-void player_init(Entity *p, SpriteID sprite, short _colour);
+#include "player_config.h"
+
+void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg);
 void player_update(Entity *p, int cur_buf);
 void player_draw(const Entity *p);
 

@@ -1,10 +1,12 @@
 #include "player.h"
 #include "vga.h"
 #include "keyboard.h"
+#include "player_anim.h"
 
 #define PLAYER_SPEED 2
 
-void player_init(Entity *p, SpriteID sprite, short _colour){
+void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg){
+    p->player_cfg = cfg; //not needed at init
     p->x = SCREEN_WIDTH / 2;
     p->y = SCREEN_HEIGHT / 2;
 
@@ -58,11 +60,11 @@ void player_update(Entity *p, int cur_buf){
     if (locked) return;
 
     /* Attack input (takes priority over movement) */
-    if (key_pressed(KEY_Z)) {
+    if (key_pressed(p->player_cfg->key_atk1)) {
         anim_play(&p->anim, ANIM_ATK1);
         return;
     }
-    if (key_pressed(KEY_X)) {
+    if (key_pressed(p->player_cfg->key_atk2)) {
         anim_play(&p->anim, ANIM_ATK2);
         return;
     }
@@ -71,20 +73,20 @@ void player_update(Entity *p, int cur_buf){
     p->dx = 0;
     p->dy = 0;
 
-    if (key_pressed(KEY_W) || key_pressed(KEY_UP)) {
+    if (key_pressed(p->player_cfg->key_up)) {
         p->dy = -PLAYER_SPEED;
         p->facing = 'n';
     }
-    if(key_pressed(KEY_S) || key_pressed(KEY_DOWN)){
+    if(key_pressed(p->player_cfg->key_down)){
         p->dy = PLAYER_SPEED;
         p->facing = 's';
     }
-    if (key_pressed(KEY_A) || key_pressed(KEY_LEFT))  { 
+    if (key_pressed(p->player_cfg->key_left))  { 
         p->dx = -PLAYER_SPEED;
         p->facing = 'w'; 
         p->anim.flip = 1;
     }
-    if (key_pressed(KEY_D) || key_pressed(KEY_RIGHT)) { 
+    if (key_pressed(p->player_cfg->key_right)) { 
         p->dx =  PLAYER_SPEED; 
         p->facing = 'e'; 
         p->anim.flip = 0;

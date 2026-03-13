@@ -11,6 +11,7 @@ Entity* spawn_entity(EntityType type){
         if(!entities[i].active){
             entities[i].active = 1;
             entities[i].type = type;
+            entities[i].player_cfg = NULL; //since not player, if player use player_init
             return &entities[i];
         }
     }

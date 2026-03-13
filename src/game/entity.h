@@ -3,6 +3,7 @@
 
 #define MAX_ENTITIES 64
 #include "player_anim.h"
+#include "player_config.h"
 
 typedef enum{
     ENTITY_NONE,
@@ -38,6 +39,8 @@ typedef struct{
     
     EntityType type;
     PlayerAnim anim;
+
+    const PlayerConfig *player_cfg;
 
     int active;
 } Entity;
