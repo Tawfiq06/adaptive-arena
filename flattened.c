@@ -157,6 +157,8 @@ void timer_init() {
 #define KEY_RIGHT 0xF4
 #define KEY_Z     0x1A  /* attack 1 */
 #define KEY_X     0x22  /* attack 2 */
+#define KEY_Q     0x15  /* P2 attack 1 */
+#define KEY_E     0x24  /* P2 attack 2 */
 
 static volatile int *ps2_ptr = (volatile int *)PS2_BASE;
 static unsigned char key_state[256 / 8];
@@ -226,7 +228,6 @@ static const AnimDef SOLDIER_ANIMS[ANIM_COUNT] = {
     [ANIM_DEATH ] = { 39, 42, 0,  6 },
 };
 
-
 static const short soldier_f00[41*29] = {
     0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,
     0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,
@@ -258,6 +259,7 @@ static const short soldier_f00[41*29] = {
     0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,
     0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F
 };
+
 
 static const short soldier_f01[41*29] = {
     0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,
@@ -1702,7 +1704,7 @@ static void draw_soldier(const PlayerAnim *a, int x, int y) {
 }
 
 /* ===========================================================================
- * SPRITES (tiles — unchanged from your original)
+ * SPRITES (tiles)
  * =========================================================================*/
 #define SPRITE_TRANSPARENT  ((short)0xF81F)
 #define TILE_W  16
@@ -1730,9 +1732,9 @@ static const short stone_sprite[TILE_W * TILE_H] = { [0 ... 255] = (short)0x7BEF
 static const short water_sprite[TILE_W * TILE_H] = { [0 ... 255] = (short)0x001F };
 
 Sprite sprites[SPRITE_COUNT] = {
-    [SPRITE_PLAYER]     = {SOLDIER_W, SOLDIER_H, NULL},   /* drawn via draw_soldier */
-    [SPRITE_ENEMY]      = {TILE_W,    TILE_H,    stone_sprite}, /* placeholder */
-    [SPRITE_PROJECTILE] = {4,         4,         stone_sprite}, /* placeholder */
+    [SPRITE_PLAYER]     = {SOLDIER_W, SOLDIER_H, NULL},
+    [SPRITE_ENEMY]      = {TILE_W,    TILE_H,    stone_sprite},
+    [SPRITE_PROJECTILE] = {4,         4,         stone_sprite},
     [SPRITE_TILE_GRASS] = {TILE_W,    TILE_H,    grass_sprite},
     [SPRITE_TILE_DIRT]  = {TILE_W,    TILE_H,    dirt_sprite},
     [SPRITE_TILE_STONE] = {TILE_W,    TILE_H,    stone_sprite},
@@ -1820,6 +1822,38 @@ void draw_background() {
 }
 
 /* ===========================================================================
+ * PLAYER CONFIG — edit these to re-bind keys for either player
+ * =========================================================================*/
+typedef struct {
+    unsigned char key_up;
+    unsigned char key_down;
+    unsigned char key_left;
+    unsigned char key_right;
+    unsigned char key_atk1;
+    unsigned char key_atk2;
+} PlayerConfig;
+
+/* Player 1: WASD + Z/X */
+static const PlayerConfig p1_cfg = {
+    .key_up    = KEY_W,
+    .key_down  = KEY_S,
+    .key_left  = KEY_A,
+    .key_right = KEY_D,
+    .key_atk1  = KEY_Z,
+    .key_atk2  = KEY_X,
+};
+
+/* Player 2: Arrow keys + Q/E */
+static const PlayerConfig p2_cfg = {
+    .key_up    = KEY_UP,
+    .key_down  = KEY_DOWN,
+    .key_left  = KEY_LEFT,
+    .key_right = KEY_RIGHT,
+    .key_atk1  = KEY_Q,
+    .key_atk2  = KEY_E,
+};
+
+/* ===========================================================================
  * ENTITY
  * =========================================================================*/
 #define MAX_ENTITIES  64
@@ -1845,9 +1879,10 @@ typedef struct {
     short colour;
     EntityType type;
     int active;
-    PlayerAnim anim;   /* animation state, 4 bytes */
-    int prev_x[2];     /* position when this buffer was last drawn — one per buffer */
+    PlayerAnim anim;          /* animation state, 4 bytes */
+    int prev_x[2];            /* one saved position per buffer */
     int prev_y[2];
+    const PlayerConfig *cfg;  /* key bindings — NULL for non-players */
 } Entity;
 
 Entity entities[MAX_ENTITIES];
@@ -1855,40 +1890,35 @@ Entity entities[MAX_ENTITIES];
 /* ===========================================================================
  * PLAYER
  * =========================================================================*/
-void player_init(Entity *p, SpriteID sprite, short _colour) {
-    p->x = SCREEN_WIDTH  / 2;
-    p->y = SCREEN_HEIGHT / 2;
+void player_init(Entity *p, SpriteID sprite, short colour,
+                 const PlayerConfig *cfg, int start_x, int flip) {
+    p->x      = start_x;
+    p->y      = SCREEN_HEIGHT / 2 - PLAYER_H / 2;
     p->width  = PLAYER_W;
     p->height = PLAYER_H;
     p->dx = 0; p->dy = 0;
     p->health = HEALTH;
-    p->facing = 'e';
+    p->facing = flip ? 'w' : 'e';
     p->hitbox_offset_x = 0; p->hitbox_offset_y = 0;
     p->hitbox_w = p->width; p->hitbox_h = p->height;
     p->sprite_id = (int)sprite;
-    p->colour    = _colour;
+    p->colour    = colour;
     p->type      = ENTITY_PLAYER;
     p->active    = 1;
+    p->cfg       = cfg;
     anim_init(&p->anim);
-    p->prev_x[0] = p->x;   /* start clean — no stale erase on first frame */
-    p->prev_y[0] = p->y;
-    p->prev_x[1] = p->x;
-    p->prev_y[1] = p->y;
+    p->anim.flip = flip;
+    p->prev_x[0] = p->x; p->prev_x[1] = p->x;
+    p->prev_y[0] = p->y; p->prev_y[1] = p->y;
 }
 
 void player_update(Entity *p) {
-    /* 1. Tick animation FIRST.
-     *    BUG FIX: previously locked was computed before anim_tick, so when a
-     *    one-shot finished, locked was still true and the reset branch was
-     *    skipped. Next frame anim_tick returned 0 (already at last frame),
-     *    locked stayed true forever -> player frozen. */
+    /* 1. Tick animation FIRST — returns 1 when a one-shot finishes */
     int anim_finished = anim_tick(&p->anim);
 
-    /* 2. One-shot just finished -> immediately drop back to idle so the
-     *    locked check below sees the new state, not the completed one. */
-    if (anim_finished) {
+    /* 2. One-shot just finished -> drop back to idle */
+    if (anim_finished)
         anim_play(&p->anim, ANIM_IDLE);
-    }
 
     /* 3. Block input while a one-shot is still mid-play */
     int locked = (p->anim.anim == ANIM_ATK1 ||
@@ -1897,17 +1927,17 @@ void player_update(Entity *p) {
                   p->anim.anim == ANIM_DEATH);
     if (locked) return;
 
-    /* 4. Attack input */
-    if (key_pressed(KEY_Z)) { anim_play(&p->anim, ANIM_ATK1); return; }
-    if (key_pressed(KEY_X)) { anim_play(&p->anim, ANIM_ATK2); return; }
+    /* 4. Attack input — from this player's config */
+    const PlayerConfig *cfg = p->cfg;
+    if (key_pressed(cfg->key_atk1)) { anim_play(&p->anim, ANIM_ATK1); return; }
+    if (key_pressed(cfg->key_atk2)) { anim_play(&p->anim, ANIM_ATK2); return; }
 
     /* 5. Movement */
     p->dx = 0; p->dy = 0;
-
-    if (key_pressed(KEY_W) || key_pressed(KEY_UP))    { p->dy = -PLAYER_SPEED; p->facing = 'n'; }
-    if (key_pressed(KEY_S) || key_pressed(KEY_DOWN))  { p->dy =  PLAYER_SPEED; p->facing = 's'; }
-    if (key_pressed(KEY_A) || key_pressed(KEY_LEFT))  { p->dx = -PLAYER_SPEED; p->facing = 'w'; p->anim.flip = 1; }
-    if (key_pressed(KEY_D) || key_pressed(KEY_RIGHT)) { p->dx =  PLAYER_SPEED; p->facing = 'e'; p->anim.flip = 0; }
+    if (key_pressed(cfg->key_up))    { p->dy = -PLAYER_SPEED; p->facing = 'n'; }
+    if (key_pressed(cfg->key_down))  { p->dy =  PLAYER_SPEED; p->facing = 's'; }
+    if (key_pressed(cfg->key_left))  { p->dx = -PLAYER_SPEED; p->facing = 'w'; p->anim.flip = 1; }
+    if (key_pressed(cfg->key_right)) { p->dx =  PLAYER_SPEED; p->facing = 'e'; p->anim.flip = 0; }
 
     int moving = (p->dx != 0 || p->dy != 0);
     anim_play(&p->anim, moving ? ANIM_WALK : ANIM_IDLE);
@@ -1924,6 +1954,7 @@ void player_update(Entity *p) {
     if (p->x + p->width  > SCREEN_WIDTH)  p->x = SCREEN_WIDTH  - p->width;
     if (p->y + p->height > SCREEN_HEIGHT) p->y = SCREEN_HEIGHT - p->height;
 }
+
 void player_draw(const Entity *p) {
     draw_soldier(&p->anim, p->x, p->y);
 }
@@ -1942,10 +1973,11 @@ Entity *spawn_entity(EntityType type) {
         if (!entities[i].active) {
             entities[i].active = 1;
             entities[i].type   = type;
+            entities[i].cfg    = 0;
             return &entities[i];
         }
     }
-    return NULL;
+    return 0;
 }
 
 void draw_entity(Entity *e) {
@@ -1977,7 +2009,18 @@ void entity_draw_all() {
  * =========================================================================*/
 void game_init() {
     map_init(1);
-    player_init(&entities[0], SPRITE_PLAYER, (short)0xFFFF);
+
+    /* Player 1 — left side, faces right, WASD + Z/X */
+    Entity *p1 = spawn_entity(ENTITY_PLAYER);
+    player_init(p1, SPRITE_PLAYER, (short)0xFFFF, &p1_cfg,
+                16 + TILE_W,   /* x: one tile in from left border */
+                0);            /* flip = 0, faces right */
+
+    /* Player 2 — right side, faces left, Arrows + Q/E */
+    Entity *p2 = spawn_entity(ENTITY_PLAYER);
+    player_init(p2, SPRITE_PLAYER, (short)0x07FF, &p2_cfg,
+                SCREEN_WIDTH - 16 - TILE_W - PLAYER_W,  /* x: one tile in from right border */
+                1);                                      /* flip = 1, faces left */
 }
 
 void update_game() {
@@ -1985,29 +2028,22 @@ void update_game() {
     entity_update_all();
 }
 
-/* Redraws only the background tiles that overlap a sprite's bounding rect.
- * Called BEFORE drawing the sprite at its new position (erase old ghost).
- * w/h should be the sprite dimensions. */
+/* Redraws background tiles that cover the given pixel rect (dirty-rect erase) */
 static void erase_sprite(int x, int y, int w, int h) {
-    /* Convert pixel rect to tile indices (tiles are TILE_W x TILE_H = 16x16) */
-    int col0 = x >> 4;                        /* x / 16 */
-    int col1 = (x + w + 15) >> 4;            /* ceil((x+w) / 16) */
+    int col0 = x >> 4;
+    int col1 = (x + w + 15) >> 4;
     int row0 = y >> 4;
     int row1 = (y + h + 15) >> 4;
-
-    for (int row = row0; row < row1; row++) {
-        for (int col = col0; col < col1; col++) {
-            SpriteID id = map_get_tile(row, col);
-            draw_sprite(&sprites[id], col << 4, row << 4);
-        }
-    }
+    for (int row = row0; row < row1; row++)
+        for (int col = col0; col < col1; col++)
+            draw_sprite(&sprites[map_get_tile(row, col)], col << 4, row << 4);
 }
 
-static int bg_drawn = 0;  /* draw full background exactly once at startup */
+static int bg_drawn = 0;
 
 void draw_game() {
     if (!bg_drawn) {
-        /* Draw background into BOTH buffers before anything moves */
+        /* Prime both buffers with background so no stale pixels on frame 1 */
         draw_background();
         wait_for_vsync();
         draw_background();
@@ -2015,15 +2051,13 @@ void draw_game() {
         return;
     }
 
-    /* Step 1: erase each entity by redrawing background tiles at the position
-     * that was drawn into THIS buffer last time it was the back buffer */
+    /* Erase each entity at the position drawn into THIS buffer last time */
     for (int i = 0; i < MAX_ENTITIES; i++) {
         if (!entities[i].active) continue;
         erase_sprite(entities[i].prev_x[cur_buf], entities[i].prev_y[cur_buf],
                      entities[i].width,            entities[i].height);
     }
 
-    /* Step 2: draw entities at their NEW position */
     entity_draw_all();
 }
 
@@ -2044,7 +2078,7 @@ int main(void) {
             update_game();
             draw_game();
             wait_for_vsync();
-            cur_buf = 1 - cur_buf;  /* back buffer just became front; flip tracker */
+            cur_buf = 1 - cur_buf;
         }
     }
     return 0;
