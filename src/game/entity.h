@@ -2,6 +2,7 @@
 #define ENTITY_H
 
 #define MAX_ENTITIES 64
+#include "player_anim.h"
 
 typedef enum{
     ENTITY_NONE,
@@ -13,6 +14,9 @@ typedef enum{
 typedef struct{
     int x;
     int y;
+
+    int prev_x[2];
+    int prev_y[2];
 
     int dx;
     int dy;
@@ -33,6 +37,7 @@ typedef struct{
     short colour;
     
     EntityType type;
+    PlayerAnim anim;
 
     int active;
 } Entity;
@@ -40,7 +45,8 @@ typedef struct{
 extern Entity entities[MAX_ENTITIES];
 
 Entity* spawn_entity(EntityType type);
-void entity_update_all();
+void entity_update_all(int cur_buf);
 void entity_draw_all();
+void entity_erase_all(int cur_buf);
 
 #endif

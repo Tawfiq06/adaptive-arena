@@ -3,5 +3,5 @@
 
 void game_init();
 void update_game();
-void draw_game();
+void draw_game(int cur_buf);
 #endif

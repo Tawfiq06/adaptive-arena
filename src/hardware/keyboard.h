@@ -16,6 +16,9 @@
 #define KEY_SPACE 0x29
 #define KEY_ESC   0x76
 
+#define KEY_Z     0x1A  /* attack 1 */
+#define KEY_X     0x22  /* attack 2 */
+
 /* Returns 1 if the key with the given scancode is currently held down */
 int key_pressed(unsigned char scancode);
 

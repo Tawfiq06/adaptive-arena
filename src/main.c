@@ -78,15 +78,16 @@ int main(void){
     asm volatile("csrw mtvec, %0" : : "r"(exception_handler));
 
     asm volatile("csrs mstatus, %0" : : "r"(0x8));
-
+    int cur_buf = 0;
     while(1){
 
         if(frame_flag){
             frame_flag = 0;
-            update_game();
-            draw_game();
+            update_game(cur_buf);
+            draw_game(cur_buf);
             
             wait_for_vsync(); //display frame
+            cur_buf = 1 - cur_buf; //to keep track of our current buff
         }
     }
 

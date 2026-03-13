@@ -29,9 +29,45 @@ void player_init(Entity *p, SpriteID sprite, short _colour){
 
     p->type = ENTITY_PLAYER;
     p->active = 1;
+    
+    anim_init(&p->anim);
+
+    p->prev_x[0] = p->x;
+    p->prev_x[1] = p->x;
+    p->prev_y[0] = p->y;
+    p->prev_y[1] = p->y;
 }
 
-void player_update(Entity *p){
+void player_update(Entity *p, int cur_buf){
+    int anim_finished = anim_tick(&p->anim);
+
+    if (anim_finished){
+        anim_play(&p->anim, ANIM_IDLE);
+    }
+    
+    int locked = (p->anim.anim == ANIM_ATK1 ||
+                  p->anim.anim == ANIM_ATK2 ||
+                  p->anim.anim == ANIM_HURT  ||
+                  p->anim.anim == ANIM_DEATH);
+
+    /* Advance animation — returns 1 if one-shot just ended */
+    if (anim_tick(&p->anim) && !locked) {
+        anim_play(&p->anim, ANIM_IDLE);
+    }
+
+    if (locked) return;
+
+    /* Attack input (takes priority over movement) */
+    if (key_pressed(KEY_Z)) {
+        anim_play(&p->anim, ANIM_ATK1);
+        return;
+    }
+    if (key_pressed(KEY_X)) {
+        anim_play(&p->anim, ANIM_ATK2);
+        return;
+    }
+
+    /* Movement */
     p->dx = 0;
     p->dy = 0;
 
@@ -46,11 +82,21 @@ void player_update(Entity *p){
     if (key_pressed(KEY_A) || key_pressed(KEY_LEFT))  { 
         p->dx = -PLAYER_SPEED;
         p->facing = 'w'; 
+        p->anim.flip = 1;
     }
     if (key_pressed(KEY_D) || key_pressed(KEY_RIGHT)) { 
         p->dx =  PLAYER_SPEED; 
         p->facing = 'e'; 
+        p->anim.flip = 0;
     }
+
+    //Check if we should play idle animation
+    int moving = (p->dx != 0 || p->dy != 0);
+    anim_play(&p->anim, moving ? ANIM_WALK : ANIM_IDLE);
+
+    /*Save old postions*/
+    p->prev_x[cur_buf] = p->x;
+    p->prev_y[cur_buf] = p->y;
 
     p->x += p->dx;
     p->y += p->dy;
@@ -71,5 +117,5 @@ void player_update(Entity *p){
 }
 
 void player_draw(const Entity *p){
-    draw_rect(p->x, p->y, p->width, p->height, p->colour);
+    draw_soldier(&p->anim, p->x, p->y);
 }
