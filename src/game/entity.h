@@ -2,7 +2,7 @@
 #define ENTITY_H
 
 #define MAX_ENTITIES 64
-#include "player_anim.h"
+#include "animator.h"
 #include "player_config.h"
 
 typedef enum{
@@ -38,7 +38,9 @@ typedef struct{
     short colour;
     
     EntityType type;
-    PlayerAnim anim;
+
+    Animator anim;
+    const AnimDef *anim_def; //points to SOLDIER_ANIMS, PROJECTILE, etc
 
     const PlayerConfig *player_cfg;
 

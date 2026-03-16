@@ -51,11 +51,20 @@ void entity_draw_all()
 }
 
 void draw_entity(Entity *e){
-    if (e->type == ENTITY_PLAYER){
-        player_draw(e);
-    }
-    else{
-        draw_sprite(&sprites[e->sprite_id], e->x, e->y);
+    switch (e->type){
+        case ENTITY_PLAYER: 
+            player_draw(e);
+            break;
+        case ENTITY_ENEMY:
+            enemy_draw(e);
+            break;
+        case ENTITY_PROJECTILE:
+            projectile_draw(e);
+            break;
+        default:
+            if (e->sprite_id >= 0)
+                draw_sprite(&sprites[e->sprite_id], e->x, e->y);
+                break;
     }
 }
 

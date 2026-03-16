@@ -1,7 +1,7 @@
 #include "player.h"
 #include "vga.h"
 #include "keyboard.h"
-#include "player_anim.h"
+#include "animator.h"
 
 #define PLAYER_SPEED 2
 
@@ -32,9 +32,11 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
     p->type = ENTITY_PLAYER;
     p->active = 1;
     
-    anim_init(&p->anim);
+    p->anim_def = SOLDIER_ANIMS;
+
+    anim_init(&p->anim, p->anim_def, SOLIDER_IDLE);
     p->anim.flip = flip;
-    
+   
     p->prev_x[0] = p->x;
     p->prev_x[1] = p->x;
     p->prev_y[0] = p->y;
@@ -42,31 +44,27 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
 }
 
 void player_update(Entity *p, int cur_buf){
-    int anim_finished = anim_tick(&p->anim);
-
-    if (anim_finished){
-        anim_play(&p->anim, ANIM_IDLE);
-    }
+    int anim_finished = anim_tick(&p->anim, p->anim_def);
     
-    int locked = (p->anim.anim == ANIM_ATK1 ||
-                  p->anim.anim == ANIM_ATK2 ||
-                  p->anim.anim == ANIM_HURT  ||
-                  p->anim.anim == ANIM_DEATH);
+    int locked = (p->anim.anim == SOLDIER_ATK1 ||
+                  p->anim.anim == SOLDIER_ATK2 ||
+                  p->anim.anim == SOLDIER_HURT  ||
+                  p->anim.anim == SOLDIER_DEATH);
 
     /* Advance animation — returns 1 if one-shot just ended */
-    if (anim_tick(&p->anim) && !locked) {
-        anim_play(&p->anim, ANIM_IDLE);
+    if (anim_finished && !locked) {
+        anim_play(&p->anim, p->anim_def, SOLIDER_IDLE);
     }
 
     if (locked) return;
 
     /* Attack input (takes priority over movement) */
     if (key_pressed(p->player_cfg->key_atk1)) {
-        anim_play(&p->anim, ANIM_ATK1);
+        anim_play(&p->anim, p->anim_def, SOLIDER_IDLE);
         return;
     }
     if (key_pressed(p->player_cfg->key_atk2)) {
-        anim_play(&p->anim, ANIM_ATK2);
+        anim_play(&p->anim, p->anim_def, SOLIDER_IDLE);
         return;
     }
 
@@ -95,7 +93,7 @@ void player_update(Entity *p, int cur_buf){
 
     //Check if we should play idle animation
     int moving = (p->dx != 0 || p->dy != 0);
-    anim_play(&p->anim, moving ? ANIM_WALK : ANIM_IDLE);
+    anim_play(&p->anim, p->anim_def, moving ? SOLDIER_WALK : SOLIDER_IDLE);
 
     /*Save old postions*/
     p->prev_x[cur_buf] = p->x;

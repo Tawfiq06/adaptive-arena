@@ -8,8 +8,6 @@
 #include "player_config.h"
 #include "tile_sprites.h"
 
-Entity entities[MAX_ENTITIES];
-
 static const PlayerConfig p1_cfg = PLAYER1_CONFIG;
 static const PlayerConfig p2_cfg = PLAYER2_CONFIG;
 
