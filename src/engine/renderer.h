@@ -5,5 +5,6 @@
 
 void draw_background();
 void draw_sprite(const Sprite *s, int x, int y);
+void erase_sprite(int x, int y, int w, int h);
 
 #endif

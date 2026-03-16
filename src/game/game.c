@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "keyboard.h"
 #include "player_config.h"
+#include "tile_sprites.h"
 
 Entity entities[MAX_ENTITIES];
 
@@ -18,20 +19,16 @@ void game_init(){
     map_init(1);
 
     /*Spawn Player 1*/
+    //on the left, faces right
     Entity *p1 = spawn_entity(ENTITY_PLAYER);
     p1->player_cfg = &p1_cfg;
-    player_init(p1, SPRITE_PLAYER, (short)0xDC14, &p1_cfg);
-    p1->x = 60;
-    p1->prev_x[0] = p1->x;
-    p1->prev_x[1] = p1->x;
+    player_init(p1, SPRITE_PLAYER, (short)0xDC14, &p1_cfg, 16 + TILE_W, 0);
 
-     /*Spawn Player 2*/
+    /*Spawn Player 2*/
+    //on the right, faces left
     Entity *p2 = spawn_entity(ENTITY_PLAYER);
     p2->player_cfg = &p2_cfg;
-    player_init(p2, SPRITE_PLAYER, (short)0xDC14, &p2_cfg);
-    p2->x = 60;
-    p2->prev_x[0] = p2->x;
-    p2->prev_x[1] = p2->x;
+    player_init(p2, SPRITE_PLAYER, (short)0xDC14, &p2_cfg, SCREEN_WIDTH - 16 - TILE_W - PLAYER_W, 1);
 }
 
 void update_game(int cur_buf){

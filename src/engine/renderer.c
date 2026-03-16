@@ -41,3 +41,18 @@ void draw_background(){
         }
     }
 }
+
+void erase_sprite(int x, int y, int w, int h){
+    //convert pixel rect to tile indices
+    int col0 = x >> 4;
+    int col1 = (x + w + 15) >> 4;
+    int row0 = y >> 4;
+    int row1 = (y + h + 15) >> 4;
+
+    for(int row = row0; row < row1; row++){
+        for (int col = col0; col < col1; col++){
+            SpriteID id = map_get_tile(row, col);
+            draw_sprite(&sprites[id], col << 4, row << 4);
+        }
+    }
+}

@@ -5,10 +5,10 @@
 
 #define PLAYER_SPEED 2
 
-void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg){
+void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg, int start_x, int flip){
     p->player_cfg = cfg; //not needed at init
-    p->x = SCREEN_WIDTH / 2;
-    p->y = SCREEN_HEIGHT / 2;
+    p->x = start_x;
+    p->y = SCREEN_HEIGHT / 2 - PLAYER_H / 2;
 
     p->width = PLAYER_W;
     p->height = PLAYER_H;
@@ -18,7 +18,7 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
 
     p->health = HEALTH;
 
-    p->facing = 'n';  //n for north (up), s for south(dowm), e for east(right), w for west (left)
+    p->facing = flip ? 'w' : 'e';  //n for north (up), s for south(dowm), e for east(right), w for west (left)
 
     p->hitbox_offset_x = 0;
     p->hitbox_offset_y = 0;
@@ -33,7 +33,8 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
     p->active = 1;
     
     anim_init(&p->anim);
-
+    p->anim.flip = flip;
+    
     p->prev_x[0] = p->x;
     p->prev_x[1] = p->x;
     p->prev_y[0] = p->y;
