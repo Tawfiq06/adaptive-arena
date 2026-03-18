@@ -32,6 +32,21 @@ void game_init(){
 void update_game(int cur_buf){
     keyboard_update();
     entity_update_all(cur_buf);
+
+    for (int i = 0; i < MAX_ENTITIES; i++){
+        Entity current = entities[i];
+        int x = current.x;
+        int y = current.y; 
+        char dir = current.facing; 
+        
+        if (current.type == ENTITY_PLAYER){
+            if (current.attack_s1 | current.attack_s2) {
+                
+            }
+            
+            }
+    }
+    
 }
 
 void draw_game(int cur_buf){
