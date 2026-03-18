@@ -4,7 +4,8 @@
 #include "animator.h"
 
 #define PLAYER_SPEED 2
-
+#define HITBOX_OFFSET_X 10
+#define HITBOX_OFFSET_Y 8
 void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg, int start_x, int flip){
     p->player_cfg = cfg; //not needed at init
     p->x = start_x;
@@ -122,6 +123,14 @@ void player_update(Entity *p, int cur_buf){
 
     if(p->y + p->height > SCREEN_HEIGHT)
         p->y = SCREEN_HEIGHT - p->height;
+
+     if(p->facing == 'e'){
+        p->hitbox_x = p->x + HITBOX_OFFSET_X + p->hitbox_w;
+    }
+    
+    if(p->facing == 'w'){
+        p->hitbox_x = p->x + SOLIDER_W - HITBOX_OFFSET_X - p->hitbox_w;
+    }
 }
 
 void player_draw(const Entity *p){
