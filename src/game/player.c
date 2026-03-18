@@ -20,11 +20,11 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
 
     p->facing = flip ? 'w' : 'e';  //n for north (up), s for south(dowm), e for east(right), w for west (left)
 
-    p->hitbox_offset_x = 0;
-    p->hitbox_offset_y = 0;
+    p->hitbox_x = p->x + 10;
+    p->hitbox_y = p->y + 8;
 
-    p->hitbox_w = p->width;
-    p->hitbox_h = p->height;
+    p->hitbox_w = 20;
+    p->hitbox_h = 18;
 
     p->sprite_id = (int)sprite;
     p->colour = _colour; //white
