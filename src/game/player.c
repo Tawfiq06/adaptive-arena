@@ -81,11 +81,11 @@ void player_update(Entity *p, int cur_buf){
 
     if (key_pressed(p->player_cfg->key_up)) {
         p->dy = -PLAYER_SPEED;
-        p->facing = 'n';
+       // p->facing = 'n';
     }
     if(key_pressed(p->player_cfg->key_down)){
         p->dy = PLAYER_SPEED;
-        p->facing = 's';
+      //  p->facing = 's';
     }
     if (key_pressed(p->player_cfg->key_left))  { 
         p->dx = -PLAYER_SPEED;
