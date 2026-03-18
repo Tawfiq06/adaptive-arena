@@ -1,9 +1,16 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "soldier_frames.h"
+
 #define HEALTH 100
-#define PLAYER_W 10
-#define PLAYER_H 10
+#define PLAYER_SPEED 2
+#define HITBOX_OFFSET_X 10
+#define HITBOX_OFFSET_Y 8
+#define PLAYER_W SOLDIER_W
+#define PLAYER_H SOLDIER_H
+#define ATTACK_1_DAMAGE 10
+#define ATTACK_2_DAMAGE 15
 
 #include "entity.h"
 #include "sprite.h"
