@@ -45,6 +45,12 @@ typedef struct{
     const PlayerConfig *player_cfg;
 
     int active;
+
+    //flags to know if certain actions need to happen
+    int attack_s1;
+    int attack_s2;
+    int attack_p;
+
 } Entity;
 
 extern Entity entities[MAX_ENTITIES];

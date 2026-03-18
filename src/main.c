@@ -88,6 +88,7 @@ int main(void){
 
     asm volatile("csrs mstatus, %0" : : "r"(0x8));
     int cur_buf = 0;
+    
     while(1){
 
         if(frame_flag){
