@@ -41,6 +41,11 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
     p->prev_x[1] = p->x;
     p->prev_y[0] = p->y;
     p->prev_y[1] = p->y;
+
+    p->attack_s1 = 0;
+    p->attack_s2 = 0;
+    p->attack_p = 0;
+    
 }
 
 void player_update(Entity *p, int cur_buf){
@@ -61,10 +66,12 @@ void player_update(Entity *p, int cur_buf){
     /* Attack input (takes priority over movement) */
     if (key_pressed(p->player_cfg->key_atk1)) {
         anim_play(&p->anim, p->anim_def, SOLIDER_IDLE);
+        p->attack_s1 = 1;
         return;
     }
     if (key_pressed(p->player_cfg->key_atk2)) {
         anim_play(&p->anim, p->anim_def, SOLIDER_IDLE);
+        p->attack_s2 = 1;
         return;
     }
 
