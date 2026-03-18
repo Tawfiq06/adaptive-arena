@@ -27,8 +27,8 @@ typedef struct{
 
     char facing; //this will be used to determine which direction they are facing
 
-    int hitbox_offset_x;
-    int hitbox_offset_y;
+    int hitbox_x;
+    int hitbox_y;
     int hitbox_w;
     int hitbox_h;
 
