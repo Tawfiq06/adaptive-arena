@@ -69,7 +69,16 @@ void __attribute__((section(".exceptions"), naked)) exception_handler(void) {
     );
 }
 
+typedef enum{
+    START_SCREEN,
+    PLAYER_SELECT,
+    MAP_SELECT,
+    GAME,
+    PAUSE
+} MODE;
+
 int main(void){
+    int mode = START_SCREEN; //will control if we are start screen etc
 
     vga_init();
     timer_init();
