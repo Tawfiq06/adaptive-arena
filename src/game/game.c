@@ -58,8 +58,19 @@ void update_game(int cur_buf){
                         if(temp.type != ENTITY_PLAYER)
                             continue;
 
-                        if(temp.facing == 'e'){
-                            
+                        if(temp.hitbox_x + temp.hitbox_width >= weapon_x 
+                            && temp.hitbox_x <= weapon_x + weapon_length 
+                            && temp.hitbox_y + temp.hitbox_height >= weapon_y 
+                            && temp.hitbox_y <= weapon_y + weapon_height){
+                            temp.was_hit = 1;
+                            if(current.attack_s1){
+                                damage = 10;
+                                current.attack_s1 = 0;
+                            }
+                            else if(current.attack_s2){
+                                damage = 15;
+                                current.attack_s2 = 0;
+                            }
                         }
                     }
                 }
