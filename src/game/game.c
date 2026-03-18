@@ -57,7 +57,10 @@ void update_game(int cur_buf){
                         Entity temp = entities[j];
                         if(temp.type != ENTITY_PLAYER)
                             continue;
-                        
+
+                        if(temp.facing == 'e'){
+                            
+                        }
                     }
                 }
                 if (dir == 'w'){    // if facing left, check left weapon coordinates 
