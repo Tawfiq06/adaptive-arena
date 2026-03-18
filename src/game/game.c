@@ -41,7 +41,12 @@ void update_game(int cur_buf){
         
         if (current.type == ENTITY_PLAYER){
             if (current.attack_s1 | current.attack_s2) {
-                
+                if (dir == 'e'){    // if facing right, check right weapon coordinates 
+                    
+                }
+                if (dir == 'w'){    // if facing left, check left weapon coordinates 
+                    
+                }
             }
             
             }
