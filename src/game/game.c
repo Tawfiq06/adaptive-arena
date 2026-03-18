@@ -7,6 +7,7 @@
 #include "keyboard.h"
 #include "player_config.h"
 #include "tile_sprites.h"
+#include "soldier_frames.h"
 
 static const PlayerConfig p1_cfg = PLAYER1_CONFIG;
 static const PlayerConfig p2_cfg = PLAYER2_CONFIG;
@@ -37,15 +38,22 @@ void update_game(int cur_buf){
         Entity current = entities[i];
         int x = current.x;
         int y = current.y; 
-        char dir = current.facing; 
+        char dir = current.facing;
         
         if (current.type == ENTITY_PLAYER){
+            int weapon_x = 0;
+            int weapon_y = 0; 
+            int weapon_length = SOLDIER_W - (hitbox_x + hitbox_w);
+            int weapon_height = SOLDER_H;
+            
             if (current.attack_s1 | current.attack_s2) {
                 if (dir == 'e'){    // if facing right, check right weapon coordinates 
-                    
+                    weapon_x = x + hitbox_x + hitbox_w;     // weapon hit area is between weapon_x and x+weapon_length 
+                    weapon_y = y;
                 }
                 if (dir == 'w'){    // if facing left, check left weapon coordinates 
-                    
+                    weapon_x = x + weapon_length;
+                    weapon_y = y;
                 }
             }
             
