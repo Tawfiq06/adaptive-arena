@@ -51,6 +51,10 @@ typedef struct{
     int attack_s2;
     int attack_p;
 
+    //hit flag
+    int was_hit;
+    int damage;
+
 } Entity;
 
 extern Entity entities[MAX_ENTITIES];
