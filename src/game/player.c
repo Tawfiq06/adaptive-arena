@@ -2,6 +2,7 @@
 #include "vga.h"
 #include "keyboard.h"
 #include "animator.h"
+#include "soldier_frames.h"
 
 #define PLAYER_SPEED 2
 #define HITBOX_OFFSET_X 10
@@ -125,7 +126,7 @@ void player_update(Entity *p, int cur_buf){
         p->y = SCREEN_HEIGHT - p->height;
 
      if(p->facing == 'e'){
-        p->hitbox_x = p->x + HITBOX_OFFSET_X + p->hitbox_w;
+        p->hitbox_x = p->x + HITBOX_OFFSET_X;
     }
     
     if(p->facing == 'w'){
