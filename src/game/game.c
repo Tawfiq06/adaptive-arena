@@ -50,6 +50,15 @@ void update_game(int cur_buf){
                 if (dir == 'e'){    // if facing right, check right weapon coordinates 
                     weapon_x = x + hitbox_x + hitbox_w;     // weapon hit area is between weapon_x and x+weapon_length 
                     weapon_y = y;
+                    /* check if any player was hit */
+                    for(int j = 0; j < MAX_ENTITIES; j++{
+                        if(j == i) //check that it is not the attacking player
+                            continue;
+                        Entity temp = entities[j];
+                        if(temp.type != ENTITY_PLAYER)
+                            continue;
+                        
+                    }
                 }
                 if (dir == 'w'){    // if facing left, check left weapon coordinates 
                     weapon_x = x + weapon_length;
