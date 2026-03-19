@@ -32,87 +32,63 @@ void game_init(){
 
 void update_game(int cur_buf){
     keyboard_update();
-    entity_update_all(cur_buf);
 
-    /*Check collisions */
+    /*Check collisions before updating*/
     for (int i = 0; i < MAX_ENTITIES; i++){
-        Entity *current = &entities[i];
-        int x = current->x;
-        int y = current->y; 
-        char dir = current->facing;
+        Entity *attacker = &entities[i];
+        if(!attacker->active) continue;
         
-        if (current->type == ENTITY_PLAYER){
+        if (attacker->type == ENTITY_PLAYER){
             int weapon_x = 0;
             int weapon_y = 0; 
-            int weapon_length = SOLDIER_W - (HITBOX_OFFSET_X + current->hitbox_w);
+            int weapon_length = SOLDIER_W - (PLAYER_HITBOX_OFFSET_X + attacker->hitbox_w);
             int weapon_height = SOLDIER_H;
             
-            if (current->attack_s1 | current->attack_s2) {
+            if (attacker->attack_s1 | attacker->attack_s2) {
                 /* We need too consider both directions because bounds change */
-                if (dir == 'e'){    // if facing right, check right weapon coordinates 
-                    weapon_x = x + current->hitbox_x + current->hitbox_w;     // weapon hit area is between weapon_x and x+weapon_length 
-                    weapon_y = y;
-                    /* check if any player was hit */
-                    for(int j = 0; j < MAX_ENTITIES; j++){
-                        if(j == i) //check that it is not the attacking player
-                            continue;
-                        Entity *temp = &entities[j];
-                        if(temp->type != ENTITY_PLAYER)
-                            continue;
-
-                        if(temp->hitbox_x + temp->hitbox_w >= weapon_x 
-                            && temp->hitbox_x <= weapon_x + weapon_length 
-                            && temp->hitbox_y + temp->hitbox_h >= weapon_y 
-                            && temp->hitbox_y <= weapon_y + weapon_height){
-                            temp->was_hit = 1;
-                            if(current->attack_s1){
-                                temp->damage = ATTACK_1_DAMAGE;
-                                current->attack_s1 = 0;
-                            }
-                            else if(current->attack_s2){
-                                temp->damage = ATTACK_2_DAMAGE;
-                                current->attack_s2 = 0;
-                            }
-                        }
-                        //now update the player to handle that it was hit
-                        player_update(temp, cur_buf);
-                    }
+                if(attacker->facing == 'e'){
+                    /* Facing right: weapon extends from right edge of hitbox outward*/
+                    weapon_x = attacker->hitbox_x + attacker->hitbox_w;
+                    weapon_y = attacker->y;
                 }
-                if (dir == 'w'){    // if facing left, check left weapon coordinates 
-                    weapon_x = x + weapon_length;
-                    weapon_y = y;
+                else{
+                    /*Facing left: weapon extends from left edge of sprite to left edge of hitbox*/
+                    weapon_x = attacker->x;
+                    weapon_y = attacker->y;
+                    weapon_length = attacker->hitbox_x - attacker->x;
+                    if(weapon_length < 0) weapon_length = 0;
+                }
 
-                    /* check if any player was hit */
-                    for(int j = 0; j < MAX_ENTITIES; j++){
-                        if(j == i) //check that it is not the attacking player
-                            continue;
-                        Entity *temp = &entities[j];
-                        if(temp->type != ENTITY_PLAYER)
-                            continue;
+                for (int j = 0; j < MAX_ENTITIES; j++){
+                    if (j == i) continue;
+                    Entity *target = &entities[j];
+                    if(!target->active) continue;
+                    if(target->type != ENTITY_PLAYER) continue;
+                    if (target->dying) continue;
 
-                        if(temp->hitbox_x + temp->hitbox_w >= x 
-                            && temp->hitbox_x <= weapon_x 
-                            && temp->hitbox_y + temp->hitbox_h >= weapon_y 
-                            && temp->hitbox_y <= weapon_y + weapon_height){
-                            temp->was_hit = 1;
-                            if(current->attack_s1){
-                                temp->damage = ATTACK_1_DAMAGE;
-                                current->attack_s1 = 0;
+                    if(target->hitbox_x + target->hitbox_w >= weapon_x 
+                        && target->hitbox_x <= weapon_x + weapon_length 
+                        && target->hitbox_y + target->hitbox_h >= weapon_y 
+                        && target->hitbox_y <= weapon_y + weapon_height){
+
+                            target->was_hit = 1;
+                            if(attacker->attack_s1){
+                                target->damage = ATTACK_1_DAMAGE;
                             }
-                            else if(current->attack_s2){
-                                temp->damage = ATTACK_2_DAMAGE;
-                                current->attack_s2 = 0;
+                            else if(attacker->attack_s2){
+                                target->damage = ATTACK_2_DAMAGE;
                             }
-                        }
-                        //now update the player to handle that it was hit
-                        player_update(temp, cur_buf);
+
+                            /*Clear flags*/
+                            attacker->attack_s1 = 0;
+                            attacker->attack_s2 = 0;
                     }
                 }
             }
             //Implement player launch projectile here
         }
     }
-    
+    entity_update_all(cur_buf);
 }
 
 void draw_game(int cur_buf){

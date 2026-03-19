@@ -45,6 +45,7 @@ typedef struct{
     const PlayerConfig *player_cfg;
 
     int active;
+    int dying;
 
     //flags to know if certain actions need to happen
     int attack_s1;

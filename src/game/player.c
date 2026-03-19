@@ -18,8 +18,8 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
 
     p->facing = flip ? 'w' : 'e';  //n for north (up), s for south(dowm), e for east(right), w for west (left)
 
-    p->hitbox_x = p->x + 10;
-    p->hitbox_y = p->y + 8;
+    p->hitbox_x = p->x + PLAYER_HITBOX_OFFSET_X;
+    p->hitbox_y = p->y + PLAYER_HITBOX_OFFSET_Y;
 
     p->hitbox_w = 20;
     p->hitbox_h = 18;
@@ -29,6 +29,7 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
 
     p->type = ENTITY_PLAYER;
     p->active = 1;
+    p->dying = 0;
     
     p->anim_def = SOLDIER_ANIMS;
 
@@ -43,25 +44,47 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
     p->attack_s1 = 0;
     p->attack_s2 = 0;
     p->attack_p = 0;
+
+    p->was_hit = 0;
+    p->damage = 0;
     
 }
 
 void player_update(Entity *p, int cur_buf){
+    /* 1. Tick animation first - returns 1 when one shot is done*/
     int anim_finished = anim_tick(&p->anim, p->anim_def);
     
-    if(p->was_hit){
-        p->was_hit = 0;
-        p->health -= p->damage;
-        if(p->health < 0){
-            p->health = 0;
-            anim_play(&p->anim, p->anim_def, SOLDIER_DEATH);
-            p->active = 0;
-            return;
+    /* 2. If currently play death animation, wait for it to finish*/
+    if (p->dying){
+        if(anim_finished){
+            p->active = 0; /*deactive after death anim*/
         }
-        anim_play(&p->anim, p->anim_def, SOLDIER_HURT);
         return;
     }
 
+    /* 3. Handle incoming hit */
+    if(p->was_hit){
+        p->was_hit = 0;
+        p->health -= p->damage;
+        p->damage = 0;
+        
+        /*Save postion before returning so erase works*/
+        p->prev_x[cur_buf] = p->x;
+        p->prev_y[cur_buf] = p->y;
+
+        if(p->health < 0){
+            p->health = 0;
+            p->dying = 1;
+            anim_play(&p->anim, p->anim_def, SOLDIER_DEATH);
+        }
+        else{
+            anim_play(&p->anim, p->anim_def, SOLDIER_HURT);
+
+        }
+        return;
+    }
+
+    /* 4. Locked if you shouldnt be able to move during the animation*/
     int locked = (p->anim.anim == SOLDIER_ATK1 ||
                   p->anim.anim == SOLDIER_ATK2 ||
                   p->anim.anim == SOLDIER_HURT  ||
@@ -69,18 +92,21 @@ void player_update(Entity *p, int cur_buf){
 
     /* Advance animation — returns 1 if one-shot just ended */
     if (anim_finished && !locked) {
+        p->attack_s1 = 0;
+        p->attack_s2 = 0;
         anim_play(&p->anim, p->anim_def, SOLIDER_IDLE);
     }
 
     if (locked) return;
 
     /* Attack input (takes priority over movement) */
-    if (key_pressed(p->player_cfg->key_atk1)) {
+    const PlayerConfig *cfg = p->player_cfg;
+    if (key_pressed(cfg->key_atk1)) {
         anim_play(&p->anim, p->anim_def, SOLDIER_ATK1);
         p->attack_s1 = 1;
         return;
     }
-    if (key_pressed(p->player_cfg->key_atk2)) {
+    if (key_pressed(cfg->key_atk2)) {
         anim_play(&p->anim, p->anim_def, SOLDIER_ATK2);
         p->attack_s2 = 1;
         return;
@@ -134,13 +160,16 @@ void player_update(Entity *p, int cur_buf){
     if(p->y + p->height > SCREEN_HEIGHT)
         p->y = SCREEN_HEIGHT - p->height;
 
-     if(p->facing == 'e'){
-        p->hitbox_x = p->x + HITBOX_OFFSET_X;
+    
+    /* Update hitbox to follow player postion */
+    if(p->facing == 'e'){
+        p->hitbox_x = p->x + PLAYER_HITBOX_OFFSET_X;
     }
     
     if(p->facing == 'w'){
-        p->hitbox_x = p->x + SOLDIER_W - HITBOX_OFFSET_X - p->hitbox_w;
+        p->hitbox_x = p->x + SOLDIER_W - PLAYER_HITBOX_OFFSET_X - p->hitbox_w;
     }
+    p->hitbox_y = p->y + PLAYER_HITBOX_OFFSET_Y;
 }
 
 void player_draw(const Entity *p){

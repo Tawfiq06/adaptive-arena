@@ -2,6 +2,6 @@
 #define GAME_H
 
 void game_init();
-void update_game();
+void update_game(int cur_buf);
 void draw_game(int cur_buf);
 #endif
