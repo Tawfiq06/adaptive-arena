@@ -12,10 +12,16 @@ Entity* spawn_entity(EntityType type){
             entities[i].active = 1;
             entities[i].type = type;
             entities[i].player_cfg = NULL; //since not player, if player use player_init
+            entities[i].anim_def = NULL;
+            entities[i].dying = 0;
+            entities[i].was_hit = 0;
+            entities[i].damage = 0;
+            entities[i].attack_s1 = 0;
+            entities[i].attack_s2 = 0;
+            entities[i].attack_p = 0;
             return &entities[i];
         }
     }
-
     return NULL;
 }
 

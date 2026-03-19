@@ -9,6 +9,8 @@
 #include "tile_sprites.h"
 #include "soldier_frames.h"
 
+#define WEAPON_OFFSET (SOLDIER_W >> 2)
+
 static const PlayerConfig p1_cfg = PLAYER1_CONFIG;
 static const PlayerConfig p2_cfg = PLAYER2_CONFIG;
 
@@ -41,23 +43,26 @@ void update_game(int cur_buf){
         if (attacker->type == ENTITY_PLAYER){
             int weapon_x = 0;
             int weapon_y = 0; 
-            int weapon_length = SOLDIER_W - (PLAYER_HITBOX_OFFSET_X + attacker->hitbox_w);
+            //int weapon_length = SOLDIER_W - (PLAYER_HITBOX_OFFSET_X + attacker->hitbox_w);
+            int weapon_length = 0;
             int weapon_height = SOLDIER_H;
             
             if (attacker->attack_s1 | attacker->attack_s2) {
                 /* We need too consider both directions because bounds change */
                 if(attacker->facing == 'e'){
                     /* Facing right: weapon extends from right edge of hitbox outward*/
-                    weapon_x = attacker->hitbox_x + attacker->hitbox_w;
+                    weapon_x = attacker->hitbox_x + attacker->hitbox_w - WEAPON_OFFSET;
                     weapon_y = attacker->y;
+                    weapon_length = (attacker->x + SOLDIER_W) - weapon_x;
                 }
                 else{
                     /*Facing left: weapon extends from left edge of sprite to left edge of hitbox*/
                     weapon_x = attacker->x;
                     weapon_y = attacker->y;
-                    weapon_length = attacker->hitbox_x - attacker->x;
-                    if(weapon_length < 0) weapon_length = 0;
+                    weapon_length = attacker->hitbox_x + WEAPON_OFFSET - attacker->x;
                 }
+
+                if(weapon_length <= 0) continue;
 
                 for (int j = 0; j < MAX_ENTITIES; j++){
                     if (j == i) continue;

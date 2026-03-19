@@ -64,8 +64,6 @@ volatile int pixel_buffer_start;
 short int Buffer1[SCREEN_HEIGHT][BUFFER_WIDTH];
 short int Buffer2[SCREEN_HEIGHT][BUFFER_WIDTH];
 
-static void _swap(int *a, int *b) { int t = *a; *a = *b; *b = t; }
-
 void wait_for_vsync() {
     volatile int *ctrl = (volatile int *)PIXEL_BUF_CTRL_BASE;
     *ctrl = 1;
@@ -103,22 +101,8 @@ void draw_rect(int x, int y, int w, int h, short colour) {
     if (x1 > SCREEN_WIDTH)  x1 = SCREEN_WIDTH;
     if (y1 > SCREEN_HEIGHT) y1 = SCREEN_HEIGHT;
     for (int row = y; row < y1; row++) {
-        volatile short *rp = (volatile short *)(pixel_buffer_start + (row << 10));
-        for (int col = x; col < x1; col++) rp[col] = colour;
-    }
-}
-
-void draw_line(int x0, int y0, int x1, int y1, short colour) {
-    bool steep = abs(y1-y0) > abs(x1-x0);
-    if (steep)   { _swap(&x0,&y0); _swap(&x1,&y1); }
-    if (x0 > x1) { _swap(&x0,&x1); _swap(&y0,&y1); }
-    int dx = x1-x0, dy = abs(y1-y0), err = -(dx/2);
-    int y = y0, ystep = (y0 < y1) ? 1 : -1;
-    for (int x = x0; x <= x1; x++) {
-        if (steep) plot_pixel(y, x, colour);
-        else       plot_pixel(x, y, colour);
-        err += dy;
-        if (err > 0) { y += ystep; err -= dx; }
+        volatile short *r = (volatile short *)(pixel_buffer_start + (row << 10));
+        for (int col = x; col < x1; col++) r[col] = colour;
     }
 }
 
@@ -129,7 +113,6 @@ void draw_line(int x0, int y0, int x1, int y1, short colour) {
 #define TIMER_FREQ 100000000
 
 volatile int frame_flag = 0;
-static int cur_buf = 0;  /* tracks which buffer is currently the back buffer */
 static volatile unsigned int *timer_ptr = (volatile unsigned int *)TIMER_BASE;
 
 void timer_init() {
@@ -137,52 +120,73 @@ void timer_init() {
     timer_ptr[0] = 1;
     timer_ptr[1] = 0x8;
     timer_ptr[2] = period & 0xFFFF;
-    timer_ptr[3] = period >> 16;
+    timer_ptr[3] = (period >> 16);
     asm volatile("csrs mie, %0" : : "r"(0x10000));
-    timer_ptr[1] = 0x7;
+    timer_ptr[1] = 0b111;
 }
 
 /* ===========================================================================
  * KEYBOARD
+ *
+ * FIX: The PS/2 data register is a destructive read — reading it pops the
+ * byte from the FIFO.  The original code read ps2[0] twice per loop
+ * iteration (once in the while condition, once for the data byte), so every
+ * other byte was silently discarded.  The fix: read once per iteration into
+ * a local 'raw', check RVALID (bit 15) from that same value, and extract
+ * the data byte from it.
  * =========================================================================*/
 #define KEY_W     0x1D
 #define KEY_A     0x1C
 #define KEY_S     0x1B
 #define KEY_D     0x23
-#define KEY_SPACE 0x29
-#define KEY_ESC   0x76
+
+/* Arrow keys carry an 0xE0 prefix; we store them with bit 7 set
+   so they don't collide with normal scancodes in the key_state table.
+   Raw scancode -> stored code:  UP=0x75->0xF5, DOWN=0x72->0xF2,
+                                 LEFT=0x6B->0xEB, RIGHT=0x74->0xF4       */
 #define KEY_UP    0xF5
 #define KEY_DOWN  0xF2
 #define KEY_LEFT  0xEB
 #define KEY_RIGHT 0xF4
-#define KEY_Z     0x1A  /* attack 1 */
-#define KEY_X     0x22  /* attack 2 */
-#define KEY_Q     0x15  /* P2 attack 1 */
-#define KEY_E     0x24  /* P2 attack 2 */
 
-static volatile int *ps2_ptr = (volatile int *)PS2_BASE;
-static unsigned char key_state[256 / 8];
+#define KEY_SPACE 0x29
+#define KEY_ESC   0x76
+#define KEY_Z     0x1A   /* P1 attack 1 */
+#define KEY_X     0x22   /* P1 attack 2 */
+#define KEY_Q     0x15   /* P2 attack 1 */
+#define KEY_E     0x24   /* P2 attack 2 */
+
+static volatile int *ps2 = (volatile int *)PS2_BASE;
+
+/* One bit per scancode (256 possible codes -> 32 bytes) */
+static unsigned char key_state[32];
 
 static void key_set(unsigned char code, int down) {
-    if (down) key_state[code >> 3] |=  (1 << (code & 7));
-    else      key_state[code >> 3] &= ~(1 << (code & 7));
+    if (down) key_state[code >> 3] |=  (unsigned char)(1u << (code & 7));
+    else      key_state[code >> 3] &= ~(unsigned char)(1u << (code & 7));
 }
 
 int key_pressed(unsigned char scancode) {
     return (key_state[scancode >> 3] >> (scancode & 7)) & 1;
 }
 
-void keyboard_update() {
-    static int break_next = 0;
-    static int extended   = 0;
-    int data;
-    while ((data = ps2_ptr[0]) & 0x8000) {
-        unsigned char byte = (unsigned char)(data & 0xFF);
+void keyboard_update(void) {
+    static int break_next = 0;   /* next scancode is a key-release  */
+    static int extended   = 0;   /* previous byte was 0xE0 prefix   */
+
+    int raw;
+    /* Read once — bit 15 (RVALID) and data byte come from the same read.
+       This is the critical fix: a single read pops one byte from the FIFO. */
+    while ((raw = ps2[0]) & 0x8000) {
+        unsigned char byte = (unsigned char)(raw & 0xFF);
+
         if (byte == 0xE0) {
             extended = 1;
         } else if (byte == 0xF0) {
             break_next = 1;
         } else {
+            /* Extended keys get bit 7 set so they live in a different slot
+               from regular keys with the same raw code. */
             unsigned char code = extended ? (byte | 0x80) : byte;
             key_set(code, !break_next);
             break_next = 0;
@@ -192,16 +196,24 @@ void keyboard_update() {
 }
 
 /* ===========================================================================
- * SOLDIER SPRITE DATA (41x29px, RGB565, 0xF81F=transparent)
- * const = placed in SDRAM .rodata. On-chip SRAM cost: 0 bytes.
+ * SOLDIER SPRITE DIMENSIONS & ANIMATION DEFINITIONS
  * =========================================================================*/
 #define SOLDIER_W      41
 #define SOLDIER_H      29
 #define SOLDIER_FRAMES 43
 #define TRANSPARENT    ((short)0xF81F)
 
+/* AnimDef — generic: any sprite sheet can provide its own array of these */
+typedef struct {
+    unsigned char start;   /* first frame index (into the frame-pointer table) */
+    unsigned char end;     /* last  frame index (inclusive)                     */
+    unsigned char loop;    /* 1 = looping, 0 = play-once                        */
+    unsigned char fps;     /* playback speed                                    */
+} AnimDef;
+
+/* Soldier animation IDs */
 typedef enum {
-    ANIM_IDLE,
+    ANIM_IDLE  = 0,
     ANIM_WALK,
     ANIM_ATK1,
     ANIM_ATK2,
@@ -210,13 +222,6 @@ typedef enum {
     ANIM_DEATH,
     ANIM_COUNT
 } AnimID;
-
-typedef struct {
-    unsigned char start;  /* first frame index */
-    unsigned char end;    /* last frame index (inclusive) */
-    unsigned char loop;   /* 1=loop, 0=play once */
-    unsigned char fps;
-} AnimDef;
 
 static const AnimDef SOLDIER_ANIMS[ANIM_COUNT] = {
     [ANIM_IDLE  ] = {  0,  5, 1,  6 },
@@ -1650,44 +1655,76 @@ static const short * const soldier_frames[SOLDIER_FRAMES] = {
     soldier_f42
 };
 
-
 /* ===========================================================================
- * ANIMATION CONTROLLER (inline, zero heap)
+ * ANIMATOR
+ *
+ * Generic animation controller — works for any entity (player, projectile,
+ * enemy …) as long as you supply the matching AnimDef table and frame array.
+ *
+ * Bugs fixed vs the original animator.c:
+ *  1. anim_init was declared 'static inline' in the header but 'static'
+ *     (non-inline) in the .c — definitions must match.  All functions are
+ *     plain 'static' here (inline is a hint the compiler ignores for static
+ *     functions in a single TU anyway).
+ *  2. anim_frame returned soldier_frames[] directly — not generic.  It now
+ *     accepts an explicit frame-pointer table so any sprite sheet can use it.
  * =========================================================================*/
 #define GAME_FPS 60
 
 typedef struct {
-    unsigned char anim;   /* AnimID                        */
-    unsigned char frame;  /* absolute frame index          */
-    unsigned char tick;   /* ticks until next frame        */
-    unsigned char flip;   /* 1 = mirror left               */
-} PlayerAnim;
+    unsigned char anim;    /* current animation ID                  */
+    unsigned char frame;   /* current absolute frame index          */
+    unsigned char tick;    /* ticks remaining until next frame      */
+    unsigned char flip;    /* 1 = mirror horizontally (face left)   */
+} Animator;
 
-static void anim_init(PlayerAnim *a) {
-    a->anim  = ANIM_IDLE;
-    a->frame = SOLDIER_ANIMS[ANIM_IDLE].start;
-    a->tick  = GAME_FPS / SOLDIER_ANIMS[ANIM_IDLE].fps;
+static void anim_init(Animator *a, const AnimDef *defs, int start_anim) {
+    a->anim  = (unsigned char)start_anim;
+    a->frame = defs[start_anim].start;
+    a->tick  = GAME_FPS / defs[start_anim].fps;
     a->flip  = 0;
 }
 
-/* Returns 1 when a non-looping animation finishes its last frame */
-static int anim_tick(PlayerAnim *a) {
+/* Returns 1 when a non-looping animation reaches and holds its last frame */
+static int anim_tick(Animator *a, const AnimDef *defs) {
     if (a->tick > 0) { a->tick--; return 0; }
-    const AnimDef *def = &SOLDIER_ANIMS[a->anim];
+
+    const AnimDef *def = &defs[a->anim];
     a->tick = GAME_FPS / def->fps;
-    if (a->frame < def->end) { a->frame++; return 0; }
-    if (def->loop)            { a->frame = def->start; return 0; }
-    return 1; /* one-shot done */
+
+    if (a->frame < def->end) {
+        a->frame++;
+        return 0;
+    }
+    /* Reached last frame */
+    if (def->loop) {
+        a->frame = def->start;
+        return 0;
+    }
+    return 1;   /* one-shot finished */
 }
 
-static void anim_play(PlayerAnim *a, AnimID id) {
+/* Generic frame lookup — caller supplies the sprite-sheet's frame table */
+static const short *anim_frame(const Animator *a, const short * const *frames) {
+    return frames[a->frame];
+}
+
+/* Switch to animation 'id'; no-op if already playing it */
+static void anim_play(Animator *a, const AnimDef *defs, int id) {
     if (a->anim == (unsigned char)id) return;
     a->anim  = (unsigned char)id;
-    a->frame = SOLDIER_ANIMS[id].start;
-    a->tick  = GAME_FPS / SOLDIER_ANIMS[id].fps;
+    a->frame = defs[id].start;
+    a->tick  = GAME_FPS / defs[id].fps;
 }
 
-static void draw_soldier(const PlayerAnim *a, int x, int y) {
+/* Restart the current animation from its first frame */
+static void anim_restart(Animator *a, const AnimDef *defs) {
+    a->frame = defs[a->anim].start;
+    a->tick  = GAME_FPS / defs[a->anim].fps;
+}
+
+/* Draw a soldier-sprite frame at (x, y), honouring the flip flag */
+static void draw_soldier(const Animator *a, int x, int y) {
     const short *frame = soldier_frames[a->frame];
     for (int row = 0; row < SOLDIER_H; row++) {
         int py = y + row;
@@ -1820,8 +1857,18 @@ void draw_background() {
             draw_sprite(&sprites[map_get_tile(row, col)], col << 4, row << 4);
 }
 
+static void erase_sprite(int x, int y, int w, int h) {
+    int col0 = x >> 4;
+    int col1 = (x + w + 15) >> 4;
+    int row0 = y >> 4;
+    int row1 = (y + h + 15) >> 4;
+    for (int row = row0; row < row1; row++)
+        for (int col = col0; col < col1; col++)
+            draw_sprite(&sprites[map_get_tile(row, col)], col << 4, row << 4);
+}
+
 /* ===========================================================================
- * PLAYER CONFIG — edit these to re-bind keys for either player
+ * PLAYER CONFIG
  * =========================================================================*/
 typedef struct {
     unsigned char key_up;
@@ -1832,7 +1879,6 @@ typedef struct {
     unsigned char key_atk2;
 } PlayerConfig;
 
-/* Player 1: WASD + Z/X */
 static const PlayerConfig p1_cfg = {
     .key_up    = KEY_W,
     .key_down  = KEY_S,
@@ -1842,7 +1888,6 @@ static const PlayerConfig p1_cfg = {
     .key_atk2  = KEY_X,
 };
 
-/* Player 2: Arrow keys + Q/E */
 static const PlayerConfig p2_cfg = {
     .key_up    = KEY_UP,
     .key_down  = KEY_DOWN,
@@ -1855,11 +1900,17 @@ static const PlayerConfig p2_cfg = {
 /* ===========================================================================
  * ENTITY
  * =========================================================================*/
-#define MAX_ENTITIES  64
-#define HEALTH        100
-#define PLAYER_SPEED  2
-#define PLAYER_W      SOLDIER_W
-#define PLAYER_H      SOLDIER_H
+#define MAX_ENTITIES    64
+#define HEALTH          100
+#define PLAYER_SPEED    2
+#define PLAYER_W        SOLDIER_W
+#define PLAYER_H        SOLDIER_H
+#define HITBOX_OFFSET_X 10
+#define HITBOX_OFFSET_Y 8
+#define HITBOX_W        20
+#define HITBOX_H        18
+#define ATTACK_1_DAMAGE 10
+#define ATTACK_2_DAMAGE 15
 
 typedef enum {
     ENTITY_NONE,
@@ -1870,21 +1921,33 @@ typedef enum {
 
 typedef struct {
     int x, y, dx, dy;
+    int prev_x[2];
+    int prev_y[2];
     char facing;
     int width, height;
-    int hitbox_offset_x, hitbox_offset_y, hitbox_w, hitbox_h;
+    /* Hitbox: absolute screen coordinates */
+    int hitbox_x, hitbox_y, hitbox_w, hitbox_h;
     int health;
     int sprite_id;
     short colour;
     EntityType type;
     int active;
-    PlayerAnim anim;          /* animation state, 4 bytes */
-    int prev_x[2];            /* one saved position per buffer */
-    int prev_y[2];
-    const PlayerConfig *cfg;  /* key bindings — NULL for non-players */
+    Animator anim;              /* generic animator — works for any entity */
+    const AnimDef *anim_defs;   /* pointer to this entity's AnimDef table  */
+    const PlayerConfig *cfg;    /* key bindings — NULL for non-players      */
+    /* Attack flags: set on input, cleared after hit detection */
+    int attack_s1;
+    int attack_s2;
+    int attack_p;
+    /* Damage reception */
+    int was_hit;
+    int damage;
+    /* Set when dying: keep drawing death anim until it finishes */
+    int dying;
 } Entity;
 
 Entity entities[MAX_ENTITIES];
+static int cur_buf = 0;   /* shared back-buffer index; updated in main() */
 
 /* ===========================================================================
  * PLAYER
@@ -1896,52 +1959,99 @@ void player_init(Entity *p, SpriteID sprite, short colour,
     p->width  = PLAYER_W;
     p->height = PLAYER_H;
     p->dx = 0; p->dy = 0;
-    p->health = HEALTH;
-    p->facing = flip ? 'w' : 'e';
-    p->hitbox_offset_x = 0; p->hitbox_offset_y = 0;
-    p->hitbox_w = p->width; p->hitbox_h = p->height;
+    p->health  = HEALTH;
+    p->facing  = flip ? 'w' : 'e';
+    p->hitbox_x = p->x + HITBOX_OFFSET_X;
+    p->hitbox_y = p->y + HITBOX_OFFSET_Y;
+    p->hitbox_w = HITBOX_W;
+    p->hitbox_h = HITBOX_H;
     p->sprite_id = (int)sprite;
     p->colour    = colour;
     p->type      = ENTITY_PLAYER;
     p->active    = 1;
+    p->dying     = 0;
     p->cfg       = cfg;
-    anim_init(&p->anim);
+    p->anim_defs = SOLDIER_ANIMS;
+    anim_init(&p->anim, SOLDIER_ANIMS, ANIM_IDLE);
     p->anim.flip = flip;
     p->prev_x[0] = p->x; p->prev_x[1] = p->x;
     p->prev_y[0] = p->y; p->prev_y[1] = p->y;
+    p->attack_s1 = 0;
+    p->attack_s2 = 0;
+    p->attack_p  = 0;
+    p->was_hit   = 0;
+    p->damage    = 0;
 }
 
 void player_update(Entity *p) {
-    /* 1. Tick animation FIRST — returns 1 when a one-shot finishes */
-    int anim_finished = anim_tick(&p->anim);
+    /* 1. Tick animation; returns 1 when a one-shot finishes its last frame */
+    int anim_finished = anim_tick(&p->anim, p->anim_defs);
 
-    /* 2. One-shot just finished -> drop back to idle */
-    if (anim_finished)
-        anim_play(&p->anim, ANIM_IDLE);
+    /* 2. If playing the death animation, wait for it to complete */
+    if (p->dying) {
+        if (anim_finished)
+            p->active = 0;   /* deactivate only after the full death anim */
+        return;
+    }
 
-    /* 3. Block input while a one-shot is still mid-play */
-    int locked = (p->anim.anim == ANIM_ATK1 ||
-                  p->anim.anim == ANIM_ATK2 ||
+    /* 3. Handle an incoming hit — overrides everything else this frame */
+    if (p->was_hit) {
+        p->was_hit = 0;
+        p->health -= p->damage;
+        p->damage  = 0;
+        /* Save position so the erase pass works correctly next frame */
+        p->prev_x[cur_buf] = p->x;
+        p->prev_y[cur_buf] = p->y;
+        if (p->health <= 0) {
+            p->health = 0;
+            p->dying  = 1;
+            anim_play(&p->anim, p->anim_defs, ANIM_DEATH);
+        } else {
+            anim_play(&p->anim, p->anim_defs, ANIM_HURT);
+        }
+        return;
+    }
+
+    /* 4. Locked while a one-shot animation is still playing */
+    int locked = (p->anim.anim == ANIM_ATK1  ||
+                  p->anim.anim == ANIM_ATK2  ||
                   p->anim.anim == ANIM_HURT  ||
                   p->anim.anim == ANIM_DEATH);
+
+    /* 5. One-shot just finished -> clear attack flags, return to idle */
+    if (anim_finished) {
+        p->attack_s1 = 0;
+        p->attack_s2 = 0;
+        anim_play(&p->anim, p->anim_defs, ANIM_IDLE);
+        locked = 0;
+    }
+
     if (locked) return;
 
-    /* 4. Attack input — from this player's config */
+    /* 6. Attack input (takes priority over movement) */
     const PlayerConfig *cfg = p->cfg;
-    if (key_pressed(cfg->key_atk1)) { anim_play(&p->anim, ANIM_ATK1); return; }
-    if (key_pressed(cfg->key_atk2)) { anim_play(&p->anim, ANIM_ATK2); return; }
+    if (key_pressed(cfg->key_atk1)) {
+        anim_play(&p->anim, p->anim_defs, ANIM_ATK1);
+        p->attack_s1 = 1;
+        return;
+    }
+    if (key_pressed(cfg->key_atk2)) {
+        anim_play(&p->anim, p->anim_defs, ANIM_ATK2);
+        p->attack_s2 = 1;
+        return;
+    }
 
-    /* 5. Movement */
+    /* 7. Movement */
     p->dx = 0; p->dy = 0;
-    if (key_pressed(cfg->key_up))    { p->dy = -PLAYER_SPEED; p->facing = 'n'; }
-    if (key_pressed(cfg->key_down))  { p->dy =  PLAYER_SPEED; p->facing = 's'; }
+    if (key_pressed(cfg->key_up))    { p->dy = -PLAYER_SPEED; }
+    if (key_pressed(cfg->key_down))  { p->dy =  PLAYER_SPEED; }
     if (key_pressed(cfg->key_left))  { p->dx = -PLAYER_SPEED; p->facing = 'w'; p->anim.flip = 1; }
     if (key_pressed(cfg->key_right)) { p->dx =  PLAYER_SPEED; p->facing = 'e'; p->anim.flip = 0; }
 
     int moving = (p->dx != 0 || p->dy != 0);
-    anim_play(&p->anim, moving ? ANIM_WALK : ANIM_IDLE);
+    anim_play(&p->anim, p->anim_defs, moving ? ANIM_WALK : ANIM_IDLE);
 
-    /* 6. Save old position into this buffer's slot BEFORE moving */
+    /* 8. Save old position BEFORE moving */
     p->prev_x[cur_buf] = p->x;
     p->prev_y[cur_buf] = p->y;
 
@@ -1952,6 +2062,13 @@ void player_update(Entity *p) {
     if (p->y < 0)                         p->y = 0;
     if (p->x + p->width  > SCREEN_WIDTH)  p->x = SCREEN_WIDTH  - p->width;
     if (p->y + p->height > SCREEN_HEIGHT) p->y = SCREEN_HEIGHT - p->height;
+
+    /* 9. Keep hitbox in sync with position */
+    if (p->facing == 'e')
+        p->hitbox_x = p->x + HITBOX_OFFSET_X;
+    else
+        p->hitbox_x = p->x + SOLDIER_W - HITBOX_OFFSET_X - p->hitbox_w;
+    p->hitbox_y = p->y + HITBOX_OFFSET_Y;
 }
 
 void player_draw(const Entity *p) {
@@ -1959,10 +2076,12 @@ void player_draw(const Entity *p) {
 }
 
 /* ===========================================================================
- * ENEMY / PROJECTILE — stubs
+ * ENEMY / PROJECTILE — stubs (ready to expand)
  * =========================================================================*/
 void enemy_update(Entity *e)      { (void)e; }
+void enemy_draw(Entity *e)        { draw_sprite(&sprites[e->sprite_id], e->x, e->y); }
 void projectile_update(Entity *e) { (void)e; }
+void projectile_draw(Entity *e)   { draw_sprite(&sprites[e->sprite_id], e->x, e->y); }
 
 /* ===========================================================================
  * ENTITY SYSTEM
@@ -1970,9 +2089,16 @@ void projectile_update(Entity *e) { (void)e; }
 Entity *spawn_entity(EntityType type) {
     for (int i = 0; i < MAX_ENTITIES; i++) {
         if (!entities[i].active) {
-            entities[i].active = 1;
-            entities[i].type   = type;
-            entities[i].cfg    = 0;
+            entities[i].active    = 1;
+            entities[i].type      = type;
+            entities[i].cfg       = 0;
+            entities[i].anim_defs = 0;
+            entities[i].dying     = 0;
+            entities[i].was_hit   = 0;
+            entities[i].damage    = 0;
+            entities[i].attack_s1 = 0;
+            entities[i].attack_s2 = 0;
+            entities[i].attack_p  = 0;
             return &entities[i];
         }
     }
@@ -1980,10 +2106,15 @@ Entity *spawn_entity(EntityType type) {
 }
 
 void draw_entity(Entity *e) {
-    if (e->type == ENTITY_PLAYER)
-        player_draw(e);
-    else
-        draw_sprite(&sprites[e->sprite_id], e->x, e->y);
+    switch (e->type) {
+        case ENTITY_PLAYER:     player_draw(e);     break;
+        case ENTITY_ENEMY:      enemy_draw(e);      break;
+        case ENTITY_PROJECTILE: projectile_draw(e); break;
+        default:
+            if (e->sprite_id >= 0)
+                draw_sprite(&sprites[e->sprite_id], e->x, e->y);
+            break;
+    }
 }
 
 void entity_update_all() {
@@ -2006,43 +2137,76 @@ void entity_draw_all() {
 /* ===========================================================================
  * GAME
  * =========================================================================*/
+#define WEAPON_OFFSET (SOLDIER_W >> 2)
 void game_init() {
     map_init(1);
 
-    /* Player 1 — left side, faces right, WASD + Z/X */
     Entity *p1 = spawn_entity(ENTITY_PLAYER);
     player_init(p1, SPRITE_PLAYER, (short)0xFFFF, &p1_cfg,
-                16 + TILE_W,   /* x: one tile in from left border */
-                0);            /* flip = 0, faces right */
+                16 + TILE_W, 0);
 
-    /* Player 2 — right side, faces left, Arrows + Q/E */
     Entity *p2 = spawn_entity(ENTITY_PLAYER);
     player_init(p2, SPRITE_PLAYER, (short)0x07FF, &p2_cfg,
-                SCREEN_WIDTH - 16 - TILE_W - PLAYER_W,  /* x: one tile in from right border */
-                1);                                      /* flip = 1, faces left */
+                SCREEN_WIDTH - 16 - TILE_W - PLAYER_W, 1);
 }
 
 void update_game() {
     keyboard_update();
-    entity_update_all();
-}
 
-/* Redraws background tiles that cover the given pixel rect (dirty-rect erase) */
-static void erase_sprite(int x, int y, int w, int h) {
-    int col0 = x >> 4;
-    int col1 = (x + w + 15) >> 4;
-    int row0 = y >> 4;
-    int row1 = (y + h + 15) >> 4;
-    for (int row = row0; row < row1; row++)
-        for (int col = col0; col < col1; col++)
-            draw_sprite(&sprites[map_get_tile(row, col)], col << 4, row << 4);
+    /* Hit detection: read attack flags set last frame, before updating anyone.
+       This avoids double-updating the hit entity in the same frame. */
+    for (int i = 0; i < MAX_ENTITIES; i++) {
+        Entity *attacker = &entities[i];
+        if (!attacker->active) continue;
+        if (attacker->type != ENTITY_PLAYER) continue;
+        if (!attacker->attack_s1 && !attacker->attack_s2) continue;
+
+        /* Weapon box: the strip between the hitbox edge and the sprite edge */
+        int weapon_x, weapon_y, weapon_w, weapon_h;
+        weapon_h = SOLDIER_H;
+
+        if (attacker->facing == 'e') {
+            /* Facing right: weapon extends from right side of hitbox outward */
+            weapon_x = attacker->hitbox_x + attacker->hitbox_w - WEAPON_OFFSET;
+            weapon_y = attacker->y;
+            weapon_w = (attacker->x + SOLDIER_W) - weapon_x;
+        } else {
+            /* Facing left: weapon extends from left sprite edge to hitbox left edge */
+            weapon_x = attacker->x;
+            weapon_y = attacker->y;
+            weapon_w = attacker->hitbox_x + WEAPON_OFFSET - attacker->x;
+        }
+        if (weapon_w <= 0) continue;
+
+        for (int j = 0; j < MAX_ENTITIES; j++) {
+            if (j == i) continue;
+            Entity *target = &entities[j];
+            if (!target->active || target->dying) continue;
+            if (target->type != ENTITY_PLAYER) continue;
+
+            /* AABB overlap */
+            if (target->hitbox_x + target->hitbox_w >= weapon_x
+             && target->hitbox_x                    <= weapon_x + weapon_w
+             && target->hitbox_y + target->hitbox_h >= weapon_y
+             && target->hitbox_y                    <= weapon_y + weapon_h) {
+
+                target->was_hit = 1;
+                target->damage  = attacker->attack_s1 ? ATTACK_1_DAMAGE
+                                                      : ATTACK_2_DAMAGE;
+                /* Clear immediately so the same swing only lands once */
+                attacker->attack_s1 = 0;
+                attacker->attack_s2 = 0;
+            }
+        }
+    }
+
+    entity_update_all();
 }
 
 static int bg_drawn = 0;
 
 void draw_game() {
     if (!bg_drawn) {
-        /* Prime both buffers with background so no stale pixels on frame 1 */
         draw_background();
         wait_for_vsync();
         draw_background();
@@ -2050,7 +2214,6 @@ void draw_game() {
         return;
     }
 
-    /* Erase each entity at the position drawn into THIS buffer last time */
     for (int i = 0; i < MAX_ENTITIES; i++) {
         if (!entities[i].active) continue;
         erase_sprite(entities[i].prev_x[cur_buf], entities[i].prev_y[cur_buf],

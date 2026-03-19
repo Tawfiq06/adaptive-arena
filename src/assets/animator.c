@@ -2,7 +2,7 @@
 #include "vga.h"
 
 static void anim_init(Animator *a, const AnimDef *def, int start_anim){
-    a->anim = start_anim;
+    a->anim = (unsigned char) start_anim;
     a->frame = def[start_anim].start;
     a->tick = GAME_FPS / def[start_anim].fps;
     a->flip = 0;
@@ -29,19 +29,19 @@ static inline int anim_tick(Animator *a, const AnimDef *defs) {
     return 1; 
 }
 
-static inline const short *anim_frame(const Animator *a) {
-    return soldier_frames[a->frame];
+static const short *anim_frame(const Animator *a, const short * const *frames) {
+    return frames[a->frame];
 }
 
 
-static inline void anim_play(Animator *a, const AnimDef *def, int id) {
-    if (a->anim == id) return;
+static void anim_play(Animator *a, const AnimDef *def, int id) {
+    if (a->anim == (unsigned char) id) return;
     a->anim  = (unsigned char)id;
     a->frame = def[id].start;
     a->tick  = GAME_FPS / def[id].fps;
 }
 
-static inline void anim_restart(Animator *a, const AnimDef *def) {
+static void anim_restart(Animator *a, const AnimDef *def) {
     a->frame = def[a->anim].start;
     a->tick  = GAME_FPS / def[a->anim].fps;
 }

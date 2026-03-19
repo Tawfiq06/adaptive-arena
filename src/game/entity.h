@@ -45,7 +45,6 @@ typedef struct{
     const PlayerConfig *player_cfg;
 
     int active;
-    int dying;
 
     //flags to know if certain actions need to happen
     int attack_s1;
@@ -55,6 +54,9 @@ typedef struct{
     //hit flag
     int was_hit;
     int damage;
+
+    /* Set when dying: keep drawing death anim until it finishes*/
+    int dying;
 
 } Entity;
 
