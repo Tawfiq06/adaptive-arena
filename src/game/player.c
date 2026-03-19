@@ -49,6 +49,19 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
 void player_update(Entity *p, int cur_buf){
     int anim_finished = anim_tick(&p->anim, p->anim_def);
     
+    if(p->was_hit){
+        p->was_hit = 0;
+        p->health -= p->damage;
+        if(p->health < 0){
+            p->health = 0;
+            anim_play(&p->anim, p->anim_def, SOLDIER_DEATH);
+            p->active = 0;
+            return;
+        }
+        anim_play(&p->anim, p->anim_def, SOLDIER_HURT);
+        return;
+    }
+
     int locked = (p->anim.anim == SOLDIER_ATK1 ||
                   p->anim.anim == SOLDIER_ATK2 ||
                   p->anim.anim == SOLDIER_HURT  ||
@@ -63,12 +76,12 @@ void player_update(Entity *p, int cur_buf){
 
     /* Attack input (takes priority over movement) */
     if (key_pressed(p->player_cfg->key_atk1)) {
-        anim_play(&p->anim, p->anim_def, SOLIDER_IDLE);
+        anim_play(&p->anim, p->anim_def, SOLDIER_ATK1);
         p->attack_s1 = 1;
         return;
     }
     if (key_pressed(p->player_cfg->key_atk2)) {
-        anim_play(&p->anim, p->anim_def, SOLIDER_IDLE);
+        anim_play(&p->anim, p->anim_def, SOLDIER_ATK2);
         p->attack_s2 = 1;
         return;
     }

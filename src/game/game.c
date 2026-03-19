@@ -110,7 +110,6 @@ void update_game(int cur_buf){
                 }
             }
             //Implement player launch projectile here
-            
         }
     }
     
