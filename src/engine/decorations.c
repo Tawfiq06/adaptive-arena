@@ -56,12 +56,12 @@ void decoration_init(void){
     deco_count = 0;
 
     //map rools 0-19 to a specific type. -1 means no spawn
-    const int SPAWN_TABLE[16] = {
-        0, 1, 2, 3, 4, 5,       // Rocks (0-5)
-        6, 7, 8, 9,             // Bushes (6-9)
+    const int SPAWN_TABLE[22] = {
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, // Rocks (0-5)
+        10, 11, 12, 13, 14,            // Bushes (6-9)
         13, 14,                 // Flowers/Plants (10-11)
         12,                     // Stick (12)
-        15, 16, 17,             // Trees (13-15)
+        15, 16, 17, 18, 19, 20, 21    // Trees (13-15)
     };
 
     while(deco_count < MAX_DECORATIONS){

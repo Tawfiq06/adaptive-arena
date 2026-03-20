@@ -31,7 +31,7 @@ import re
 import argparse
 from pathlib import Path
 
-DEFAULT_CONFIG = "flatten.cfg"
+DEFAULT_CONFIG = "tools/flatten.cfg"
 DEFAULT_OUTPUT = "flattened.c"
 
 # All project filenames — populated after reading config

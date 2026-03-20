@@ -3,7 +3,7 @@
 
 #include "decoration_sprites.h"
 
-#define MAX_DECORATIONS 2
+#define MAX_DECORATIONS 15
 
 typedef struct{
     short x, y;

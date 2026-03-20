@@ -7,5 +7,9 @@
 extern const short grass_sprite[TILE_H*TILE_W];
 extern const short stone_sprite[TILE_H*TILE_W];
 extern const short water_sprite[TILE_H*TILE_W];
-static const short dirt_sprite[TILE_W * TILE_H];
+extern const short dirt_sprite[TILE_W * TILE_H];
+extern const short sand_sprite[TILE_W * TILE_H];
+const short snow_sprite[TILE_W  * TILE_H];
+const short water_bright_sprite[TILE_W * TILE_H];
+
 #endif
