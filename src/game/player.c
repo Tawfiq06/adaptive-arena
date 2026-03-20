@@ -3,6 +3,8 @@
 #include "keyboard.h"
 #include "animator.h"
 
+#define SHOOT_COOLDOWN 30
+
 void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg, int start_x, int flip){
     p->player_cfg = cfg; //not needed at init
     p->x = start_x;
@@ -47,7 +49,9 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
 
     p->was_hit = 0;
     p->damage = 0;
-    
+
+    p->pending_erase = 0;
+    p->shoot_cooldown = 0;
 }
 
 void player_update(Entity *p, int cur_buf){
@@ -110,6 +114,16 @@ void player_update(Entity *p, int cur_buf){
     if (key_pressed(cfg->key_atk2)) {
         anim_play(&p->anim, p->anim_def, SOLDIER_ATK2);
         p->attack_s2 = 1;
+        return;
+    }
+
+    if(p->shoot_cooldown > 0){
+        p->shoot_cooldown--;
+    }
+
+    if (key_pressed(cfg->key_atkp) && p->shoot_cooldown == 0){
+        p->attack_p = 1;
+        p->shoot_cooldown = SHOOT_COOLDOWN;
         return;
     }
 

@@ -1,4 +1,6 @@
 #include "projectile.h"
+#include "projectile_sprites.h"
+#include "renderer.h"
 #include "vga.h"
 
 #define PROJECTILE_HITBOX_OFFSET_X 0
@@ -15,7 +17,7 @@ void projectile_init(Entity *e, SpriteID sprite, int x, int y, char facing){
 
     if(facing == 'e'){
         e->dx = PROJECTILE_SPEED;
-        e->hitbox_x = e->width - e->hitbox_w;
+        e->hitbox_x = e->x + e->width - e->hitbox_w;
     }
     else if(facing == 'w'){
         e->dx = -PROJECTILE_SPEED;
@@ -26,7 +28,7 @@ void projectile_init(Entity *e, SpriteID sprite, int x, int y, char facing){
     e->hitbox_y = e->y + (e->height >> 2) - (e->hitbox_h >> 2);
     
     e->facing = facing;
-    e->sprite_id = sprite;
+    e->sprite_id = (int) sprite;
 
     e->type = ENTITY_PROJECTILE;
     e->active = 1;
@@ -44,13 +46,22 @@ void projectile_update(Entity *e, int cur_buf){
     e->x += e->dx;
     e->y += e->dy;
 
+    if(e->facing == 'e'){
+        e->hitbox_x = e->x + e->width - e->hitbox_w;
+    }
+    else if(e->facing == 'w'){
+        e->hitbox_x = e->x + PROJECTILE_HITBOX_OFFSET_X;
+    }
+
+    e->hitbox_y = e->y + (e->height >> 2) - (e->hitbox_h >> 2);
+
     //make projectile vanish if out of bounds
     if(e->hitbox_x < 0 || e->hitbox_x + e->hitbox_w > SCREEN_WIDTH ||
        e->hitbox_y < 0 || e->hitbox_y + e->hitbox_h > SCREEN_HEIGHT){
-        e->active = 0;
+        e->pending_erase = 1;
     }
 }
 
 void projectile_draw(Entity *e){
-    (void)e;
+    draw_sprite(&sprites[e->sprite_id], e->x, e->y);
 }

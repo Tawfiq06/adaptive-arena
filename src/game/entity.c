@@ -4,6 +4,7 @@
 #include "sprite.h"
 #include "renderer.h"
 #include "decorations.h"
+#include "projectile.h"
 
 Entity entities[MAX_ENTITIES];
 
@@ -20,6 +21,8 @@ Entity* spawn_entity(EntityType type){
             entities[i].attack_s1 = 0;
             entities[i].attack_s2 = 0;
             entities[i].attack_p = 0;
+            entities[i].pending_erase = 0;
+            entities[i].shoot_cooldown = 0;
             return &entities[i];
         }
     }
@@ -40,7 +43,7 @@ void entity_update_all(int cur_buf){
                 break;
             
             case ENTITY_PROJECTILE:
-                projectile_update(&entities[i]);
+                projectile_update(&entities[i], cur_buf);
                 break;
             default: 
                 break;
@@ -82,6 +85,11 @@ void entity_erase_all(int cur_buf){
             continue;
         }
         erase_sprite(entities[i].prev_x[cur_buf], entities[i].prev_y[cur_buf], entities[i].width, entities[i].height);
+
+        if(entities[i].pending_erase){
+            entities[i].active = 0;
+            entities[i].pending_erase = 0;
+        }
     }
 }
 

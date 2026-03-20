@@ -8,6 +8,7 @@
 #include "player_config.h"
 #include "tile_sprites.h"
 #include "soldier_frames.h"
+#include "projectile.h"
 #include "decorations.h"
 
 #define WEAPON_OFFSET (SOLDIER_W >> 2)
@@ -92,6 +93,13 @@ void update_game(int cur_buf){
                 }
             }
             //Implement player launch projectile here
+            if(attacker->attack_p){
+                Entity* arrow = spawn_entity(ENTITY_PROJECTILE);
+                if(arrow){ //make sure its not NULL
+                    projectile_init(arrow, SPRITE_PROJECTILE, attacker->hitbox_x, attacker->hitbox_y, attacker->facing);
+                }
+                attacker->attack_p = 0;
+            }
         }
     }
     entity_update_all(cur_buf);

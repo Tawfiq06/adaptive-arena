@@ -58,6 +58,11 @@ typedef struct{
     /* Set when dying: keep drawing death anim until it finishes*/
     int dying;
 
+    int pending_erase;
+
+    //cooldowns (number of frames)
+    int shoot_cooldown;
+
 } Entity;
 
 extern Entity entities[MAX_ENTITIES];
