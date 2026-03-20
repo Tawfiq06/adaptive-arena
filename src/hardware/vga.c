@@ -32,6 +32,10 @@ void vga_init(){
 }
 
 void plot_pixel(int x, int y, short int colour) {
+  //make sure we are drawing properly
+  if(x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT){
+    return;
+  }
   volatile short int* one_pixel_address;
   one_pixel_address = (volatile short int*)(pixel_buffer_start + (y << 10) + (x << 1));
   *one_pixel_address = colour;
