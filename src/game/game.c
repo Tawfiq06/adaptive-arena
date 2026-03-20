@@ -98,9 +98,12 @@ void update_game(int cur_buf){
 
 void draw_game(int cur_buf){
     if(!bg_drawn){
+        //draw background into both buffers
         draw_background();
+        decoration_draw_all();
         wait_for_vsync();
         draw_background();
+        decoration_draw_all();
         bg_drawn = 1;
         return;
     }

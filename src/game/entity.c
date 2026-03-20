@@ -3,6 +3,7 @@
 #include "player.h"
 #include "sprite.h"
 #include "renderer.h"
+#include "decorations.h"
 
 Entity entities[MAX_ENTITIES];
 
@@ -75,6 +76,7 @@ void draw_entity(Entity *e){
 }
 
 void entity_erase_all(int cur_buf){
+    /* erase - restore tiles under every entity*/
     for (int i = 0; i < MAX_ENTITIES; i++){
         if (!entities[i].active){
             continue;

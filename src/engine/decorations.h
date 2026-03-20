@@ -14,5 +14,5 @@ int deco_count;
 
 Decoration decorations[MAX_DECORATIONS];
 void decoration_init(void);
-void decoration_redraw_region(int x, int y, int w, int h);
+void decoration_redraw_region(int row0, int col0, int row1, int col1);
 #endif
