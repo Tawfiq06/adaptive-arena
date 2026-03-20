@@ -20,9 +20,9 @@ typedef struct{
     unsigned char count; //amount of decor in this cell
 } DecoCell;
 
-static DecoCell deco_map[MAP_HEIGHT][MAP_WIDTH];
+DecoCell deco_map[MAP_HEIGHT][MAP_WIDTH];
 
-static void deco_map_build(void){
+void deco_map_build(void){
     //first cell every cell
     for(int r=0; r < MAP_HEIGHT; r++){
         for (int c = 0; c < MAP_WIDTH; c++){
@@ -52,11 +52,11 @@ static void deco_map_build(void){
     }
 }
 
-static void decoration_init(void){
+void decoration_init(void){
     deco_count = 0;
 
     //map rools 0-19 to a specific type. -1 means no spawn
-    static const int SPAWN_TABLE[16] = {
+    const int SPAWN_TABLE[16] = {
         0, 1, 2, 3, 4, 5,       // Rocks (0-5)
         6, 7, 8, 9,             // Bushes (6-9)
         13, 14,                 // Flowers/Plants (10-11)
@@ -100,7 +100,7 @@ static void decoration_init(void){
     deco_map_build();
 }
 
-static void decoration_draw_all(void){
+void decoration_draw_all(void){
     for(int i = 0; i < deco_count; i++){
         const DecoType *d = &DECO_LOOKUP[decorations[i].type];
         Sprite s = {
@@ -113,7 +113,7 @@ static void decoration_draw_all(void){
 }
 
 //need to redraw decor if a sprite overlaps it
-static void decoration_redraw_region(int row0, int col0, int row1, int col1) {   
+void decoration_redraw_region(int row0, int col0, int row1, int col1) {   
     int clip_x0 = col0 * TILE_W;
     int clip_x1 = col1 * TILE_W - 1;
     int clip_y0 = row0 * TILE_H;

@@ -8,6 +8,7 @@
 #include "player_config.h"
 #include "tile_sprites.h"
 #include "soldier_frames.h"
+#include "decorations.h"
 
 #define WEAPON_OFFSET (SOLDIER_W >> 2)
 
@@ -18,7 +19,7 @@ static int bg_drawn = 0; //draw full background once at startup
 
 void game_init(){
     map_init(1);
-
+    decoration_init();
     /*Spawn Player 1*/
     //on the left, faces right
     Entity *p1 = spawn_entity(ENTITY_PLAYER);

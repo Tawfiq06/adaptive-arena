@@ -2,13 +2,13 @@
 #include "address_map.h"
 
 //pointer to base
-static volatile int *ps2 = (volatile int *)PS2_BASE;
+volatile int *ps2 = (volatile int *)PS2_BASE;
 
 /* Bitmask table — one bit per scancode (256 scancodes, 256/8 = 32 bytes) */
 //there are 256 possible scancodes
-static unsigned char key_state[256 / 8];
+unsigned char key_state[256 / 8];
 
-static void key_set(unsigned char code, int down) {
+void key_set(unsigned char code, int down) {
     if (down) key_state[code >> 3] |=  (1 << (code & 7)); //set to 1 if its pressed
     else      key_state[code >> 3] &= ~(1 << (code & 7)); //set to 0 if released
 }

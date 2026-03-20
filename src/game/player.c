@@ -91,10 +91,11 @@ void player_update(Entity *p, int cur_buf){
                   p->anim.anim == SOLDIER_DEATH);
 
     /* Advance animation — returns 1 if one-shot just ended */
-    if (anim_finished && !locked) {
+    if (anim_finished) {
         p->attack_s1 = 0;
         p->attack_s2 = 0;
         anim_play(&p->anim, p->anim_def, SOLIDER_IDLE);
+        locked = 0;
     }
 
     if (locked) return;
@@ -138,10 +139,6 @@ void player_update(Entity *p, int cur_buf){
     //Check if we should play idle animation
     int moving = (p->dx != 0 || p->dy != 0);
     anim_play(&p->anim, p->anim_def, moving ? SOLDIER_WALK : SOLIDER_IDLE);
-
-    /*Save old postions*/
-    p->prev_x[cur_buf] = p->x;
-    p->prev_y[cur_buf] = p->y;
 
     p->x += p->dx;
     p->y += p->dy;
