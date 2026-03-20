@@ -51,6 +51,10 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
 }
 
 void player_update(Entity *p, int cur_buf){
+    /*Save postion before returning so erase works*/
+        p->prev_x[cur_buf] = p->x;
+        p->prev_y[cur_buf] = p->y;
+    
     /* 1. Tick animation first - returns 1 when one shot is done*/
     int anim_finished = anim_tick(&p->anim, p->anim_def);
     
@@ -67,10 +71,6 @@ void player_update(Entity *p, int cur_buf){
         p->was_hit = 0;
         p->health -= p->damage;
         p->damage = 0;
-        
-        /*Save postion before returning so erase works*/
-        p->prev_x[cur_buf] = p->x;
-        p->prev_y[cur_buf] = p->y;
 
         if(p->health < 0){
             p->health = 0;

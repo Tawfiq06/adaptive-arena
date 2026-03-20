@@ -4145,9 +4145,10 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
 }
 
 void player_update(Entity *p, int cur_buf){
-
-    p->prev_x[cur_buf] = p->x;
-    p->prev_y[cur_buf] = p->y;
+    /*Save postion before returning so erase works*/
+        p->prev_x[cur_buf] = p->x;
+        p->prev_y[cur_buf] = p->y;
+    
     /* 1. Tick animation first - returns 1 when one shot is done*/
     int anim_finished = anim_tick(&p->anim, p->anim_def);
     
@@ -4164,7 +4165,7 @@ void player_update(Entity *p, int cur_buf){
         p->was_hit = 0;
         p->health -= p->damage;
         p->damage = 0;
-        
+
         if(p->health < 0){
             p->health = 0;
             p->dying = 1;
@@ -4184,10 +4185,11 @@ void player_update(Entity *p, int cur_buf){
                   p->anim.anim == SOLDIER_DEATH);
 
     /* Advance animation — returns 1 if one-shot just ended */
-    if (anim_finished && !locked) {
+    if (anim_finished) {
         p->attack_s1 = 0;
         p->attack_s2 = 0;
         anim_play(&p->anim, p->anim_def, SOLIDER_IDLE);
+        locked = 0;
     }
 
     if (locked) return;
@@ -4317,7 +4319,7 @@ void projectile_draw(Entity *e){
  * =========================================================================*/
 /* #include "decoration_sprites.h" -- merged */
 
-#define MAX_DECORATIONS 96
+#define MAX_DECORATIONS 2
 
 typedef struct{
     short x, y;
