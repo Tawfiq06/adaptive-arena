@@ -21,8 +21,10 @@ Entity* spawn_entity(EntityType type){
             entities[i].attack_s1 = 0;
             entities[i].attack_s2 = 0;
             entities[i].attack_p = 0;
-            entities[i].pending_erase = 0;
+            entities[i].pending_erase_b1 = 0;
+            entities[i].pending_erase_b2 = 0;
             entities[i].shoot_cooldown = 0;
+            entities[i].arrow_fired = 0;
             return &entities[i];
         }
     }
@@ -73,7 +75,7 @@ void draw_entity(Entity *e){
             break;
         default:
             if (e->sprite_id >= 0)
-                draw_sprite(&sprites[e->sprite_id], e->x, e->y);
+                draw_sprite(&sprites[e->sprite_id], e->x, e->y, 0, 0);
                 break;
     }
 }
@@ -86,9 +88,17 @@ void entity_erase_all(int cur_buf){
         }
         erase_sprite(entities[i].prev_x[cur_buf], entities[i].prev_y[cur_buf], entities[i].width, entities[i].height);
 
-        if(entities[i].pending_erase){
-            entities[i].active = 0;
+        if(cur_buf == 0 && entities[i].pending_erase_b1){
+            entities[i].pending_erase_b1 = 0;
+        }
+
+        if(cur_buf == 1 && entities[i].pending_erase_b2){
+            entities[i].pending_erase_b2 = 0;
+        }
+
+        if(entities[i].pending_erase && !entities[i].pending_erase_b1 && !entities[i].pending_erase_b2){
             entities[i].pending_erase = 0;
+            entities[i].active = 0;
         }
     }
 }

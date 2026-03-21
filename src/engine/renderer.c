@@ -8,15 +8,29 @@
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 
-void draw_sprite(const Sprite *s, int x, int y){
+void draw_sprite(const Sprite *s, int x, int y, int flip_h, int flip_v){
     for(int row = 0; row < s->height; row++)
     {   
-        int py = y + row;
+        int py = y;
+        if(flip_v){
+            py += s->height - 1 -row;
+        }
+        else{
+            py += row;
+        }
+
         if(py < 0 || py >= SCREEN_HEIGHT) continue;
 
         for(int col = 0; col < s->width; col++)
         {   
-            int px = x + col;
+            int px = x;
+            if(flip_h){
+                px += s->width - 1 - col;
+            }
+            else{
+                px += col;
+            }
+
             if(px < 0 || px >= SCREEN_WIDTH) continue;
 
             int idx = row * s->width + col;
@@ -39,7 +53,7 @@ void draw_background(){
             int x_pos = col << 4; //current map tile * 16 give the coord
             int y_pos = row << 4;
 
-            draw_sprite(&sprites[id], x_pos, y_pos);
+            draw_sprite(&sprites[id], x_pos, y_pos, 0, 0);
         }
     }
 }
@@ -60,7 +74,7 @@ void erase_sprite(int x, int y, int w, int h){
     for(int row = row0; row < row1; row++){
         for (int col = col0; col < col1; col++){
             SpriteID id = map_get_tile(row, col);
-            draw_sprite(&sprites[id], col << 4, row << 4);
+            draw_sprite(&sprites[id], col << 4, row << 4, 0, 0);
         }
     }
 

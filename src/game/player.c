@@ -52,6 +52,7 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
 
     p->pending_erase = 0;
     p->shoot_cooldown = 0;
+    p->arrow_fired = 0;
 }
 
 void player_update(Entity *p, int cur_buf){
@@ -91,6 +92,7 @@ void player_update(Entity *p, int cur_buf){
     /* 4. Locked if you shouldnt be able to move during the animation*/
     int locked = (p->anim.anim == SOLDIER_ATK1 ||
                   p->anim.anim == SOLDIER_ATK2 ||
+                  p->anim.anim == SOLDIER_ATK3 ||
                   p->anim.anim == SOLDIER_HURT  ||
                   p->anim.anim == SOLDIER_DEATH);
 
@@ -100,6 +102,12 @@ void player_update(Entity *p, int cur_buf){
         p->attack_s2 = 0;
         anim_play(&p->anim, p->anim_def, SOLIDER_IDLE);
         locked = 0;
+    }
+
+    /*decect release frame for arrow*/
+    if (p->anim.anim == SOLDIER_ATK3 && p->anim.frame == SOLDIER_ANIMS[SOLDIER_ATK3].end - 1 && !p->attack_p && !p->arrow_fired){
+        p->attack_p = 1;
+        p->arrow_fired = 1;
     }
 
     if (locked) return;
@@ -122,8 +130,9 @@ void player_update(Entity *p, int cur_buf){
     }
 
     if (key_pressed(cfg->key_atkp) && p->shoot_cooldown == 0){
-        p->attack_p = 1;
+        anim_play(&p->anim, p->anim_def, SOLDIER_ATK3);
         p->shoot_cooldown = SHOOT_COOLDOWN;
+        p->arrow_fired = 0;
         return;
     }
 
@@ -158,7 +167,7 @@ void player_update(Entity *p, int cur_buf){
     p->y += p->dy;
 
     /*Now clamp*/
-    if (p->x < 0){
+    if (p->x  < 0){
         p->x = 0;
     }                       
     if (p->y < 0){

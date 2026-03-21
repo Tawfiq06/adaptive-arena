@@ -92,17 +92,22 @@ void update_game(int cur_buf){
                     }
                 }
             }
-            //Implement player launch projectile here
-            if(attacker->attack_p){
-                Entity* arrow = spawn_entity(ENTITY_PROJECTILE);
-                if(arrow){ //make sure its not NULL
-                    projectile_init(arrow, SPRITE_PROJECTILE, attacker->hitbox_x, attacker->hitbox_y, attacker->facing);
-                }
-                attacker->attack_p = 0;
-            }
         }
     }
     entity_update_all(cur_buf);
+
+    /* Now spawn projectiles*/
+    for (int i = 0; i < MAX_ENTITIES; i++){
+        Entity *p = &entities[i];
+        if (!p->active || p->type != ENTITY_PLAYER) continue;
+        if (p->attack_p){
+            Entity *arrow = spawn_entity(ENTITY_PROJECTILE);
+            if (arrow)
+                projectile_init(arrow, SPRITE_PROJECTILE,
+                                p->hitbox_x, p->hitbox_y, p->facing);
+            p->attack_p = 0;
+        }
+    }
 }
 
 void draw_game(int cur_buf){

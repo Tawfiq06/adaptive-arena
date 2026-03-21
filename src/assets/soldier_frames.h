@@ -18,7 +18,7 @@ typedef enum {
     SOLDIER_WALK,
     SOLDIER_ATK1,
     SOLDIER_ATK2,
-    SOLDIER_RUN,
+    SOLDIER_ATK3,
     SOLDIER_HURT,
     SOLDIER_DEATH,
     SOLDIER_COUNT
@@ -58,6 +58,7 @@ extern const short soldier_f22[41*29];
 extern const short soldier_f23[41*29];
 extern const short soldier_f24[41*29];
 extern const short soldier_f25[41*29];
+
 extern const short soldier_f26[41*29];
 extern const short soldier_f27[41*29];
 extern const short soldier_f28[41*29];
@@ -67,6 +68,7 @@ extern const short soldier_f31[41*29];
 extern const short soldier_f32[41*29];
 extern const short soldier_f33[41*29];
 extern const short soldier_f34[41*29];
+
 extern const short soldier_f35[41*29];
 extern const short soldier_f36[41*29];
 extern const short soldier_f37[41*29];

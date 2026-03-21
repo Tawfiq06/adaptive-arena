@@ -59,9 +59,12 @@ typedef struct{
     int dying;
 
     int pending_erase;
+    int pending_erase_b1; //to check both buffers for pending
+    int pending_erase_b2;
 
     //cooldowns (number of frames)
     int shoot_cooldown;
+    int arrow_fired;
 
 } Entity;
 

@@ -108,7 +108,7 @@ void decoration_draw_all(void){
             d->h,
             d->data
         };
-        draw_sprite(&s, decorations[i].x, decorations[i].y);
+        draw_sprite(&s, decorations[i].x, decorations[i].y, 0, 0);
     }
 }
 

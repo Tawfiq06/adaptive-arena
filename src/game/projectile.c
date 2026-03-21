@@ -1,5 +1,6 @@
 #include "projectile.h"
 #include "projectile_sprites.h"
+#include "soldier_frames.h"
 #include "renderer.h"
 #include "vga.h"
 
@@ -7,7 +8,7 @@
 
 void projectile_init(Entity *e, SpriteID sprite, int x, int y, char facing){
     e->x = x;
-    e->y = y;
+    e->y = y + (SOLDIER_H >> 2) - (PROJECTILE_H >> 2);
 
     e->width = PROJECTILE_W;
     e->height = PROJECTILE_H;
@@ -40,8 +41,8 @@ void projectile_init(Entity *e, SpriteID sprite, int x, int y, char facing){
 }
 
 void projectile_update(Entity *e, int cur_buf){
-    e->prev_x[cur_buf] = e->x;
-    e->prev_y[cur_buf] = e->y;
+    e->prev_x[cur_buf] = e->x - e->dx;
+    e->prev_y[cur_buf] = e->y - e->dy;
 
     e->x += e->dx;
     e->y += e->dy;
@@ -59,9 +60,15 @@ void projectile_update(Entity *e, int cur_buf){
     if(e->hitbox_x < 0 || e->hitbox_x + e->hitbox_w > SCREEN_WIDTH ||
        e->hitbox_y < 0 || e->hitbox_y + e->hitbox_h > SCREEN_HEIGHT){
         e->pending_erase = 1;
+        e->pending_erase_b1 = 1;
+        e->pending_erase_b2 = 1;
     }
 }
 
 void projectile_draw(Entity *e){
-    draw_sprite(&sprites[e->sprite_id], e->x, e->y);
+    int flip_h = 0;
+    if(e->facing == 'w'){
+        flip_h = 1;
+    }
+    draw_sprite(&sprites[e->sprite_id], e->x, e->y, flip_h, 0);
 }
