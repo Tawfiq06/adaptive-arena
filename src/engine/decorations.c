@@ -12,15 +12,11 @@
 /* built only ocne during init                    */
 /**************************************************/
 
-#define DECO_CELL_CAP 4
-
-typedef struct{
-    //this will hold which indicies in decor corrsepond to this cell
-    unsigned char indices[DECO_CELL_CAP];
-    unsigned char count; //amount of decor in this cell
-} DecoCell;
-
 DecoCell deco_map[MAP_HEIGHT][MAP_WIDTH];
+
+const DecoCell *deco_map_get_cell(int row, int col){
+    return &deco_map[row][col];
+}
 
 void deco_map_build(void){
     //first cell every cell
@@ -69,7 +65,9 @@ void decoration_init(void){
 
     const int TREE_TABLE[] = {
         DECO_STICK_TREE,
-        DECO_TREE_GREEN_A, DECO_TREE_GREEN_B,
+        DECO_TREE_GREEN_A, 
+        DECO_GREEN_PLANT_TREE_A,
+        DECO_TREE_GREEN_B,
         DECO_TREE_AUTUMN_A, DECO_TREE_AUTUMN_B,
     };
 

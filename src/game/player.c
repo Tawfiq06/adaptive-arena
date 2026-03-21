@@ -4,6 +4,7 @@
 #include "animator.h"
 #include "renderer.h"
 #include "map.h"
+#include "obstacle_map.h"
 
 void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg, int start_x, int flip){
     p->player_cfg = cfg; //not needed at init
@@ -236,53 +237,73 @@ void player_update(Entity *p, int cur_buf){
         p->blocking = 0;
     }
 
-    //Check if we should play idle animation
-    
-    if(p->anim.anim != SOLDIER_ATK3){
+    // Sample both bottom corners + center for robustness
+    int feet_y  = p->hitbox_y + p->hitbox_h;
+    int left_x  = p->hitbox_x;
+    int right_x = p->hitbox_x + p->hitbox_w - 1;
+    int mid_x   = p->hitbox_x + (p->hitbox_w >> 1);
+
+    if (p->dx != 0) {
+        int nx = (p->dx > 0) ? right_x + p->dx : left_x + p->dx;
+        if ((obstacle_map_at_pixel(nx, feet_y)     & TILE_FLAG_SOLID) ||
+            (obstacle_map_at_pixel(nx, feet_y - 1) & TILE_FLAG_SOLID)) {
+            p->dx = 0;
+        }
+    }
+    if (p->dy != 0) {
+        int ny = feet_y + p->dy;
+        if ((obstacle_map_at_pixel(left_x,  ny) & TILE_FLAG_SOLID) ||
+            (obstacle_map_at_pixel(right_x, ny) & TILE_FLAG_SOLID) ||
+            (obstacle_map_at_pixel(mid_x,   ny) & TILE_FLAG_SOLID)) {
+            p->dy = 0;
+        }
+    }
+
+    // Slow tiles
+    if (obstacle_map_at_pixel(mid_x + p->dx, feet_y + p->dy) & TILE_FLAG_SLOW) {
+        p->dx /= 2;
+        p->dy /= 2;
+    }
+
+    // --- Animation ---
+    if (p->anim.anim != SOLDIER_ATK3) {
         int moving = (p->dx != 0 || p->dy != 0);
         anim_play(&p->anim, p->anim_def, moving ? SOLDIER_WALK : SOLIDER_IDLE);
     }
 
-    p->x += p->dx;
-    p->y += p->dy;
+    // --- Move hitbox, clamp hitbox to screen ---
+    p->hitbox_x += p->dx;
+    p->hitbox_y += p->dy;
 
-    /*Now clamp*/
-    if (p->x  < 0){
-        p->x = 0;
-    }                       
-    if (p->y < 0){
-        p->y = 0;
-    }
+    if (p->hitbox_x < 0)
+        p->hitbox_x = 0;
+    if (p->hitbox_x + p->hitbox_w > SCREEN_WIDTH)
+        p->hitbox_x = SCREEN_WIDTH - p->hitbox_w;
+    if (p->hitbox_y < 0)
+        p->hitbox_y = 0;
+    if (p->hitbox_y + p->hitbox_h > SCREEN_HEIGHT)
+        p->hitbox_y = SCREEN_HEIGHT - p->hitbox_h;
 
-    if(p->x + p->width > SCREEN_WIDTH)
-        p->x = SCREEN_WIDTH - p->width;
-
-    if(p->y + p->height > SCREEN_HEIGHT)
-        p->y = SCREEN_HEIGHT - p->height;
-
-    
-    /* Update hitbox to follow player postion */
-    if(p->facing == 'e'){
-        p->hitbox_x = p->x + PLAYER_HITBOX_OFFSET_X;
-    }
-    
-    if(p->facing == 'w'){
-        p->hitbox_x = p->x + SOLDIER_W - PLAYER_HITBOX_OFFSET_X - p->hitbox_w;
-    }
-    p->hitbox_y = p->y + PLAYER_HITBOX_OFFSET_Y;
+    // --- Derive p->x / p->y from hitbox (single source of truth) ---
+    p->x = p->hitbox_x - PLAYER_HITBOX_OFFSET_X;
+    p->y = p->hitbox_y - PLAYER_HITBOX_OFFSET_Y;
 }
 
 void player_draw(const Entity *p){
-    draw_soldier(&p->anim, p->x, p->y);
+    int draw_x = p->x;
+    if(p->facing == 'w'){
+        draw_x = p->x - (SOLDIER_W - 2 * PLAYER_HITBOX_OFFSET_X - PLAYER_HITBOX_W);
+    }
+    draw_soldier(&p->anim, draw_x, p->y);
     if(p->blocking){
         int flip_h = 0;
         int x_off = 0;
         if(p->facing == 'w'){
             flip_h = 1;
-            int x_off = -1;
+            x_off = -1;
         }
         draw_sprite(&sprites[SPRITE_WOOD_SHIELD], p->hitbox_x + x_off, p->hitbox_y + 2, flip_h, 0);
     }
     /*Use this to show player hitboxes*/
-    //draw_rect_outline(p->hitbox_x, p->hitbox_y, p->hitbox_w, p->hitbox_h, 0x0000);
+    draw_rect_outline(p->hitbox_x, p->hitbox_y, p->hitbox_w, p->hitbox_h, 0x0000);
 }

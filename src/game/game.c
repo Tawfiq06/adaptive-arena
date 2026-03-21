@@ -10,6 +10,7 @@
 #include "soldier_frames.h"
 #include "projectile.h"
 #include "decorations.h"
+#include "obstacle_map.h"
 
 #define WEAPON_OFFSET (SOLDIER_W >> 2)
 
@@ -21,6 +22,7 @@ static int bg_drawn = 0; //draw full background once at startup
 void game_init(){
     map_init(1);
     decoration_init();
+    obstacle_map_init();
     /*Spawn Player 1*/
     //on the left, faces right
     Entity *p1 = spawn_entity(ENTITY_PLAYER);
@@ -73,7 +75,7 @@ void update_game(int cur_buf){
                     if(target->type != ENTITY_PLAYER) continue;
                     if (target->dying) continue;
                     if(target->blocking) continue;
-                    
+
                     if(target->hitbox_x + target->hitbox_w >= weapon_x 
                         && target->hitbox_x <= weapon_x + weapon_length 
                         && target->hitbox_y + target->hitbox_h >= weapon_y 

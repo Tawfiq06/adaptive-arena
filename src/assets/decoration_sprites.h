@@ -20,7 +20,9 @@ typedef enum {
     DECO_BUSH_GREEN_LG,
     DECO_BUSH_OLIVE_LG, 
     DECO_STICK_TREE,
-    DECO_FLOWER_PURPLE, DECO_PLANT_TALL, DECO_TREE_GREEN_A,
+    DECO_FLOWER_PURPLE, DECO_PLANT_TALL, 
+    DECO_TREE_GREEN_A,
+    DECO_GREEN_PLANT_TREE_A,
     DECO_TREE_GREEN_B, DECO_TREE_AUTUMN_A, DECO_TREE_AUTUMN_B,
     DECO_COUNT
 } DecoID;
@@ -77,10 +79,16 @@ static const DecoType DECO_LOOKUP[DECO_COUNT];
 #define FLOWER_PURPLE_H  31
 #define PLANT_TALL_W  47
 #define PLANT_TALL_H  28
+
 #define TREE_GREEN_A_W  29
-#define TREE_GREEN_A_H  95
-#define TREE_GREEN_B_W  29
-#define TREE_GREEN_B_H  79
+#define TREE_GREEN_A_H  47
+
+#define GREEN_PLANT_TREE_A_W  16
+#define GREEN_PLANT_TREE_A_H  31
+
+#define TREE_GREEN_B_W  36
+#define TREE_GREEN_B_H  76
+
 #define TREE_AUTUMN_A_W  29
 #define TREE_AUTUMN_A_H  95
 #define TREE_AUTUMN_B_W  29
@@ -108,8 +116,11 @@ static const short bush_olive_lg[BUSH_OLIVE_LG_W * BUSH_OLIVE_LG_H];
 static const short stick_tree[1598];
 static const short flower_purple[806];
 static const short plant_tall[1316];
-static const short tree_green_a[2755];
-static const short tree_green_b[2291];
+
+static const short tree_green_a[TREE_GREEN_A_W * TREE_GREEN_A_H];
+static const short green_plant_tree_a[GREEN_PLANT_TREE_A_H * GREEN_PLANT_TREE_A_W];
+static const short tree_green_b[TREE_GREEN_B_W * TREE_GREEN_B_H];
+
 static const short tree_autumn_a[2755];
 static const short tree_autumn_b[2291];
 

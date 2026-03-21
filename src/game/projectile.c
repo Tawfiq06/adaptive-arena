@@ -3,6 +3,7 @@
 #include "soldier_frames.h"
 #include "renderer.h"
 #include "vga.h"
+#include "obstacle_map.h"
 
 #define PROJECTILE_HITBOX_OFFSET_X 0
 
@@ -57,6 +58,13 @@ void projectile_update(Entity *e, int cur_buf){
     }
 
     e->hitbox_y = e->y + (e->height >> 2) - (e->hitbox_h >> 2);
+
+    unsigned char flags = obstacle_map_at_pixel(e->hitbox_x, e->hitbox_y);
+    if(flags & TILE_FLAG_NO_PROJ){
+        e->pending_erase = 1;
+        e->pending_erase_b1 = 1;
+        e->pending_erase_b2 = 1;
+    }
 
     //make projectile vanish if out of bounds
     if(e->hitbox_x < 0 || e->hitbox_x + e->hitbox_w > SCREEN_WIDTH ||
