@@ -2,8 +2,8 @@
 #include "vga.h"
 #include "keyboard.h"
 #include "animator.h"
-
-#define SHOOT_COOLDOWN 30
+#include "renderer.h"
+#include "map.h"
 
 void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg, int start_x, int flip){
     p->player_cfg = cfg; //not needed at init
@@ -23,8 +23,8 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
     p->hitbox_x = p->x + PLAYER_HITBOX_OFFSET_X;
     p->hitbox_y = p->y + PLAYER_HITBOX_OFFSET_Y;
 
-    p->hitbox_w = 20;
-    p->hitbox_h = 18;
+    p->hitbox_w = PLAYER_HITBOX_W;
+    p->hitbox_h = PLAYER_HITBOX_H;
 
     p->sprite_id = (int)sprite;
     p->colour = _colour; //white
@@ -53,6 +53,17 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
     p->pending_erase = 0;
     p->shoot_cooldown = 0;
     p->arrow_fired = 0;
+
+    p->atk1_cooldown = 0;
+    p->atk2_cooldown = 0;
+
+    p->dash_cooldown = 0;
+    p->dash_timer = 0;
+    p->is_dashing = 0;
+
+    p->block_cooldown = 0;
+    p->block_timer = 0;
+    p->blocking = 0;
 }
 
 void player_update(Entity *p, int cur_buf){
@@ -91,7 +102,7 @@ void player_update(Entity *p, int cur_buf){
     /* 4. Locked if you shouldnt be able to move during the animation*/
     int locked = (p->anim.anim == SOLDIER_ATK1 ||
                   p->anim.anim == SOLDIER_ATK2 ||
-                  p->anim.anim == SOLDIER_ATK3 ||
+                  //p->anim.anim == SOLDIER_ATK3 ||
                   p->anim.anim == SOLDIER_HURT  ||
                   p->anim.anim == SOLDIER_DEATH);
 
@@ -111,21 +122,40 @@ void player_update(Entity *p, int cur_buf){
 
     if (locked) return;
 
-    /* Attack input (takes priority over movement) */
-    const PlayerConfig *cfg = p->player_cfg;
-    if (key_pressed(cfg->key_atk1)) {
-        anim_play(&p->anim, p->anim_def, SOLDIER_ATK1);
-        p->attack_s1 = 1;
-        return;
+    /* Handle cooldowns*/
+    if(p->atk1_cooldown > 0){
+        p->atk1_cooldown--;
     }
-    if (key_pressed(cfg->key_atk2)) {
-        anim_play(&p->anim, p->anim_def, SOLDIER_ATK2);
-        p->attack_s2 = 1;
-        return;
+
+    if(p->atk2_cooldown > 0){
+        p->atk2_cooldown--;
     }
 
     if(p->shoot_cooldown > 0){
         p->shoot_cooldown--;
+    }
+
+    if(p->dash_cooldown > 0 && !p->is_dashing){
+        p->dash_cooldown--;
+    }
+
+    if(p->block_cooldown > 0 && !p->blocking){
+        p->block_cooldown--;
+    }
+
+    /* Attack input (takes priority over movement) */
+    const PlayerConfig *cfg = p->player_cfg;
+    if (key_pressed(cfg->key_atk1) && p->atk1_cooldown == 0) {
+        anim_play(&p->anim, p->anim_def, SOLDIER_ATK1);
+        p->atk1_cooldown = ATK1_COOLDOWN;
+        p->attack_s1 = 1;
+        return;
+    }
+    if (key_pressed(cfg->key_atk2) && p->atk2_cooldown == 0) {
+        anim_play(&p->anim, p->anim_def, SOLDIER_ATK2);
+        p->atk2_cooldown = ATK2_COOLDOWN;
+        p->attack_s2 = 1;
+        return;
     }
 
     if (key_pressed(cfg->key_atkp) && p->shoot_cooldown == 0){
@@ -135,32 +165,83 @@ void player_update(Entity *p, int cur_buf){
         return;
     }
 
-    /* Movement */
-    p->dx = 0;
-    p->dy = 0;
+    if(key_pressed(cfg->key_dash) && p->dash_cooldown == 0){
+        p->dash_cooldown = DASH_COOLDOWN;
+        p->is_dashing = 1;
+        p->dash_timer = DASH_TIMER;
+    }
 
-    if (key_pressed(p->player_cfg->key_up)) {
+    if(key_pressed(cfg->key_block) && p->block_cooldown == 0){
+        p->block_cooldown = BLOCK_COOLDOWN;
+        p->blocking = 1;
+        p->block_timer = BLOCK_TIMER;
+    }
+
+    /* Movement */
+    if(!p->is_dashing){
+        p->dx = 0;
+        p->dy = 0;
+    }
+
+    if (!p->is_dashing && key_pressed(p->player_cfg->key_up)) {
         p->dy = -PLAYER_SPEED;
        // p->facing = 'n';
     }
-    if(key_pressed(p->player_cfg->key_down)){
+    if(!p->is_dashing && key_pressed(p->player_cfg->key_down)){
         p->dy = PLAYER_SPEED;
       //  p->facing = 's';
     }
-    if (key_pressed(p->player_cfg->key_left))  { 
+    if (!p->is_dashing && key_pressed(p->player_cfg->key_left))  { 
         p->dx = -PLAYER_SPEED;
         p->facing = 'w'; 
         p->anim.flip = 1;
     }
-    if (key_pressed(p->player_cfg->key_right)) { 
+    if (!p->is_dashing && key_pressed(p->player_cfg->key_right)) { 
         p->dx =  PLAYER_SPEED; 
         p->facing = 'e'; 
         p->anim.flip = 0;
     }
 
+    //half player movement while bow is drawn
+    if(p->anim.anim == SOLDIER_ATK3 && !p->arrow_fired){
+        p->dx = p->dx >> 1;
+        p->dy = p->dy >> 1;
+    }
+    if(p->anim.anim == SOLDIER_ATK3 && p->arrow_fired){
+        p->dx = p->dx << 1;
+        p->dy = p->dy << 1;
+    }
+
+    if(p->is_dashing && p->dash_timer == DASH_TIMER){
+        p->dx = p->dx << 1;
+        p->dy = p->dy << 1;
+    }
+    if(p->is_dashing){
+        p->dash_timer--;
+        if(p->dash_timer == 0){
+            p->is_dashing = 0;
+            p->dx = p->dx >> 1;
+            p->dy = p->dy >> 1;
+        }
+    }
+
+    if(p->blocking){
+        p->dx = p->dx >> 1;
+        p->dy = p->dy >> 1;
+        p->block_timer--;
+    }
+    if(p->blocking && p->block_timer == 0){
+        p->dx = p->dx << 1;
+        p->dy = p->dy << 1;
+        p->blocking = 0;
+    }
+
     //Check if we should play idle animation
-    int moving = (p->dx != 0 || p->dy != 0);
-    anim_play(&p->anim, p->anim_def, moving ? SOLDIER_WALK : SOLIDER_IDLE);
+    
+    if(p->anim.anim != SOLDIER_ATK3){
+        int moving = (p->dx != 0 || p->dy != 0);
+        anim_play(&p->anim, p->anim_def, moving ? SOLDIER_WALK : SOLIDER_IDLE);
+    }
 
     p->x += p->dx;
     p->y += p->dy;
@@ -193,4 +274,15 @@ void player_update(Entity *p, int cur_buf){
 
 void player_draw(const Entity *p){
     draw_soldier(&p->anim, p->x, p->y);
+    if(p->blocking){
+        int flip_h = 0;
+        int x_off = 0;
+        if(p->facing == 'w'){
+            flip_h = 1;
+            int x_off = -1;
+        }
+        draw_sprite(&sprites[SPRITE_WOOD_SHIELD], p->hitbox_x + x_off, p->hitbox_y + 2, flip_h, 0);
+    }
+    /*Use this to show player hitboxes*/
+    //draw_rect_outline(p->hitbox_x, p->hitbox_y, p->hitbox_w, p->hitbox_h, 0x0000);
 }

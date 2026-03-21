@@ -26,6 +26,17 @@ Entity* spawn_entity(EntityType type){
             entities[i].shoot_cooldown = 0;
             entities[i].arrow_fired = 0;
             entities[i].owner = NULL;
+
+            entities[i].atk1_cooldown = 0;
+            entities[i].atk2_cooldown = 0;
+
+            entities[i].blocking = 0;
+            entities[i].block_cooldown = 0;
+            entities[i].block_timer = 0;
+
+            entities[i].dash_cooldown = 0;
+            entities[i].dash_timer = 0;
+            entities[i].is_dashing = 0;
             return &entities[i];
         }
     }

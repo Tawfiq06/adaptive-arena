@@ -62,9 +62,20 @@ typedef struct{
     int pending_erase_b1; //to check both buffers for pending
     int pending_erase_b2;
 
-    //cooldowns (number of frames)
+    /* cooldowns (number of frames) */
+    int atk1_cooldown;
+    int atk2_cooldown;
+
     int shoot_cooldown;
     int arrow_fired;
+
+    int dash_cooldown;
+    int dash_timer;
+    int is_dashing; //use to check if speed needs to be *2
+
+    int block_cooldown;
+    int block_timer;
+    int blocking;
 
     struct Entity* owner;
 

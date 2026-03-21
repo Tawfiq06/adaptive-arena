@@ -118,3 +118,24 @@ void wait_for_vsync() {
     while (*(pixel_ctrl_ptr + 3) & 0x1);  // wait for S bit to go to
     pixel_buffer_start = *(pixel_ctrl_ptr + 1);//update start
 }
+
+void draw_rect_outline(int x, int y, int width, int height, short colour){
+    int x_end = x + width - 1; // Subtract 1 to stay within the width/height
+    int y_end = y + height - 1;
+
+    // Boundary clipping
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x_end >= SCREEN_WIDTH) x_end = SCREEN_WIDTH - 1;
+    if (y_end >= SCREEN_HEIGHT) y_end = SCREEN_HEIGHT - 1;
+    
+    for(int row = y; row <= y_end; row++){
+        volatile short *row_ptr = (volatile short*)(pixel_buffer_start + (row << 10));
+        for(int col = x; col <= x_end; col++){
+            // Only draw if we are on one of the four edges
+            if (row == y || row == y_end || col == x || col == x_end) {
+                row_ptr[col] = colour;
+            }
+        }
+    }
+}

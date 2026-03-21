@@ -4,6 +4,10 @@
 #define OLD_PLAYER_W 16
 #define OLD_PLAYER_H 16
 
+#define WOOD_SHIELD_W  14
+#define WOOD_SHIELD_H  16
+
 extern const short player_sprite[OLD_PLAYER_W * OLD_PLAYER_H];
+static const short wood_shield[WOOD_SHIELD_W * WOOD_SHIELD_H];
 
 #endif

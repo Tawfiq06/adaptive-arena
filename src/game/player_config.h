@@ -15,6 +15,8 @@ typedef struct {
     unsigned char key_atk1;
     unsigned char key_atk2;
     unsigned char key_atkp;
+    unsigned char key_dash;
+    unsigned char key_block;
 } PlayerConfig;
 
 /* Player 1: WASD + Z/X attacks */
@@ -25,7 +27,9 @@ typedef struct {
     .key_right = KEY_D,     \
     .key_atk1  = KEY_Q,     \
     .key_atk2  = KEY_E,      \
-    .key_atkp = KEY_R   \
+    .key_atkp = KEY_R,   \
+    .key_dash = KEY_Z,   \
+    .key_block = KEY_X   \
 }
 
 /* Player 2: Arrow keys + Q/E attacks */
@@ -36,7 +40,9 @@ typedef struct {
     .key_right = KEY_RIGHT, \
     .key_atk1  = KEY_M,     \
     .key_atk2  = KEY_K,      \
-    .key_atkp = KEY_L     \
+    .key_atkp = KEY_L,     \
+    .key_dash = KEY_N,       \
+    .key_block = KEY_J      \
 }
 
 #endif

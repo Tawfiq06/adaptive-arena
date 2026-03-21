@@ -2,8 +2,9 @@
 #define PROJECTILE_H
 #include "entity.h"
 
+#include "player.h"
+
 #define PROJECTILE_SPEED 4
-#define PROJECTILE_DAMAGE 10
 
 void projectile_update(Entity *e, int cur_buf);
 void projectile_draw(Entity *e);

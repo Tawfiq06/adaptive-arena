@@ -72,7 +72,8 @@ void update_game(int cur_buf){
                     if(!target->active) continue;
                     if(target->type != ENTITY_PLAYER) continue;
                     if (target->dying) continue;
-
+                    if(target->blocking) continue;
+                    
                     if(target->hitbox_x + target->hitbox_w >= weapon_x 
                         && target->hitbox_x <= weapon_x + weapon_length 
                         && target->hitbox_y + target->hitbox_h >= weapon_y 
@@ -102,12 +103,13 @@ void update_game(int cur_buf){
                 if(!target->active) continue;
                 if(target->type != ENTITY_PLAYER) continue;
                 if(target->dying) continue;
+                if(target->blocking) continue; //cant take damage
                 //attacker is the arrow (projectile) target is the player
                 if(attacker->hitbox_x + attacker->hitbox_w >= target->hitbox_x &&
                    attacker->hitbox_x <= target->hitbox_x + target->hitbox_w &&
                    attacker->hitbox_y + attacker->hitbox_h >= target->hitbox_y &&
                    attacker->hitbox_y <= target->hitbox_y + target->hitbox_h){
-                    
+
                     target->was_hit = 1;
                     target->damage = PROJECTILE_DAMAGE;
 

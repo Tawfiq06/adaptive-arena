@@ -130,6 +130,7 @@ void clear_screen();
 void draw_line(int x0, int y0, int x1, int y1, short int colour);
 void wait_for_vsync();
 void draw_rect(int x, int y, int width, int height, short colour);
+void draw_rect_outline(int x, int y, int width, int height, short colour);
 void fill_screen(short colour);
 
 
@@ -253,6 +254,27 @@ void wait_for_vsync() {
     *pixel_ctrl_ptr = 1;                  // request swap
     while (*(pixel_ctrl_ptr + 3) & 0x1);  // wait for S bit to go to
     pixel_buffer_start = *(pixel_ctrl_ptr + 1);//update start
+}
+
+void draw_rect_outline(int x, int y, int width, int height, short colour){
+    int x_end = x + width - 1; // Subtract 1 to stay within the width/height
+    int y_end = y + height - 1;
+
+    // Boundary clipping
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x_end >= SCREEN_WIDTH) x_end = SCREEN_WIDTH - 1;
+    if (y_end >= SCREEN_HEIGHT) y_end = SCREEN_HEIGHT - 1;
+    
+    for(int row = y; row <= y_end; row++){
+        volatile short *row_ptr = (volatile short*)(pixel_buffer_start + (row << 10));
+        for(int col = x; col <= x_end; col++){
+            // Only draw if we are on one of the four edges
+            if (row == y || row == y_end || col == x || col == x_end) {
+                row_ptr[col] = colour;
+            }
+        }
+    }
 }
 
 
@@ -585,7 +607,11 @@ const short water_bright_sprite[TILE_W * TILE_H] = {
 #define OLD_PLAYER_W 16
 #define OLD_PLAYER_H 16
 
+#define WOOD_SHIELD_W  14
+#define WOOD_SHIELD_H  16
+
 const short player_sprite[OLD_PLAYER_W * OLD_PLAYER_H];
+/* removed fwd decl: static const short wood_shield[WOOD_SHIELD_W * WOOD_SHIELD_H]; */
 
 
 /* ===========================================================================
@@ -613,6 +639,23 @@ const short player_sprite[OLD_PLAYER_W * OLD_PLAYER_H] = {
     SP(0xF81F),SP(0xF81F),SP(0xF81F),SP(0xF81F),SP(0xF81F),SP(0xFFFF),SP(0xFFFF),SP(0xFFFF),SP(0xFFFF),SP(0xFFFF),SP(0xFFFF),SP(0xF81F),SP(0xF81F),SP(0xF81F),SP(0xF81F),SP(0xF81F),
 };
 #undef SP
+
+const short wood_shield[224] = {
+    0x4141,0x4141,0x4141,0x4141,0x4141,0x4141,0x4141,0x4141,0x4141,0x4141,0x4141,0x4141,0x4141,0x4141,0x4141,0xF52D,
+    0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0x10A2,0x4141,0xF52D,0x4141,0x4141,
+    0x4141,0x4141,0x4141,0x7A44,0x7A44,0x7A44,0x7A44,0x7A44,0xF52D,0x10A2,0x4141,0xF52D,0x4141,0x4141,0xB387,0xB387,
+    0x4141,0xB387,0xB387,0x7A44,0xB387,0xB387,0xF52D,0x10A2,0x4141,0xF52D,0x4141,0x4141,0xB387,0xB387,0x7A44,0xB387,
+    0xB387,0x7A44,0xB387,0xB387,0xF52D,0x10A2,0x4141,0xF52D,0x7A44,0x7A44,0xB387,0xB387,0x7A44,0xB387,0xB387,0x7A44,
+    0xB387,0xB387,0xF52D,0x10A2,0x4141,0xF52D,0x4141,0x4141,0xB387,0xB387,0x7A44,0xB387,0xB387,0x7A44,0xB387,0xB387,
+    0xF52D,0x10A2,0x4141,0xF52D,0x7A44,0x7A44,0xB387,0xB387,0x7A44,0xB387,0xB387,0x7A44,0xB387,0xB387,0xF52D,0x10A2,
+    0x4141,0xF52D,0x7A44,0x7A44,0xB387,0xB387,0x7A44,0xB387,0xB387,0x7A44,0xB387,0xB387,0xF52D,0x10A2,0x4141,0xF52D,
+    0x7A44,0x7A44,0xB387,0xB387,0x7A44,0xB387,0xB387,0x7A44,0xB387,0xB387,0xF52D,0x10A2,0x4141,0xF52D,0x7A44,0x7A44,
+    0xB387,0xB387,0x7A44,0xB387,0xB387,0x7A44,0xB387,0xB387,0xF52D,0x10A2,0x4141,0xF52D,0x7A44,0x7A44,0xB387,0xB387,
+    0x7A44,0xB387,0xB387,0x4141,0xB387,0xB387,0xF52D,0x10A2,0x4141,0xF52D,0xF52D,0x7A44,0xB387,0xB387,0x7A44,0xB387,
+    0xB387,0x4141,0xB387,0xF52D,0xF52D,0x10A2,0xF81F,0x4141,0xF52D,0xF52D,0xB387,0xB387,0x7A44,0xB387,0xB387,0x4141,
+    0xF52D,0xF52D,0x10A2,0xF81F,0xF81F,0xF81F,0x4141,0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0x10A2,
+    0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0x4141,0x4141,0x10A2,0x10A2,0x10A2,0x10A2,0x10A2,0x10A2,0xF81F,0xF81F,0xF81F,
+};
 
 
 /* ===========================================================================
@@ -4288,22 +4331,25 @@ const short arrow_sprite[140] = {
 //this will be used to determine if we should not draw that pixel
 #define TRANSPARENT 0xF81F //magenta
 
-#define SPRITE_COUNT 7
+#define SPRITE_COUNT 8
 typedef enum {
     //Player
-    SPRITE_PLAYER = 0,
+    SPRITE_PLAYER,
 
     //Enemies
-    SPRITE_ENEMY = 1,
+    SPRITE_ENEMY,
 
     //Projectiles
-    SPRITE_PROJECTILE = 2,
+    SPRITE_PROJECTILE,
 
     //Background tiles
-    SPRITE_TILE_GRASS = 3,
-    SPRITE_TILE_DIRT  = 4,
-    SPRITE_TILE_STONE = 5,
-    SPRITE_TILE_WATER = 6
+    SPRITE_TILE_GRASS,
+    SPRITE_TILE_DIRT,
+    SPRITE_TILE_STONE,
+
+    SPRITE_TILE_WATER,
+
+    SPRITE_WOOD_SHIELD
 } SpriteID;
 
 typedef struct{
@@ -4333,6 +4379,7 @@ Sprite sprites[SPRITE_COUNT] = {
     [SPRITE_TILE_DIRT]  = {TILE_W,   TILE_H,   dirt_sprite},
     [SPRITE_TILE_STONE] = {TILE_W,   TILE_H,   stone_sprite},
     [SPRITE_TILE_WATER] = {TILE_W,   TILE_H,   water_sprite},
+    [SPRITE_WOOD_SHIELD] = {WOOD_SHIELD_W, WOOD_SHIELD_H, wood_shield}
 };
 
 
@@ -4531,6 +4578,8 @@ typedef struct {
     unsigned char key_atk1;
     unsigned char key_atk2;
     unsigned char key_atkp;
+    unsigned char key_dash;
+    unsigned char key_block;
 } PlayerConfig;
 
 /* Player 1: WASD + Z/X attacks */
@@ -4541,7 +4590,9 @@ typedef struct {
     .key_right = KEY_D,     \
     .key_atk1  = KEY_Q,     \
     .key_atk2  = KEY_E,      \
-    .key_atkp = KEY_R   \
+    .key_atkp = KEY_R,   \
+    .key_dash = KEY_Z,   \
+    .key_block = KEY_X   \
 }
 
 /* Player 2: Arrow keys + Q/E attacks */
@@ -4552,7 +4603,9 @@ typedef struct {
     .key_right = KEY_RIGHT, \
     .key_atk1  = KEY_M,     \
     .key_atk2  = KEY_K,      \
-    .key_atkp = KEY_L     \
+    .key_atkp = KEY_L,     \
+    .key_dash = KEY_N,       \
+    .key_block = KEY_J      \
 }
 
 
@@ -4620,9 +4673,20 @@ typedef struct{
     int pending_erase_b1; //to check both buffers for pending
     int pending_erase_b2;
 
-    //cooldowns (number of frames)
+    /* cooldowns (number of frames) */
+    int atk1_cooldown;
+    int atk2_cooldown;
+
     int shoot_cooldown;
     int arrow_fired;
+
+    int dash_cooldown;
+    int dash_timer;
+    int is_dashing; //use to check if speed needs to be *2
+
+    int block_cooldown;
+    int block_timer;
+    int blocking;
 
     struct Entity* owner;
 
@@ -4666,6 +4730,17 @@ Entity* spawn_entity(EntityType type){
             entities[i].shoot_cooldown = 0;
             entities[i].arrow_fired = 0;
             entities[i].owner = NULL;
+
+            entities[i].atk1_cooldown = 0;
+            entities[i].atk2_cooldown = 0;
+
+            entities[i].blocking = 0;
+            entities[i].block_cooldown = 0;
+            entities[i].block_timer = 0;
+
+            entities[i].dash_cooldown = 0;
+            entities[i].dash_timer = 0;
+            entities[i].is_dashing = 0;
             return &entities[i];
         }
     }
@@ -4752,12 +4827,27 @@ void entity_erase_all(int cur_buf){
 
 #define HEALTH 100
 #define PLAYER_SPEED 2
-#define PLAYER_HITBOX_OFFSET_X 10
+#define PLAYER_HITBOX_OFFSET_X 7
 #define PLAYER_HITBOX_OFFSET_Y 8
+#define PLAYER_HITBOX_W 13
+#define PLAYER_HITBOX_H 18
 #define PLAYER_W SOLDIER_W
 #define PLAYER_H SOLDIER_H
+
 #define ATTACK_1_DAMAGE 10
-#define ATTACK_2_DAMAGE 15
+#define ATK1_COOLDOWN 20
+
+#define ATTACK_2_DAMAGE 18
+#define ATK2_COOLDOWN 30
+
+#define PROJECTILE_DAMAGE 12
+#define SHOOT_COOLDOWN 45
+
+#define DASH_COOLDOWN 60
+#define DASH_TIMER 15
+
+#define BLOCK_COOLDOWN 30
+#define BLOCK_TIMER 15
 
 /* #include "entity.h" -- merged */
 /* #include "sprite.h" -- merged */
@@ -4775,8 +4865,8 @@ void player_draw(const Entity *p);
 /* #include "vga.h" -- merged */
 /* #include "keyboard.h" -- merged */
 /* #include "animator.h" -- merged */
-
-#define SHOOT_COOLDOWN 30
+/* #include "renderer.h" -- merged */
+/* #include "map.h" -- merged */
 
 void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg, int start_x, int flip){
     p->player_cfg = cfg; //not needed at init
@@ -4796,8 +4886,8 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
     p->hitbox_x = p->x + PLAYER_HITBOX_OFFSET_X;
     p->hitbox_y = p->y + PLAYER_HITBOX_OFFSET_Y;
 
-    p->hitbox_w = 20;
-    p->hitbox_h = 18;
+    p->hitbox_w = PLAYER_HITBOX_W;
+    p->hitbox_h = PLAYER_HITBOX_H;
 
     p->sprite_id = (int)sprite;
     p->colour = _colour; //white
@@ -4826,6 +4916,17 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
     p->pending_erase = 0;
     p->shoot_cooldown = 0;
     p->arrow_fired = 0;
+
+    p->atk1_cooldown = 0;
+    p->atk2_cooldown = 0;
+
+    p->dash_cooldown = 0;
+    p->dash_timer = 0;
+    p->is_dashing = 0;
+
+    p->block_cooldown = 0;
+    p->block_timer = 0;
+    p->blocking = 0;
 }
 
 void player_update(Entity *p, int cur_buf){
@@ -4857,7 +4958,6 @@ void player_update(Entity *p, int cur_buf){
         }
         else{
             anim_play(&p->anim, p->anim_def, SOLDIER_HURT);
-
         }
         return;
     }
@@ -4865,7 +4965,7 @@ void player_update(Entity *p, int cur_buf){
     /* 4. Locked if you shouldnt be able to move during the animation*/
     int locked = (p->anim.anim == SOLDIER_ATK1 ||
                   p->anim.anim == SOLDIER_ATK2 ||
-                  p->anim.anim == SOLDIER_ATK3 ||
+                  //p->anim.anim == SOLDIER_ATK3 ||
                   p->anim.anim == SOLDIER_HURT  ||
                   p->anim.anim == SOLDIER_DEATH);
 
@@ -4885,21 +4985,40 @@ void player_update(Entity *p, int cur_buf){
 
     if (locked) return;
 
-    /* Attack input (takes priority over movement) */
-    const PlayerConfig *cfg = p->player_cfg;
-    if (key_pressed(cfg->key_atk1)) {
-        anim_play(&p->anim, p->anim_def, SOLDIER_ATK1);
-        p->attack_s1 = 1;
-        return;
+    /* Handle cooldowns*/
+    if(p->atk1_cooldown > 0){
+        p->atk1_cooldown--;
     }
-    if (key_pressed(cfg->key_atk2)) {
-        anim_play(&p->anim, p->anim_def, SOLDIER_ATK2);
-        p->attack_s2 = 1;
-        return;
+
+    if(p->atk2_cooldown > 0){
+        p->atk2_cooldown--;
     }
 
     if(p->shoot_cooldown > 0){
         p->shoot_cooldown--;
+    }
+
+    if(p->dash_cooldown > 0 && !p->is_dashing){
+        p->dash_cooldown--;
+    }
+
+    if(p->block_cooldown > 0 && !p->blocking){
+        p->block_cooldown--;
+    }
+
+    /* Attack input (takes priority over movement) */
+    const PlayerConfig *cfg = p->player_cfg;
+    if (key_pressed(cfg->key_atk1) && p->atk1_cooldown == 0) {
+        anim_play(&p->anim, p->anim_def, SOLDIER_ATK1);
+        p->atk1_cooldown = ATK1_COOLDOWN;
+        p->attack_s1 = 1;
+        return;
+    }
+    if (key_pressed(cfg->key_atk2) && p->atk2_cooldown == 0) {
+        anim_play(&p->anim, p->anim_def, SOLDIER_ATK2);
+        p->atk2_cooldown = ATK2_COOLDOWN;
+        p->attack_s2 = 1;
+        return;
     }
 
     if (key_pressed(cfg->key_atkp) && p->shoot_cooldown == 0){
@@ -4909,32 +5028,83 @@ void player_update(Entity *p, int cur_buf){
         return;
     }
 
-    /* Movement */
-    p->dx = 0;
-    p->dy = 0;
+    if(key_pressed(cfg->key_dash) && p->dash_cooldown == 0){
+        p->dash_cooldown = DASH_COOLDOWN;
+        p->is_dashing = 1;
+        p->dash_timer = DASH_TIMER;
+    }
 
-    if (key_pressed(p->player_cfg->key_up)) {
+    if(key_pressed(cfg->key_block) && p->block_cooldown == 0){
+        p->block_cooldown = BLOCK_COOLDOWN;
+        p->blocking = 1;
+        p->block_timer = BLOCK_TIMER;
+    }
+
+    /* Movement */
+    if(!p->is_dashing){
+        p->dx = 0;
+        p->dy = 0;
+    }
+
+    if (!p->is_dashing && key_pressed(p->player_cfg->key_up)) {
         p->dy = -PLAYER_SPEED;
        // p->facing = 'n';
     }
-    if(key_pressed(p->player_cfg->key_down)){
+    if(!p->is_dashing && key_pressed(p->player_cfg->key_down)){
         p->dy = PLAYER_SPEED;
       //  p->facing = 's';
     }
-    if (key_pressed(p->player_cfg->key_left))  { 
+    if (!p->is_dashing && key_pressed(p->player_cfg->key_left))  { 
         p->dx = -PLAYER_SPEED;
         p->facing = 'w'; 
         p->anim.flip = 1;
     }
-    if (key_pressed(p->player_cfg->key_right)) { 
+    if (!p->is_dashing && key_pressed(p->player_cfg->key_right)) { 
         p->dx =  PLAYER_SPEED; 
         p->facing = 'e'; 
         p->anim.flip = 0;
     }
 
+    //half player movement while bow is drawn
+    if(p->anim.anim == SOLDIER_ATK3 && !p->arrow_fired){
+        p->dx = p->dx >> 1;
+        p->dy = p->dy >> 1;
+    }
+    if(p->anim.anim == SOLDIER_ATK3 && p->arrow_fired){
+        p->dx = p->dx << 1;
+        p->dy = p->dy << 1;
+    }
+
+    if(p->is_dashing && p->dash_timer == DASH_TIMER){
+        p->dx = p->dx << 1;
+        p->dy = p->dy << 1;
+    }
+    if(p->is_dashing){
+        p->dash_timer--;
+        if(p->dash_timer == 0){
+            p->is_dashing = 0;
+            p->dx = p->dx >> 1;
+            p->dy = p->dy >> 1;
+        }
+    }
+
+    if(p->blocking){
+        p->dx = p->dx >> 1;
+        p->dy = p->dy >> 1;
+        p->block_timer--;
+    }
+    if(p->blocking && p->block_timer == 0){
+        p->dx = p->dx << 1;
+        p->dy = p->dy << 1;
+        p->blocking = 0;
+    }
+
     //Check if we should play idle animation
-    int moving = (p->dx != 0 || p->dy != 0);
-    anim_play(&p->anim, p->anim_def, moving ? SOLDIER_WALK : SOLIDER_IDLE);
+    
+    if(p->anim.anim != SOLDIER_ATK3){
+        int moving = (p->dx != 0 || p->dy != 0);
+        anim_play(&p->anim, p->anim_def, moving ? SOLDIER_WALK : SOLIDER_IDLE);
+    }
 
     p->x += p->dx;
     p->y += p->dy;
@@ -4967,6 +5137,16 @@ void player_update(Entity *p, int cur_buf){
 
 void player_draw(const Entity *p){
     draw_soldier(&p->anim, p->x, p->y);
+    if(p->blocking){
+        int flip_h = 0;
+        int x_off = 0;
+        if(p->facing == 'w'){
+            flip_h = 1;
+            int x_off = -1;
+        }
+        draw_sprite(&sprites[SPRITE_WOOD_SHIELD], p->hitbox_x + x_off, p->hitbox_y + 2, flip_h, 0);
+    }
+    draw_rect_outline(p->hitbox_x, p->hitbox_y, p->hitbox_w, p->hitbox_h, 0x0000);
 }
 
 
@@ -4998,8 +5178,9 @@ void enemy_draw(Entity *e){
  * =========================================================================*/
 /* #include "entity.h" -- merged */
 
+/* #include "player.h" -- merged */
+
 #define PROJECTILE_SPEED 4
-#define PROJECTILE_DAMAGE 10
 
 void projectile_update(Entity *e, int cur_buf);
 void projectile_draw(Entity *e);
@@ -5584,7 +5765,8 @@ void update_game(int cur_buf){
                     if(!target->active) continue;
                     if(target->type != ENTITY_PLAYER) continue;
                     if (target->dying) continue;
-
+                    if(target->blocking) continue;
+                    
                     if(target->hitbox_x + target->hitbox_w >= weapon_x 
                         && target->hitbox_x <= weapon_x + weapon_length 
                         && target->hitbox_y + target->hitbox_h >= weapon_y 
@@ -5614,12 +5796,13 @@ void update_game(int cur_buf){
                 if(!target->active) continue;
                 if(target->type != ENTITY_PLAYER) continue;
                 if(target->dying) continue;
+                if(target->blocking) continue; //cant take damage
                 //attacker is the arrow (projectile) target is the player
                 if(attacker->hitbox_x + attacker->hitbox_w >= target->hitbox_x &&
                    attacker->hitbox_x <= target->hitbox_x + target->hitbox_w &&
                    attacker->hitbox_y + attacker->hitbox_h >= target->hitbox_y &&
                    attacker->hitbox_y <= target->hitbox_y + target->hitbox_h){
-                    
+
                     target->was_hit = 1;
                     target->damage = PROJECTILE_DAMAGE;
 
