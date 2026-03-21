@@ -1,6 +1,40 @@
 #include "map.h"
 #include <string.h>
 
+const MapConfig MAP_CONFIGS[] = {
+    [0] = {0}, //unused
+
+    /*Map 1: wetland/meadow */
+    // - water patches, cattails, scattered trees
+    [1] = {
+        .tree_budget = 12,
+        .rock_budget = 4,
+        .small_budget = 6,
+        .cattail_budget = 8,
+        .fern_budget = 6,
+        .tree_cluster_size = 2,
+        .rock_cluster_size = 2,
+        .use_autumn_trees = 1,
+        .use_grey_rocks = 2,
+    },
+
+    /* Map 2: Stone map*/
+    // rock clusters, no water, no cattails
+    [2] = {
+        .tree_budget = 1,
+        .rock_budget = 20,
+        .bush_budget = 2,
+        .small_budget = 4,
+        .cattail_budget = 0,
+        .fern_budget = 0,
+        .tree_cluster_size = 1,
+        .rock_cluster_size = 5,
+        .use_autumn_trees = 0,
+        .use_grey_rocks = 1,
+    },
+
+};
+
 unsigned char current_map[MAP_HEIGHT][MAP_WIDTH];
 
 const unsigned char map_1[MAP_HEIGHT][MAP_WIDTH] = {

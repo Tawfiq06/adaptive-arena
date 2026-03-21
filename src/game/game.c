@@ -21,7 +21,7 @@ static int bg_drawn = 0; //draw full background once at startup
 
 void game_init(){
     map_init(1);
-    decoration_init();
+    decoration_init(1);
     obstacle_map_init();
     /*Spawn Player 1*/
     //on the left, faces right
@@ -154,4 +154,5 @@ void draw_game(int cur_buf){
     /* Erase each entity first */
     entity_erase_all(cur_buf);
     entity_draw_all();
+    decoration_draw_canopies();
 }

@@ -15,25 +15,9 @@ static int deco_is_solid(int deco_type) {
         case DECO_ROCK_MED_GREY:
         case DECO_TREE_GREEN_A:
         case DECO_TREE_GREEN_B:
-        case DECO_TREE_AUTUMN_A:
-        case DECO_TREE_AUTUMN_B:
-        case DECO_STICK_TREE:
-            return 1;
-        default:
-            return 0;
-    }
-}
-
-static int deco_blocks_proj(int deco_type) {
-    /* Everything solid also blocks projectiles,
-       plus bushes (cover but not impassable) */
-    if (deco_is_solid(deco_type)) return 1;
-    switch (deco_type) {
-        case DECO_BUSH_GREEN_SM:
-        case DECO_BUSH_OLIVE_SM:
-        case DECO_BUSH_RED_SM:
-        case DECO_BUSH_GREEN_LG:
-        case DECO_BUSH_OLIVE_LG:
+        case DECO_AUTUMN_TREE_RED_MED:
+        case DECO_AUTUMN_TREE_YELLOW_MED:
+        case DECO_STICK_TREE_MED:
             return 1;
         default:
             return 0;
@@ -51,22 +35,24 @@ void obstacle_map_init(void) {
         for (int c = 0; c < MAP_WIDTH; c++) {
             SpriteID tile = map_get_tile(r, c);
             if (tile == SPRITE_TILE_WATER) {
-                obstacle_map[r][c] |= TILE_FLAG_SLOW | TILE_FLAG_NO_PROJ;
+                obstacle_map[r][c] |= TILE_FLAG_SLOW;
             }
         }
     }
 
-    /* 3. Stamp decoration-based flags using the existing deco_map */
-    for (int r = 0; r < MAP_HEIGHT; r++) {
-        for (int c = 0; c < MAP_WIDTH; c++) {
-            const DecoCell *cell = deco_map_get_cell(r, c);
-            for (int i = 0; i < cell->count; i++) {
-                int dtype = decorations[cell->indices[i]].type;
-                if (deco_is_solid(dtype))
-                    obstacle_map[r][c] |= TILE_FLAG_SOLID | TILE_FLAG_NO_PROJ;
-                else if (deco_blocks_proj(dtype))
-                    obstacle_map[r][c] |= TILE_FLAG_NO_PROJ;
-            }
+    /* 3. Stamp decoration-based flags — bottom row only for SOLID */
+    for (int i = 0; i < deco_count; i++) {
+        const Decoration *d   = &decorations[i];
+        const DecoType   *dt  = &DECO_LOOKUP[d->type];
+
+        /* Bottom row only — player walks "behind" the upper part */
+        int base_row  = (d->y + dt->h - 1) / TILE_H;
+        int col_left  = d->x / TILE_W;
+        int col_right = (d->x + dt->w - 1) / TILE_W;
+
+        if (deco_is_solid(d->type)) {
+            for (int c = col_left; c <= col_right; c++)
+                obstacle_map_set(base_row, c, TILE_FLAG_SOLID);
         }
     }
 }

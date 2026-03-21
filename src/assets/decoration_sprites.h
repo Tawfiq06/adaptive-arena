@@ -14,16 +14,26 @@ typedef enum {
     DECO_ROCK_SM_A_GREY,
     DECO_ROCK_SM_B_GREY, 
     DECO_ROCK_SM_C_GREY,
+
     DECO_BUSH_GREEN_SM, 
     DECO_BUSH_OLIVE_SM, 
     DECO_BUSH_RED_SM,
     DECO_BUSH_GREEN_LG,
     DECO_BUSH_OLIVE_LG, 
-    DECO_STICK_TREE,
-    DECO_FLOWER_PURPLE, DECO_PLANT_TALL, 
+
+    DECO_STICK_TREE_MED,
+    DECO_FLOWER_PURPLE,
+
     DECO_TREE_GREEN_A,
     DECO_GREEN_PLANT_TREE_A,
-    DECO_TREE_GREEN_B, DECO_TREE_AUTUMN_A, DECO_TREE_AUTUMN_B,
+
+    DECO_AUTUMN_TREE_RED_MED, DECO_AUTUMN_TREE_RED_SM,
+    DECO_AUTUMN_TREE_YELLOW_MED, DECO_AUTUMN_TREE_YELLOW_SM,
+
+    DECO_TREE_GREEN_B,
+
+    DECO_CATTAIL_GREEN_LG, DECO_CATTAIL_GREEN_MED, DECO_CATTAIL_GREEN_SM,
+    DECO_FERN_GREEN_LG, DECO_FERN_GREEN_MED,
     DECO_COUNT
 } DecoID;
 
@@ -73,12 +83,12 @@ static const DecoType DECO_LOOKUP[DECO_COUNT];
 
 #define BUSH_OLIVE_LG_W  30
 #define BUSH_OLIVE_LG_H  43
-#define STICK_TREE_W  34
-#define STICK_TREE_H  47
+
+#define STICK_TREE_MED_W  26
+#define STICK_TREE_MED_H  47
+
 #define FLOWER_PURPLE_W  26
 #define FLOWER_PURPLE_H  31
-#define PLANT_TALL_W  47
-#define PLANT_TALL_H  28
 
 #define TREE_GREEN_A_W  29
 #define TREE_GREEN_A_H  47
@@ -89,10 +99,27 @@ static const DecoType DECO_LOOKUP[DECO_COUNT];
 #define TREE_GREEN_B_W  36
 #define TREE_GREEN_B_H  76
 
-#define TREE_AUTUMN_A_W  29
-#define TREE_AUTUMN_A_H  95
-#define TREE_AUTUMN_B_W  29
-#define TREE_AUTUMN_B_H  79
+#define AUTUMN_TREE_RED_MED_W  32
+#define AUTUMN_TREE_RED_MED_H  62
+#define AUTUMN_TREE_RED_SM_W  16
+#define AUTUMN_TREE_RED_SM_H  32
+
+#define AUTUMN_TREE_YELLOW_MED_W  32
+#define AUTUMN_TREE_YELLOW_MED_H  62
+#define AUTUMN_TREE_YELLOW_SM_W  16
+#define AUTUMN_TREE_YELLOW_SM_H  32
+
+#define CATTAIL_GREEN_LG_W  16
+#define CATTAIL_GREEN_LG_H  26
+#define CATTAIL_GREEN_MED_W  15
+#define CATTAIL_GREEN_MED_H  26
+#define CATTAIL_GREEN_SM_W  9
+#define CATTAIL_GREEN_SM_H  16
+
+#define FERN_GREEN_LG_W  16
+#define FERN_GREEN_LG_H  22
+#define FERN_GREEN_MED_W  14
+#define FERN_GREEN_MED_H  15
 
 static const short rock_big_brown[ROCK_BIG_BROWN_W * ROCK_BIG_BROWN_W];
 static const short rock_med_brown[ROCK_MED_BROWN_W * ROCK_MED_BROWN_H];
@@ -113,15 +140,24 @@ static const short bush_red_sm[BUSH_RED_SM_W * BUSH_RED_SM_H];
 static const short bush_green_lg[BUSH_GREEN_LG_W * BUSH_GREEN_LG_H];
 static const short bush_olive_lg[BUSH_OLIVE_LG_W * BUSH_OLIVE_LG_H];
 
-static const short stick_tree[1598];
+static const short stick_tree_med[STICK_TREE_MED_W * STICK_TREE_MED_H];
+
 static const short flower_purple[806];
-static const short plant_tall[1316];
 
 static const short tree_green_a[TREE_GREEN_A_W * TREE_GREEN_A_H];
 static const short green_plant_tree_a[GREEN_PLANT_TREE_A_H * GREEN_PLANT_TREE_A_W];
 static const short tree_green_b[TREE_GREEN_B_W * TREE_GREEN_B_H];
 
-static const short tree_autumn_a[2755];
-static const short tree_autumn_b[2291];
+static const short autumn_tree_red_med[AUTUMN_TREE_RED_MED_W * AUTUMN_TREE_RED_MED_H];
+static const short autumn_tree_red_sm[AUTUMN_TREE_RED_SM_W * AUTUMN_TREE_RED_SM_H];
 
+static const short autumn_tree_yellow_med[AUTUMN_TREE_YELLOW_MED_W * AUTUMN_TREE_YELLOW_MED_H];
+static const short autumn_tree_yellow_sm[AUTUMN_TREE_YELLOW_SM_W * AUTUMN_TREE_YELLOW_SM_H];
+
+static const short cattail_green_lg[CATTAIL_GREEN_LG_W * CATTAIL_GREEN_LG_H];
+static const short cattail_green_med[CATTAIL_GREEN_MED_W * CATTAIL_GREEN_MED_H];
+static const short cattail_green_sm[CATTAIL_GREEN_SM_W * CATTAIL_GREEN_SM_H];
+
+static const short fern_green_lg[FERN_GREEN_LG_W * FERN_GREEN_LG_H];
+static const short fern_green_med[FERN_GREEN_MED_W * FERN_GREEN_MED_H];
 #endif

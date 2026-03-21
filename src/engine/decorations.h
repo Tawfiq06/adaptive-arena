@@ -3,7 +3,7 @@
 
 #include "decoration_sprites.h"
 
-#define MAX_DECORATIONS 15
+#define MAX_DECORATIONS 30
 #define DECO_CELL_CAP 4
 
 typedef struct{
@@ -22,6 +22,7 @@ typedef struct{
 extern Decoration decorations[MAX_DECORATIONS];
 const DecoCell *deco_map_get_cell(int row, int col);
 
-void decoration_init(void);
+void decoration_init(int map_index);
 void decoration_redraw_region(int row0, int col0, int row1, int col1);
+void decoration_draw_canopies(void);
 #endif

@@ -5,6 +5,8 @@
 #include "renderer.h"
 #include "map.h"
 #include "obstacle_map.h"
+#include "decorations.h"
+#include "tile_sprites.h"
 
 void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg, int start_x, int flip){
     p->player_cfg = cfg; //not needed at init
@@ -146,23 +148,24 @@ void player_update(Entity *p, int cur_buf){
 
     /* Attack input (takes priority over movement) */
     const PlayerConfig *cfg = p->player_cfg;
-    if (key_pressed(cfg->key_atk1) && p->atk1_cooldown == 0) {
+    if (key_pressed(cfg->key_atk1) && p->atk1_cooldown == 0 && p->anim.anim != SOLDIER_ATK1) {
         anim_play(&p->anim, p->anim_def, SOLDIER_ATK1);
         p->atk1_cooldown = ATK1_COOLDOWN;
         p->attack_s1 = 1;
         return;
     }
-    if (key_pressed(cfg->key_atk2) && p->atk2_cooldown == 0) {
+    if (key_pressed(cfg->key_atk2) && p->atk2_cooldown == 0 && p->anim.anim != SOLDIER_ATK2) {
         anim_play(&p->anim, p->anim_def, SOLDIER_ATK2);
         p->atk2_cooldown = ATK2_COOLDOWN;
         p->attack_s2 = 1;
         return;
     }
 
-    if (key_pressed(cfg->key_atkp) && p->shoot_cooldown == 0){
+    if (key_pressed(cfg->key_atkp) && p->shoot_cooldown == 0 && p->anim.anim != SOLDIER_ATK3){
         anim_play(&p->anim, p->anim_def, SOLDIER_ATK3);
         p->shoot_cooldown = SHOOT_COOLDOWN;
         p->arrow_fired = 0;
+        p->attack_p = 0;
         return;
     }
 
@@ -237,25 +240,77 @@ void player_update(Entity *p, int cur_buf){
         p->blocking = 0;
     }
 
-    // Sample both bottom corners + center for robustness
+    //check for colisions with decor
     int feet_y  = p->hitbox_y + p->hitbox_h;
     int left_x  = p->hitbox_x;
     int right_x = p->hitbox_x + p->hitbox_w - 1;
     int mid_x   = p->hitbox_x + (p->hitbox_w >> 1);
 
     if (p->dx != 0) {
-        int nx = (p->dx > 0) ? right_x + p->dx : left_x + p->dx;
-        if ((obstacle_map_at_pixel(nx, feet_y)     & TILE_FLAG_SOLID) ||
-            (obstacle_map_at_pixel(nx, feet_y - 1) & TILE_FLAG_SOLID)) {
-            p->dx = 0;
+    int nx = (p->dx > 0) ? p->hitbox_x + p->hitbox_w + p->dx : p->hitbox_x + p->dx;
+    int row = (p->hitbox_y + p->hitbox_h - 1) / TILE_H;
+    int col = nx / TILE_W;
+
+        if (obstacle_map_get(row, col) & TILE_FLAG_SOLID) {
+            /* Tile is flagged, now check against decorations in that cell */
+            const DecoCell *cell = deco_map_get_cell(row, col);
+            int blocked = 0;
+            for (int i = 0; i < cell->count; i++) {
+                int idx = cell->indices[i];
+                if (!deco_is_solid(decorations[idx].type)) continue;
+                const DecoType *dt = &DECO_LOOKUP[decorations[idx].type];
+
+                /* Base rect only — bottom 8px of the decoration */
+                int dx = decorations[idx].x;
+                int dy = decorations[idx].y + dt->h - 8;
+                int dw = dt->w;
+                int dh = 8;
+
+                int pl = p->hitbox_x + p->dx;
+                int pr = pl + p->hitbox_w - 1;
+                int pt = p->hitbox_y;
+                int pb = p->hitbox_y + p->hitbox_h - 1;
+
+                if (pr >= dx && pl <= dx + dw - 1 &&
+                    pb >= dy && pt <= dy + dh - 1) {
+                    blocked = 1;
+                    break;
+                }
+            }
+            if (blocked) p->dx = 0;
         }
     }
+
     if (p->dy != 0) {
-        int ny = feet_y + p->dy;
-        if ((obstacle_map_at_pixel(left_x,  ny) & TILE_FLAG_SOLID) ||
-            (obstacle_map_at_pixel(right_x, ny) & TILE_FLAG_SOLID) ||
-            (obstacle_map_at_pixel(mid_x,   ny) & TILE_FLAG_SOLID)) {
-            p->dy = 0;
+        int ny = (p->dy > 0) ? p->hitbox_y + p->hitbox_h + p->dy : p->hitbox_y + p->dy;
+        int row = ny / TILE_H;
+        int col = (p->hitbox_x + p->hitbox_w / 2) / TILE_W;
+
+        if (obstacle_map_get(row, col) & TILE_FLAG_SOLID) {
+            const DecoCell *cell = deco_map_get_cell(row, col);
+            int blocked = 0;
+            for (int i = 0; i < cell->count; i++) {
+                int idx = cell->indices[i];
+                if (!deco_is_solid(decorations[idx].type)) continue;
+                const DecoType *dt = &DECO_LOOKUP[decorations[idx].type];
+
+                int dx = decorations[idx].x;
+                int dy = decorations[idx].y + dt->h - 8;
+                int dw = dt->w;
+                int dh = 8;
+
+                int pl = p->hitbox_x;
+                int pr = pl + p->hitbox_w - 1;
+                int pt = p->hitbox_y + p->dy;
+                int pb = pt + p->hitbox_h - 1;
+
+                if (pr >= dx && pl <= dx + dw - 1 &&
+                    pb >= dy && pt <= dy + dh - 1) {
+                    blocked = 1;
+                    break;
+                }
+            }
+            if (blocked) p->dy = 0;
         }
     }
 
