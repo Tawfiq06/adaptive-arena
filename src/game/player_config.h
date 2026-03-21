@@ -25,7 +25,7 @@ typedef struct {
     .key_right = KEY_D,     \
     .key_atk1  = KEY_Q,     \
     .key_atk2  = KEY_E,      \
-    .key_atkp = KEY_ESC   \
+    .key_atkp = KEY_R   \
 }
 
 /* Player 2: Arrow keys + Q/E attacks */
@@ -34,9 +34,9 @@ typedef struct {
     .key_down  = KEY_DOWN,  \
     .key_left  = KEY_LEFT,  \
     .key_right = KEY_RIGHT, \
-    .key_atk1  = KEY_Z,     \
-    .key_atk2  = KEY_X,      \
-    .key_atkp = KEY_SPACE     \
+    .key_atk1  = KEY_M,     \
+    .key_atk2  = KEY_K,      \
+    .key_atkp = KEY_L     \
 }
 
 #endif

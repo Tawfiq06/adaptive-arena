@@ -84,7 +84,6 @@ void player_update(Entity *p, int cur_buf){
         }
         else{
             anim_play(&p->anim, p->anim_def, SOLDIER_HURT);
-
         }
         return;
     }

@@ -6,7 +6,9 @@
 
 #define PROJECTILE_HITBOX_OFFSET_X 0
 
-void projectile_init(Entity *e, SpriteID sprite, int x, int y, char facing){
+void projectile_init(Entity *e, Entity *owner, SpriteID sprite, int x, int y, char facing){
+    e->owner = owner;
+    
     e->x = x;
     e->y = y + (SOLDIER_H >> 2) - (PROJECTILE_H >> 2);
 

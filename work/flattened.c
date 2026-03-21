@@ -315,7 +315,7 @@ void timer_irq(){
 #define KEY_SPACE   0x29
 #define KEY_ESC     0x76
 #define KEY_LSHIFT  0x12
-#define KET_RSHIFT  0x59
+#define KEY_RSHIFT  0x59
 #define KEY_LCTRL   0x14
 #define KEY_CAPS    0x58
 #define KEY_ENTER   0x5A
@@ -4541,7 +4541,7 @@ typedef struct {
     .key_right = KEY_D,     \
     .key_atk1  = KEY_Q,     \
     .key_atk2  = KEY_E,      \
-    .key_atkp = KEY_ESC   \
+    .key_atkp = KEY_R   \
 }
 
 /* Player 2: Arrow keys + Q/E attacks */
@@ -4550,9 +4550,9 @@ typedef struct {
     .key_down  = KEY_DOWN,  \
     .key_left  = KEY_LEFT,  \
     .key_right = KEY_RIGHT, \
-    .key_atk1  = KEY_Z,     \
-    .key_atk2  = KEY_X,      \
-    .key_atkp = KEY_SPACE     \
+    .key_atk1  = KEY_M,     \
+    .key_atk2  = KEY_K,      \
+    .key_atkp = KEY_L     \
 }
 
 
@@ -4624,6 +4624,8 @@ typedef struct{
     int shoot_cooldown;
     int arrow_fired;
 
+    struct Entity* owner;
+
 } Entity;
 
 Entity entities[MAX_ENTITIES];
@@ -4663,6 +4665,7 @@ Entity* spawn_entity(EntityType type){
             entities[i].pending_erase_b2 = 0;
             entities[i].shoot_cooldown = 0;
             entities[i].arrow_fired = 0;
+            entities[i].owner = NULL;
             return &entities[i];
         }
     }
@@ -4996,10 +4999,11 @@ void enemy_draw(Entity *e){
 /* #include "entity.h" -- merged */
 
 #define PROJECTILE_SPEED 4
+#define PROJECTILE_DAMAGE 10
 
 void projectile_update(Entity *e, int cur_buf);
 void projectile_draw(Entity *e);
-void projectile_init(Entity *e, SpriteID sprite, int x, int y, char facing);
+void projectile_init(Entity *e, Entity *owner, SpriteID sprite, int x, int y, char facing);
 
 
 /* ===========================================================================
@@ -5013,7 +5017,9 @@ void projectile_init(Entity *e, SpriteID sprite, int x, int y, char facing);
 
 #define PROJECTILE_HITBOX_OFFSET_X 0
 
-void projectile_init(Entity *e, SpriteID sprite, int x, int y, char facing){
+void projectile_init(Entity *e, Entity *owner, SpriteID sprite, int x, int y, char facing){
+    e->owner = owner;
+    
     e->x = x;
     e->y = y + (SOLDIER_H >> 2) - (PROJECTILE_H >> 2);
 
@@ -5193,8 +5199,8 @@ void decoration_init(void){
     /* Max placement attempts before giving up on a budget category */
     const int MAX_ATTEMPTS = 500;
 
-    /* Helper: is this pixel position too close to an already-placed decoration? */
-    #define MIN_SPACING 12   /* pixels between decoration bounding boxes */
+    /* is this pixel position too close to an already-placed decoration? */
+    #define MIN_SPACING 12   //pixels between decoration bounding boxes
 
     /* ---- place trees first (they need the most clear space) ---- */
     for(int attempts = 0; attempts < MAX_ATTEMPTS && trees_placed < TREE_BUDGET; attempts++){
@@ -5217,12 +5223,13 @@ void decoration_init(void){
         if(py < 0) py = 0;
 
         /* Check tile under the BOTTOM of the sprite */
-        int bot_col = px            / TILE_W;
-        int bot_row = (py + info->h - 1) / TILE_H;
+        int bot_col = px >> 4;
+        int bot_row = (py + info->h - 1) >> 4;
+
         if(bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
         if(map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
 
-        /* Check spacing against already-placed decorations */
+        /* Check spacing against already placed decorations */
         int too_close = 0;
         for(int i = 0; i < deco_count; i++){
             const DecoType *other = &DECO_LOOKUP[decorations[i].type];
@@ -5259,8 +5266,9 @@ void decoration_init(void){
         if(px < 0) px = 0;
         if(py < 0) py = 0;
 
-        int bot_col = px            / TILE_W;
-        int bot_row = (py + info->h - 1) / TILE_H;
+        int bot_col = px >> 4;
+        int bot_row = (py + info->h - 1) >> 4;
+        
         if(bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
         if(map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
 
@@ -5300,8 +5308,9 @@ void decoration_init(void){
         if(px < 0) px = 0;
         if(py < 0) py = 0;
 
-        int bot_col = px            / TILE_W;
-        int bot_row = (py + info->h - 1) / TILE_H;
+        int bot_col = px >> 4;
+        int bot_row = (py + info->h - 1) >> 4;
+
         if(bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
         if(map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
 
@@ -5324,7 +5333,7 @@ void decoration_init(void){
     }
 
     #undef MIN_SPACING
-    
+
     //now build the map
     deco_map_build();
 }
@@ -5596,6 +5605,31 @@ void update_game(int cur_buf){
                 }
             }
         }
+        if (attacker->type == ENTITY_PROJECTILE && !attacker->pending_erase){
+            //check if its hitbox has hit a player
+            for(int j = 0; j < MAX_ENTITIES; j++){
+                if(j == i) continue;
+                Entity *target = &entities[j];
+                if(target == attacker->owner) continue; //this is the player that shot the arrow
+                if(!target->active) continue;
+                if(target->type != ENTITY_PLAYER) continue;
+                if(target->dying) continue;
+                //attacker is the arrow (projectile) target is the player
+                if(attacker->hitbox_x + attacker->hitbox_w >= target->hitbox_x &&
+                   attacker->hitbox_x <= target->hitbox_x + target->hitbox_w &&
+                   attacker->hitbox_y + attacker->hitbox_h >= target->hitbox_y &&
+                   attacker->hitbox_y <= target->hitbox_y + target->hitbox_h){
+                    
+                    target->was_hit = 1;
+                    target->damage = PROJECTILE_DAMAGE;
+
+                    //now need to erase projectile
+                    attacker->pending_erase = 1;
+                    attacker->pending_erase_b1 = 1;
+                    attacker->pending_erase_b2 = 1;
+                   }
+            }
+        }
     }
     entity_update_all(cur_buf);
 
@@ -5606,7 +5640,7 @@ void update_game(int cur_buf){
         if (p->attack_p){
             Entity *arrow = spawn_entity(ENTITY_PROJECTILE);
             if (arrow)
-                projectile_init(arrow, SPRITE_PROJECTILE,
+                projectile_init(arrow, p, SPRITE_PROJECTILE,
                                 p->hitbox_x, p->hitbox_y, p->facing);
             p->attack_p = 0;
         }

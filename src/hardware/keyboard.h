@@ -10,7 +10,7 @@
 #define KEY_SPACE   0x29
 #define KEY_ESC     0x76
 #define KEY_LSHIFT  0x12
-#define KET_RSHIFT  0x59
+#define KEY_RSHIFT  0x59
 #define KEY_LCTRL   0x14
 #define KEY_CAPS    0x58
 #define KEY_ENTER   0x5A

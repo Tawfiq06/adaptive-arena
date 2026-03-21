@@ -66,6 +66,8 @@ typedef struct{
     int shoot_cooldown;
     int arrow_fired;
 
+    struct Entity* owner;
+
 } Entity;
 
 extern Entity entities[MAX_ENTITIES];

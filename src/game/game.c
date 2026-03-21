@@ -93,6 +93,31 @@ void update_game(int cur_buf){
                 }
             }
         }
+        if (attacker->type == ENTITY_PROJECTILE && !attacker->pending_erase){
+            //check if its hitbox has hit a player
+            for(int j = 0; j < MAX_ENTITIES; j++){
+                if(j == i) continue;
+                Entity *target = &entities[j];
+                if(target == attacker->owner) continue; //this is the player that shot the arrow
+                if(!target->active) continue;
+                if(target->type != ENTITY_PLAYER) continue;
+                if(target->dying) continue;
+                //attacker is the arrow (projectile) target is the player
+                if(attacker->hitbox_x + attacker->hitbox_w >= target->hitbox_x &&
+                   attacker->hitbox_x <= target->hitbox_x + target->hitbox_w &&
+                   attacker->hitbox_y + attacker->hitbox_h >= target->hitbox_y &&
+                   attacker->hitbox_y <= target->hitbox_y + target->hitbox_h){
+                    
+                    target->was_hit = 1;
+                    target->damage = PROJECTILE_DAMAGE;
+
+                    //now need to erase projectile
+                    attacker->pending_erase = 1;
+                    attacker->pending_erase_b1 = 1;
+                    attacker->pending_erase_b2 = 1;
+                   }
+            }
+        }
     }
     entity_update_all(cur_buf);
 
@@ -103,7 +128,7 @@ void update_game(int cur_buf){
         if (p->attack_p){
             Entity *arrow = spawn_entity(ENTITY_PROJECTILE);
             if (arrow)
-                projectile_init(arrow, SPRITE_PROJECTILE,
+                projectile_init(arrow, p, SPRITE_PROJECTILE,
                                 p->hitbox_x, p->hitbox_y, p->facing);
             p->attack_p = 0;
         }

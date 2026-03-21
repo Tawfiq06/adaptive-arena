@@ -25,6 +25,7 @@ Entity* spawn_entity(EntityType type){
             entities[i].pending_erase_b2 = 0;
             entities[i].shoot_cooldown = 0;
             entities[i].arrow_fired = 0;
+            entities[i].owner = NULL;
             return &entities[i];
         }
     }
