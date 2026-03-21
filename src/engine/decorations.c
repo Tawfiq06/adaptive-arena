@@ -55,47 +55,175 @@ void deco_map_build(void){
 void decoration_init(void){
     deco_count = 0;
 
-    //map rools 0-19 to a specific type. -1 means no spawn
-    const int SPAWN_TABLE[22] = {
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, // Rocks (0-5)
-        10, 11, 12, 13, 14,            // Bushes (6-9)
-        13, 14,                 // Flowers/Plants (10-11)
-        12,                     // Stick (12)
-        15, 16, 17, 18, 19, 20, 21    // Trees (13-15)
+    /* Define catergoies*/
+    const int SMALL_TABLE[] = {
+        DECO_ROCK_MED_BROWN, DECO_ROCK_SM_A_BROWN, DECO_ROCK_SM_B_BROWN, DECO_ROCK_SM_C_BROWN,
+        DECO_ROCK_MED_GREY,  DECO_ROCK_SM_A_GREY,  DECO_ROCK_SM_B_GREY,  DECO_ROCK_SM_C_GREY,
+        DECO_FLOWER_PURPLE,  DECO_PLANT_TALL,
     };
 
-    while(deco_count < MAX_DECORATIONS){
-        //get random tile
-        int row = (rand() % MAP_WIDTH);
-        int col = (rand() % MAP_HEIGHT);
+    const int BUSH_TABLE[] = {
+        DECO_BUSH_GREEN_SM, DECO_BUSH_OLIVE_SM, DECO_BUSH_RED_SM,
+        DECO_BUSH_GREEN_LG, DECO_BUSH_OLIVE_LG,
+    };
 
-        if(map_get_tile(row, col) != SPRITE_TILE_GRASS){
-            continue; //if not grass no decor
-        }
+    const int TREE_TABLE[] = {
+        DECO_STICK_TREE,
+        DECO_TREE_GREEN_A, DECO_TREE_GREEN_B,
+        DECO_TREE_AUTUMN_A, DECO_TREE_AUTUMN_B,
+    };
 
-        int type = SPAWN_TABLE[rand() % 16];
+    const int SMALL_COUNT = 10;
+    const int BUSH_COUNT  =  5;
+    const int TREE_COUNT  =  5;
 
-        const DecoType* info = &DECO_LOOKUP[type];
+    /* decide how many of each */
+    const int TREE_BUDGET = 3;
+    const int BUSH_BUDGET = 5;
+    const int SMALL_BUDGET = MAX_DECORATIONS - TREE_BUDGET - BUSH_BUDGET;
 
-        //random offset
-        int px = (row * TILE_W) + (rand() % (TILE_W / 2));
-        int py = (col * TILE_H) + (rand() % (TILE_H / 2));
+    int trees_placed = 0;
+    int bushes_placed = 0;
+    int smalls_placed = 0;
 
-        if(px + info->w > SCREEN_WIDTH){
-            px = SCREEN_WIDTH - info->w;
+    /* Max placement attempts before giving up on a budget category */
+    const int MAX_ATTEMPTS = 500;
+
+    /* is this pixel position too close to an already-placed decoration? */
+    #define MIN_SPACING 12   //pixels between decoration bounding boxes
+
+    /* ---- place trees first (they need the most clear space) ---- */
+    for(int attempts = 0; attempts < MAX_ATTEMPTS && trees_placed < TREE_BUDGET; attempts++){
+        int row = 1 + (rand() % (MAP_HEIGHT - 2));  /* avoid border rows */
+        int col = 1 + (rand() % (MAP_WIDTH  - 2));  /* avoid border cols */
+
+        if(map_get_tile(row, col) != SPRITE_TILE_GRASS) continue;
+
+        int type = TREE_TABLE[rand() % TREE_COUNT];
+        const DecoType *info = &DECO_LOOKUP[type];
+
+        /* Place with a sub-tile random offset so trees don't always align to grid */
+        int px = col * TILE_W + (rand() % TILE_W);
+        int py = row * TILE_H + (rand() % (TILE_H / 2));
+
+        /* Clamp to screen */
+        if(px + info->w > SCREEN_WIDTH)  px = SCREEN_WIDTH  - info->w;
+        if(py + info->h > SCREEN_HEIGHT) py = SCREEN_HEIGHT - info->h;
+        if(px < 0) px = 0;
+        if(py < 0) py = 0;
+
+        /* Check tile under the BOTTOM of the sprite */
+        int bot_col = px >> 4;
+        int bot_row = (py + info->h - 1) >> 4;
+
+        if(bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
+        if(map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+
+        /* Check spacing against already placed decorations */
+        int too_close = 0;
+        for(int i = 0; i < deco_count; i++){
+            const DecoType *other = &DECO_LOOKUP[decorations[i].type];
+            int dx = decorations[i].x - px;
+            int dy = decorations[i].y - py;
+            if(dx < 0) dx = -dx;
+            if(dy < 0) dy = -dy;
+            if(dx < other->w + MIN_SPACING && dy < other->h + MIN_SPACING){
+                too_close = 1;
+                break;
+            }
         }
-        if(py + info->h > SCREEN_HEIGHT){
-            py = SCREEN_HEIGHT - info->h;
-        }
-        if(px < 0){
-            px = 0;
-        }
-        if(py < 0){
-            py = 0;
-        }
-        
+        if(too_close) continue;
+
         decorations[deco_count++] = (Decoration){ (short)px, (short)py, (unsigned char)type };
+        trees_placed++;
     }
+
+    /* ---- place bushes ---- */
+    for(int attempts = 0; attempts < MAX_ATTEMPTS && bushes_placed < BUSH_BUDGET; attempts++){
+        int row = 1 + (rand() % (MAP_HEIGHT - 2));
+        int col = 1 + (rand() % (MAP_WIDTH  - 2));
+
+        if(map_get_tile(row, col) != SPRITE_TILE_GRASS) continue;
+
+        int type = BUSH_TABLE[rand() % BUSH_COUNT];
+        const DecoType *info = &DECO_LOOKUP[type];
+
+        int px = col * TILE_W + (rand() % TILE_W);
+        int py = row * TILE_H + (rand() % (TILE_H / 2));
+
+        if(px + info->w > SCREEN_WIDTH)  px = SCREEN_WIDTH  - info->w;
+        if(py + info->h > SCREEN_HEIGHT) py = SCREEN_HEIGHT - info->h;
+        if(px < 0) px = 0;
+        if(py < 0) py = 0;
+
+        int bot_col = px >> 4;
+        int bot_row = (py + info->h - 1) >> 4;
+        
+        if(bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
+        if(map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+
+        int too_close = 0;
+        for(int i = 0; i < deco_count; i++){
+            const DecoType *other = &DECO_LOOKUP[decorations[i].type];
+            int dx = decorations[i].x - px;
+            int dy = decorations[i].y - py;
+            if(dx < 0) dx = -dx;
+            if(dy < 0) dy = -dy;
+            if(dx < other->w + MIN_SPACING && dy < other->h + MIN_SPACING){
+                too_close = 1;
+                break;
+            }
+        }
+        if(too_close) continue;
+
+        decorations[deco_count++] = (Decoration){ (short)px, (short)py, (unsigned char)type };
+        bushes_placed++;
+    }
+
+    /* ---- place small props (rocks, flowers) ---- */
+    for(int attempts = 0; attempts < MAX_ATTEMPTS && smalls_placed < SMALL_BUDGET; attempts++){
+        int row = 1 + (rand() % (MAP_HEIGHT - 2));
+        int col = 1 + (rand() % (MAP_WIDTH  - 2));
+
+        if(map_get_tile(row, col) != SPRITE_TILE_GRASS) continue;
+
+        int type = SMALL_TABLE[rand() % SMALL_COUNT];
+        const DecoType *info = &DECO_LOOKUP[type];
+
+        int px = col * TILE_W + (rand() % TILE_W);
+        int py = row * TILE_H + (rand() % TILE_H);  /* small props can sit anywhere in the tile */
+
+        if(px + info->w > SCREEN_WIDTH)  px = SCREEN_WIDTH  - info->w;
+        if(py + info->h > SCREEN_HEIGHT) py = SCREEN_HEIGHT - info->h;
+        if(px < 0) px = 0;
+        if(py < 0) py = 0;
+
+        int bot_col = px >> 4;
+        int bot_row = (py + info->h - 1) >> 4;
+
+        if(bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
+        if(map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+
+        int too_close = 0;
+        for(int i = 0; i < deco_count; i++){
+            const DecoType *other = &DECO_LOOKUP[decorations[i].type];
+            int dx = decorations[i].x - px;
+            int dy = decorations[i].y - py;
+            if(dx < 0) dx = -dx;
+            if(dy < 0) dy = -dy;
+            if(dx < other->w + MIN_SPACING && dy < other->h + MIN_SPACING){
+                too_close = 1;
+                break;
+            }
+        }
+        if(too_close) continue;
+
+        decorations[deco_count++] = (Decoration){ (short)px, (short)py, (unsigned char)type };
+        smalls_placed++;
+    }
+
+    #undef MIN_SPACING
+
     //now build the map
     deco_map_build();
 }
