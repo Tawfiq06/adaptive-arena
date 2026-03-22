@@ -84,6 +84,11 @@ int main(void){
     timer_init();
     game_init();
 
+    /*clear char_buf*/
+    volatile char *char_buf = (volatile char *)FPGA_CHAR_BASE;
+    for (int i = 0; i < 80 * 60; i++)
+        char_buf[i] = ' ';
+
     asm volatile("csrw mtvec, %0" : : "r"(exception_handler));
 
     asm volatile("csrs mstatus, %0" : : "r"(0x8));
@@ -93,7 +98,11 @@ int main(void){
 
         if(frame_flag){
             frame_flag = 0;
-            update_game(cur_buf);
+
+            if(game_winner == 0){
+                update_game(cur_buf);
+            }
+            
             draw_game(cur_buf);
             
             wait_for_vsync(); //display frame
