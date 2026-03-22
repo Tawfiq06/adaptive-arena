@@ -315,7 +315,7 @@ void player_update(Entity *p, int cur_buf){
     }
 
     // Slow tiles
-    if (obstacle_map_at_pixel(mid_x + p->dx, feet_y + p->dy) & TILE_FLAG_SLOW) {
+    if (!p->is_dashing && obstacle_map_at_pixel(mid_x + p->dx, feet_y + p->dy) & TILE_FLAG_SLOW) {
         p->dx /= 2;
         p->dy /= 2;
     }

@@ -23,6 +23,7 @@ typedef enum {
     SPRITE_TILE_SAND,
 
     SPRITE_WOOD_SHIELD,
+    SPRITE_LIFE_POT,
     SPRITE_COUNT
 } SpriteID;
 

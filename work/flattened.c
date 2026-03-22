@@ -612,8 +612,12 @@ const short water_bright_sprite[TILE_W * TILE_H] = {
 #define WOOD_SHIELD_W  14
 #define WOOD_SHIELD_H  16
 
+#define LIFE_POT_SPRITE_W  9
+#define LIFE_POT_SPRITE_H  11
+
 const short player_sprite[OLD_PLAYER_W * OLD_PLAYER_H];
 /* removed fwd decl: static const short wood_shield[WOOD_SHIELD_W * WOOD_SHIELD_H]; */
+/* removed fwd decl: static const short life_pot_sprite[LIFE_POT_SPRITE_W * LIFE_POT_SPRITE_H]; */
 
 
 /* ===========================================================================
@@ -657,6 +661,17 @@ const short wood_shield[224] = {
     0xB387,0x4141,0xB387,0xF52D,0xF52D,0x10A2,0xF81F,0x4141,0xF52D,0xF52D,0xB387,0xB387,0x7A44,0xB387,0xB387,0x4141,
     0xF52D,0xF52D,0x10A2,0xF81F,0xF81F,0xF81F,0x4141,0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0xF52D,0x10A2,
     0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0x4141,0x4141,0x10A2,0x10A2,0x10A2,0x10A2,0x10A2,0x10A2,0xF81F,0xF81F,0xF81F,
+};
+
+
+const short life_pot_sprite[99] = {
+    0xF81F,0xF81F,0x10C3,0x10C3,0x10C3,0x10C3,0x10C3,0xF81F,0xF81F,0xF81F,0x10C3,0xFD6B,0xFD6B,0xFD6B,0xFD6B,0xFD6B,
+    0x10C3,0xF81F,0x10C3,0xF75E,0xE367,0xE367,0xE367,0xE367,0xE367,0xF75E,0x10C3,0x10C3,0xF75E,0xF75E,0xF75E,0xF75E,
+    0xF75E,0xF75E,0xF75E,0x10C3,0xF81F,0x10C3,0xF75E,0xF81F,0xF81F,0xF81F,0xF75E,0x10C3,0xF81F,0x10C3,0xF75E,0xE367,
+    0xE367,0xF81F,0xE367,0xE367,0xF75E,0x10C3,0x10C3,0xF75E,0xE367,0xE367,0xE367,0xE367,0xE367,0xF75E,0x10C3,0x10C3,
+    0xF75E,0xF81F,0xE367,0xE367,0xE367,0xF81F,0xF75E,0x10C3,0x10C3,0xF75E,0xF81F,0xF81F,0xE367,0xF81F,0xF81F,0xF75E,
+    0x10C3,0x10C3,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0x10C3,0xF81F,0x10C3,0x10C3,0x10C3,0x10C3,0x10C3,
+    0x10C3,0x10C3,0xF81F,
 };
 
 
@@ -4392,6 +4407,7 @@ typedef enum {
     SPRITE_TILE_SAND,
 
     SPRITE_WOOD_SHIELD,
+    SPRITE_LIFE_POT,
     SPRITE_COUNT
 } SpriteID;
 
@@ -4424,6 +4440,7 @@ Sprite sprites[SPRITE_COUNT] = {
     [SPRITE_TILE_WATER] = {TILE_W,   TILE_H,   water_sprite},
     [SPRITE_TILE_SAND] = {TILE_W, TILE_H, sand_sprite},
     [SPRITE_WOOD_SHIELD] = {WOOD_SHIELD_W, WOOD_SHIELD_H, wood_shield},
+    [SPRITE_LIFE_POT] = {LIFE_POT_SPRITE_W, LIFE_POT_SPRITE_H, life_pot_sprite},
 };
 
 
@@ -5958,7 +5975,7 @@ void player_update(Entity *p, int cur_buf){
     }
 
     // Slow tiles
-    if (obstacle_map_at_pixel(mid_x + p->dx, feet_y + p->dy) & TILE_FLAG_SLOW) {
+    if (!p->is_dashing && obstacle_map_at_pixel(mid_x + p->dx, feet_y + p->dy) & TILE_FLAG_SLOW) {
         p->dx /= 2;
         p->dy /= 2;
     }
@@ -6284,6 +6301,28 @@ static Entity *g_p2 = NULL;
 static int bg_drawn = 0; //draw full background once at startup
 
 int game_winner = 0;
+int game_timer = 0;
+
+/* Potion stuff */
+#define MAX_POTIONS 2
+#define POTION_SPAWN_INTERVAL 1800 /* 30s at 60 fps*/
+#define POTION_HEAL 25
+#define POTION_LIFETIME 1800 /* 30 Seconds */
+
+typedef struct{
+    int x, y;
+    int active;
+    int lifetime;
+    int erase_b0;
+    int erase_b1;
+    Sprite sprite;
+    int flash_drawn;
+    int needs_draw_b0;
+    int needs_draw_b1;
+} Potion;
+
+Potion potions[MAX_POTIONS];
+int next_potion_spawn = 900; /*first one at 15s*/
 
 void game_init(){
     map_init(2);
@@ -6300,6 +6339,13 @@ void game_init(){
     g_p2 = spawn_entity(ENTITY_PLAYER);
     g_p2->player_cfg = &p2_cfg;
     player_init(g_p2, SPRITE_PLAYER, (short)0xDC14, &p2_cfg, SCREEN_WIDTH - 16 - TILE_W - PLAYER_W, 1);
+
+    for (int i = 0; i < MAX_POTIONS; i++) {
+        potions[i].active     = 0;
+        potions[i].erase_b0   = 0;
+        potions[i].erase_b1   = 0;
+        potions[i].flash_drawn = 0;
+    }
 }
 
 void update_game(int cur_buf){
@@ -6427,6 +6473,72 @@ void update_game(int cur_buf){
             else if (alive_count == 0) game_winner = 3;  /* draw */
         }
     }
+
+    /*now handle potion stuff*/
+    game_timer++;
+
+    /*Spawn Potion*/
+    if(game_timer == next_potion_spawn){
+        for(int i = 0; i < MAX_POTIONS; i++){
+            if(!potions[i].active){
+                /*try random tile until we find a good one*/
+                int placed = 0;
+                for (int attempts = 0; attempts < 100; attempts++){
+                    int tile_col = 1 + rand() % (MAP_WIDTH - 2);
+                    int tile_row = 1 + rand() % (MAP_HEIGHT - 2);
+
+                    //check the tile is safe
+                    unsigned char flags = obstacle_map_get(tile_row, tile_col);
+                    if(flags & (TILE_FLAG_SOLID | TILE_FLAG_DAMAGE)) continue;
+
+                    potions[i].active = 1;
+                    potions[i].lifetime = POTION_LIFETIME;
+                    potions[i].sprite = sprites[SPRITE_LIFE_POT];
+                    potions[i].erase_b0 = 0;
+                    potions[i].erase_b1 = 0;
+                    potions[i].flash_drawn = 0;
+                    potions[i].needs_draw_b0 = 1;
+                    potions[i].needs_draw_b1 = 1;
+
+                    potions[i].x = tile_col * TILE_W + rand() % (TILE_W - potions[i].sprite.width);
+                    potions[i].y = tile_row * TILE_H + rand() % (TILE_H - potions[i].sprite.height);
+                    next_potion_spawn = game_timer + POTION_SPAWN_INTERVAL;
+                    placed = 1;
+                    break;
+                }
+                if (placed) break;
+            }
+        }
+    }
+
+    /* Check pickup */
+    for(int i = 0; i < MAX_POTIONS; i++){
+        if (!potions[i].active) continue;
+
+        potions[i].lifetime--;
+        if(potions[i].lifetime <= 0){
+            potions[i].active = 0;
+            potions[i].erase_b0 = 1;
+            potions[i].erase_b1 = 1;
+            continue; //skip pickup it is gone now
+        }
+
+        for(int j = 0; j < player_count; j++){
+            Entity *p = players[j];
+            if(!p->active || p->dying) continue;
+            if(p->hitbox_x < potions[i].x + potions[i].sprite.width &&
+               p->hitbox_x + p->hitbox_w > potions[i].x &&
+               p->hitbox_y < potions[i].y + potions[i].sprite.height &&
+               p->hitbox_y + p->hitbox_h > potions[i].y){
+                p->health += POTION_HEAL;
+                if(p->health > HEALTH) p->health = HEALTH;
+                potions[i].active = 0;
+                potions[i].erase_b0 = 1;
+                potions[i].erase_b1 = 1;
+                break;
+               }
+        }
+    }
 }
 
 void draw_game(int cur_buf){
@@ -6468,6 +6580,58 @@ void draw_game(int cur_buf){
     entity_erase_all(cur_buf);
     entity_draw_all();
     decoration_draw_canopies_near(px1, py1, px2, py2);
+
+    /*draw potions*/
+    for (int i = 0; i < MAX_POTIONS; i++){ 
+        //erase if flagged
+        if (cur_buf == 0 && potions[i].erase_b0){
+            erase_sprite(potions[i].x, potions[i].y, potions[i].sprite.width, potions[i].sprite.height);
+            potions[i].erase_b0 = 0;
+        }
+        if (cur_buf == 1 && potions[i].erase_b1){
+            erase_sprite(potions[i].x, potions[i].y, potions[i].sprite.width, potions[i].sprite.height);
+            potions[i].erase_b1 = 0;
+        }
+
+        if(!potions[i].active) continue;
+        //draw if active
+        
+        /*Inital draw into both buffers*/
+        if(cur_buf == 0 && potions[i].needs_draw_b0){
+            draw_sprite(&potions[i].sprite, potions[i].x, potions[i].y, 0, 0);
+            potions[i].needs_draw_b0 = 0;
+            potions[i].flash_drawn = 1;
+        }
+        if(cur_buf == 1 && potions[i].needs_draw_b1){
+            draw_sprite(&potions[i].sprite, potions[i].x, potions[i].y, 0, 0);
+            potions[i].needs_draw_b1 = 0;
+            potions[i].flash_drawn = 1;
+        }
+
+        /*Flash logic*/
+        if (potions[i].needs_draw_b0 || potions[i].needs_draw_b1) continue;
+
+        /* Flash in its last 3s: (visble for 15 frames, hidden for 15)*/
+        int should_show;
+        if(potions[i].lifetime <= 180){
+            should_show = (potions[i].lifetime / 15 ) % 2;
+        }
+        else{
+            should_show = 1;
+        }
+
+        if(should_show && !potions[i].flash_drawn){
+            potions[i].needs_draw_b0 = 1;
+            potions[i].needs_draw_b1 = 1;
+            potions[i].flash_drawn = 1;
+        }
+        else if(!should_show && potions[i].flash_drawn){
+            potions[i].erase_b0    = 1;
+            potions[i].erase_b1    = 1;
+            potions[i].flash_drawn = 0;
+        }
+       
+    }
 }
 
 
