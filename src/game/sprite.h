@@ -4,7 +4,6 @@
 //this will be used to determine if we should not draw that pixel
 #define TRANSPARENT 0xF81F //magenta
 
-#define SPRITE_COUNT 8
 typedef enum {
     //Player
     SPRITE_PLAYER,
@@ -21,8 +20,10 @@ typedef enum {
     SPRITE_TILE_STONE,
 
     SPRITE_TILE_WATER,
+    SPRITE_TILE_SAND,
 
-    SPRITE_WOOD_SHIELD
+    SPRITE_WOOD_SHIELD,
+    SPRITE_COUNT
 } SpriteID;
 
 typedef struct{

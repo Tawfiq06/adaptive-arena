@@ -4373,7 +4373,6 @@ const short arrow_sprite[140] = {
 //this will be used to determine if we should not draw that pixel
 #define TRANSPARENT 0xF81F //magenta
 
-#define SPRITE_COUNT 8
 typedef enum {
     //Player
     SPRITE_PLAYER,
@@ -4390,8 +4389,10 @@ typedef enum {
     SPRITE_TILE_STONE,
 
     SPRITE_TILE_WATER,
+    SPRITE_TILE_SAND,
 
-    SPRITE_WOOD_SHIELD
+    SPRITE_WOOD_SHIELD,
+    SPRITE_COUNT
 } SpriteID;
 
 typedef struct{
@@ -4421,7 +4422,8 @@ Sprite sprites[SPRITE_COUNT] = {
     [SPRITE_TILE_DIRT]  = {TILE_W,   TILE_H,   dirt_sprite},
     [SPRITE_TILE_STONE] = {TILE_W,   TILE_H,   stone_sprite},
     [SPRITE_TILE_WATER] = {TILE_W,   TILE_H,   water_sprite},
-    [SPRITE_WOOD_SHIELD] = {WOOD_SHIELD_W, WOOD_SHIELD_H, wood_shield}
+    [SPRITE_TILE_SAND] = {TILE_W, TILE_H, sand_sprite},
+    [SPRITE_WOOD_SHIELD] = {WOOD_SHIELD_W, WOOD_SHIELD_H, wood_shield},
 };
 
 
@@ -4545,6 +4547,9 @@ typedef struct {
     int tree_cluster_size;
     int rock_cluster_size;
 
+    int prefer_big_trees; // 0 mixed, 1 big trees first, 2 big trees only
+    int prefer_big_rocks; //0 mixed, 1 big rocks first, 2 big rocks only
+
     /* Which decoration variants to use*/
     int use_autumn_trees; //1 = include autumn variants
     int use_grey_rocks; //1 = grey rocks only, 0 = brown only, 2 both
@@ -4570,13 +4575,15 @@ const MapConfig MAP_CONFIGS[] = {
     /*Map 1: wetland/meadow */
     // - water patches, cattails, scattered trees
     [1] = {
-        .tree_budget = 12,
+        .tree_budget = 6,
         .rock_budget = 4,
-        .small_budget = 6,
-        .cattail_budget = 8,
-        .fern_budget = 6,
+        .small_budget = 4,
+        .cattail_budget = 5,
+        .fern_budget = 3,
         .tree_cluster_size = 2,
         .rock_cluster_size = 2,
+        .prefer_big_trees = 1,
+        .prefer_big_rocks = 0,
         .use_autumn_trees = 1,
         .use_grey_rocks = 2,
     },
@@ -4584,15 +4591,17 @@ const MapConfig MAP_CONFIGS[] = {
     /* Map 2: Stone map*/
     // rock clusters, no water, no cattails
     [2] = {
-        .tree_budget = 1,
-        .rock_budget = 20,
+        .tree_budget = 15,
+        .rock_budget = 15,
         .bush_budget = 2,
-        .small_budget = 4,
-        .cattail_budget = 0,
-        .fern_budget = 0,
-        .tree_cluster_size = 1,
-        .rock_cluster_size = 5,
-        .use_autumn_trees = 0,
+        .small_budget = 10,
+        .cattail_budget = 4,
+        .fern_budget = 2,
+        .tree_cluster_size = 4,
+        .rock_cluster_size = 4,
+        .prefer_big_trees = 2,
+        .prefer_big_rocks = 1,
+        .use_autumn_trees = 1,
         .use_grey_rocks = 1,
     },
 
@@ -4618,23 +4627,23 @@ const unsigned char map_1[MAP_HEIGHT][MAP_WIDTH] = {
     {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE}
 };
 
-// Map 2: The Stone Dungeon (Stored in ROM)
+// Map 2: stoney beach
 const unsigned char map_2[MAP_HEIGHT][MAP_WIDTH] = {
-    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE},
-    {SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE},
-    {SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE},
-    {SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE},
-    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE},
-    {SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE},
-    {SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE},
-    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE},
-    {SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE},
-    {SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE},
-    {SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE},
-    {SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE},
-    {SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE},
-    {SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE},
-    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE}
+    {SPRITE_TILE_GRASS, SPRITE_TILE_GRASS, SPRITE_TILE_GRASS, SPRITE_TILE_GRASS,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_GRASS, SPRITE_TILE_GRASS,  SPRITE_TILE_GRASS,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_GRASS,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_STONE, SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER},
+    {SPRITE_TILE_STONE, SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER},
+    {SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_GRASS, SPRITE_TILE_GRASS, SPRITE_TILE_GRASS, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER},
+    {SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_GRASS, SPRITE_TILE_GRASS, SPRITE_TILE_GRASS, SPRITE_TILE_GRASS, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_DIRT,  SPRITE_TILE_GRASS, SPRITE_TILE_GRASS, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER},
+    {SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_GRASS, SPRITE_TILE_GRASS, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_DIRT,  SPRITE_TILE_GRASS, SPRITE_TILE_GRASS, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND},
+    {SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_DIRT,  SPRITE_TILE_GRASS, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_GRASS, SPRITE_TILE_GRASS, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_STONE, SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_SAND,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_SAND,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT},
+    {SPRITE_TILE_SAND,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_GRASS},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_GRASS, SPRITE_TILE_GRASS}
 };
 
 void map_init(int map_index){
@@ -4666,7 +4675,7 @@ SpriteID map_get_tile(int row, int col){
  * =========================================================================*/
 /* #include "decoration_sprites.h" -- merged */
 
-#define MAX_DECORATIONS 30
+#define MAX_DECORATIONS 20
 #define DECO_CELL_CAP 4
 
 typedef struct{
@@ -4682,12 +4691,16 @@ typedef struct{
     unsigned char count; //amount of decor in this cell
 } DecoCell;
 
+int canopy_indices[MAX_DECORATIONS];
+int canopy_count;
+
 Decoration decorations[MAX_DECORATIONS];
 const DecoCell *deco_map_get_cell(int row, int col);
 
 void decoration_init(int map_index);
 void decoration_redraw_region(int row0, int col0, int row1, int col1);
 void decoration_draw_canopies(void);
+void decoration_draw_canopies_near(int px1, int py1, int px2, int py2);
 
 
 /* ===========================================================================
@@ -4698,7 +4711,7 @@ void decoration_draw_canopies(void);
 /* #include "vga.h" -- merged */
 /* #include "tile_sprites.h" -- merged */
 /* #include "sprite.h" -- merged */
-
+/* #include "soldier_frames.h" -- merged */
 /**************************************************/
 /* DECOR LOOKUP MAP                               */
 /* Same dimensions as tile map (15x20)            */
@@ -4788,16 +4801,7 @@ int too_close_to_any(int px, int py, int min_spacing) {
 /*Place one decor*/
 int place_deco(int type, int px, int py) {
     if (deco_count >= MAX_DECORATIONS) return 0;
-
-    const DecoType *info = &DECO_LOOKUP[type];
-
-    if (px + info->w > SCREEN_WIDTH)  px = SCREEN_WIDTH  - info->w;
-    if (py + info->h > SCREEN_HEIGHT) py = SCREEN_HEIGHT - info->h;
-    if (px < 0) px = 0;
-    if (py < 0) py = 0;
-
     decorations[deco_count++] = (Decoration){ (short)px, (short)py, (unsigned char)type };
-    
     return 1;
 }
 
@@ -4809,38 +4813,47 @@ void decoration_init(int map_index){
     const int MIN_SPACING = 0;
 
     /* ---- Build tree table from config ---- */
-    int TREE_TABLE[10];
-    int TREE_COUNT = 0;
-    TREE_TABLE[TREE_COUNT++] = DECO_STICK_TREE_MED;
-    TREE_TABLE[TREE_COUNT++] = DECO_TREE_GREEN_A;
-    TREE_TABLE[TREE_COUNT++] = DECO_GREEN_PLANT_TREE_A;
-    TREE_TABLE[TREE_COUNT++] = DECO_TREE_GREEN_B;
+    int TREE_TABLE_BIG[4];
+    int TREE_TABLE_SMALL[8];
+    int TREE_COUNT_BIG = 0;
+    int TREE_COUNT_SMALL = 0;
+
+    TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_TREE_GREEN_B;      /* tallest */
+    TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_TREE_GREEN_A;
     if (cfg->use_autumn_trees) {
-        TREE_TABLE[TREE_COUNT++] = DECO_AUTUMN_TREE_RED_MED;
-        TREE_TABLE[TREE_COUNT++] = DECO_AUTUMN_TREE_YELLOW_MED;
-        TREE_TABLE[TREE_COUNT++] = DECO_AUTUMN_TREE_RED_SM;
-        TREE_TABLE[TREE_COUNT++] = DECO_AUTUMN_TREE_YELLOW_SM;
+        TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_AUTUMN_TREE_RED_MED;
+        TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_AUTUMN_TREE_YELLOW_MED;
     }
 
-    /* ---- Rock table ---- */
-    int ROCK_TABLE[10];
-    int ROCK_COUNT = 0;
-    if (cfg->use_grey_rocks != 1) {  /* 0=brown only, 2=both */
-        ROCK_TABLE[ROCK_COUNT++] = DECO_ROCK_BIG_BROWN;
-        ROCK_TABLE[ROCK_COUNT++] = DECO_ROCK_MED_BROWN;
-        ROCK_TABLE[ROCK_COUNT++] = DECO_ROCK_SM_A_BROWN;
-        ROCK_TABLE[ROCK_COUNT++] = DECO_ROCK_SM_B_BROWN;
-        ROCK_TABLE[ROCK_COUNT++] = DECO_ROCK_SM_C_BROWN;
+    TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_STICK_TREE_MED;
+    TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_GREEN_PLANT_TREE_A;
+    if (cfg->use_autumn_trees) {
+        TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_AUTUMN_TREE_RED_SM;
+        TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_AUTUMN_TREE_YELLOW_SM;
+    }
+
+    /* ---- Build rock table ---- */
+    int ROCK_TABLE_BIG[4];
+    int ROCK_TABLE_SMALL[6];
+    int ROCK_COUNT_BIG = 0;
+    int ROCK_COUNT_SMALL = 0;
+
+    if (cfg->use_grey_rocks != 1) {
+        ROCK_TABLE_BIG[ROCK_COUNT_BIG++]     = DECO_ROCK_BIG_BROWN;
+        ROCK_TABLE_BIG[ROCK_COUNT_BIG++]     = DECO_ROCK_MED_BROWN;
+        ROCK_TABLE_SMALL[ROCK_COUNT_SMALL++] = DECO_ROCK_SM_A_BROWN;
+        ROCK_TABLE_SMALL[ROCK_COUNT_SMALL++] = DECO_ROCK_SM_B_BROWN;
+        ROCK_TABLE_SMALL[ROCK_COUNT_SMALL++] = DECO_ROCK_SM_C_BROWN;
     }
     if (cfg->use_grey_rocks >= 1) {
-        ROCK_TABLE[ROCK_COUNT++] = DECO_ROCK_BIG_GREY;
-        ROCK_TABLE[ROCK_COUNT++] = DECO_ROCK_MED_GREY;
-        ROCK_TABLE[ROCK_COUNT++] = DECO_ROCK_SM_A_GREY;
-        ROCK_TABLE[ROCK_COUNT++] = DECO_ROCK_SM_B_GREY;
-        ROCK_TABLE[ROCK_COUNT++] = DECO_ROCK_SM_C_GREY;
+        ROCK_TABLE_BIG[ROCK_COUNT_BIG++]     = DECO_ROCK_BIG_GREY;
+        ROCK_TABLE_BIG[ROCK_COUNT_BIG++]     = DECO_ROCK_MED_GREY;
+        ROCK_TABLE_SMALL[ROCK_COUNT_SMALL++] = DECO_ROCK_SM_A_GREY;
+        ROCK_TABLE_SMALL[ROCK_COUNT_SMALL++] = DECO_ROCK_SM_B_GREY;
+        ROCK_TABLE_SMALL[ROCK_COUNT_SMALL++] = DECO_ROCK_SM_C_GREY;
     }
 
-     const int BUSH_TABLE[] = {
+    const int BUSH_TABLE[] = {
         DECO_BUSH_GREEN_SM, DECO_BUSH_OLIVE_SM, DECO_BUSH_RED_SM,
         DECO_BUSH_GREEN_LG, DECO_BUSH_OLIVE_LG,
     };
@@ -4863,76 +4876,93 @@ void decoration_init(int map_index){
     };
     const int FERN_COUNT = 2;
 
-    
+    /* Build a list of all valid tiles for trees */
+    int grass_tiles[MAP_HEIGHT * MAP_WIDTH][2];  /* [i][0] = row, [i][1] = col */
+    int grass_count = 0;
+
+    for (int r = 0; r < MAP_HEIGHT; r++) {
+        for (int c = 0; c < MAP_WIDTH; c++) {
+            SpriteID t = map_get_tile(r, c);
+            if (t == SPRITE_TILE_GRASS)
+                grass_tiles[grass_count][0] = r,
+                grass_tiles[grass_count][1] = c,
+                grass_count++;
+        }
+    }
+
     /* ---- 1. Place trees (with optional clustering) ---- */
     int trees_placed = 0;
     for (int attempts = 0; attempts < MAX_ATTEMPTS && trees_placed < cfg->tree_budget; attempts++) {
-        //get random row and col
-        /* Bias anchor toward edges*/
-        int row, col;
-        int edge = rand() % 3; // 0, 1 = edge, 2 anywhere
-        
-        if(edge < 2){
-            //within 2 tiles of any border
-            int side = rand() % 4;
-            if (side == 0){ //top
-                row = 1 + (rand() % 2);
-                col = 1 + (rand() % (MAP_WIDTH - 2));
-            }
-            else if (side == 1){ //bottom
-                row = MAP_HEIGHT - 3 + (rand() % 2);
-                col = 1 + (rand() % (MAP_WIDTH - 2));
-            }
-            else if(side == 1){//left
-                row = MAP_HEIGHT - 3 + (rand() % 2); 
-                col = 1 + (rand() % 2);
-            }
-            else{//right
-                row = 1 + (rand() % (MAP_HEIGHT - 2));
-                col = MAP_WIDTH - 3 + (rand() % 2);
-            }
-        }
-        else{
-            row = 1 + (rand() % (MAP_HEIGHT - 2));
-            col = 1 + (rand() % (MAP_WIDTH  - 2));
-        }
-   
-        if (map_get_tile(row, col) != SPRITE_TILE_GRASS) continue; //check if its grass
+        if (grass_count == 0) break;
 
-        //give random offset
-        int type = TREE_TABLE[rand() % TREE_COUNT];
+        int idx = rand() % grass_count;
+        int row = grass_tiles[idx][0];
+        int col = grass_tiles[idx][1];
+
+        int type;
+        if (cfg->prefer_big_trees == 2) {
+            /* big only */
+            type = TREE_TABLE_BIG[rand() % TREE_COUNT_BIG];
+        } else if (cfg->prefer_big_trees == 1) {
+            /* big 75% of the time */
+            type = (rand() % 4 != 0)
+                ? TREE_TABLE_BIG[rand() % TREE_COUNT_BIG]
+                : TREE_TABLE_SMALL[rand() % TREE_COUNT_SMALL];
+        } else {
+            /* mixed — equal chance */
+            int all_count = TREE_COUNT_BIG + TREE_COUNT_SMALL;
+            int pick = rand() % all_count;
+            type = (pick < TREE_COUNT_BIG)
+                ? TREE_TABLE_BIG[pick]
+                : TREE_TABLE_SMALL[pick - TREE_COUNT_BIG];
+        }
+
         const DecoType *info = &DECO_LOOKUP[type];
+        
         int px = col * TILE_W + (rand() % TILE_W);
         int py = row * TILE_H + (rand() % (TILE_H / 2));
 
-        //check if bottom row is still on grass
-        int bot_col = (px + info->w / 2) / TILE_W;
-        int bot_row = (py + info->h - 1) / TILE_H;
-        if (bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
-        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+        int bot_col = (px + info->w / 2) >> 4;
+        int bot_row = (py + info->h - 1) >> 4;
+        if (bot_col >= 0 && bot_col < MAP_WIDTH && bot_row >= 0 && bot_row < MAP_HEIGHT) {
+            if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+        }
         if (too_close_to_any(px, py, MIN_SPACING)) continue;
-
-        //place deco (returns 0 is it failed)
         if (!place_deco(type, px, py)) break;
         trees_placed++;
 
-        /* Place cluster members close to this anchor */
         int cluster_members = cfg->tree_cluster_size - 1;
-        for (int ci = 1; ci < cluster_members; ci++) {
+        for (int ci = 0; ci < cluster_members; ci++) {
             if (trees_placed >= cfg->tree_budget) break;
-
-            int cpx = px + (rand() % 80) - 40;  
+            int cpx = px + (rand() % 80) - 40;
             int cpy = py + (rand() % 64) - 32;
 
-            int ctype = TREE_TABLE[rand() % TREE_COUNT];
-
+            int ctype;
+            if (cfg->prefer_big_trees == 2) {
+                ctype = TREE_TABLE_BIG[rand() % TREE_COUNT_BIG];
+            } else if (cfg->prefer_big_trees == 1) {
+                ctype = (rand() % 4 != 0)
+                    ? TREE_TABLE_BIG[rand() % TREE_COUNT_BIG]
+                    : TREE_TABLE_SMALL[rand() % TREE_COUNT_SMALL];
+            } else {
+                int all_count = TREE_COUNT_BIG + TREE_COUNT_SMALL;
+                int pick = rand() % all_count;
+                ctype = (pick < TREE_COUNT_BIG)
+                    ? TREE_TABLE_BIG[pick]
+                    : TREE_TABLE_SMALL[pick - TREE_COUNT_BIG];
+            }
             const DecoType *ci_info = &DECO_LOOKUP[ctype];
+
+            if (cpy + ci_info->h <= 0 || cpy >= SCREEN_HEIGHT) continue;
+            if (cpx + ci_info->w <= 0 || cpx >= SCREEN_WIDTH)  continue;
+
             int cbot_col = (cpx + ci_info->w / 2) >> 4;
             int cbot_row = (cpy + ci_info->h - 1) >> 4;
 
-            if (cbot_row < 0 || cbot_row >= MAP_HEIGHT || cbot_col < 0 || cbot_col >= MAP_WIDTH) continue;
-            if (map_get_tile(cbot_row, cbot_col) != SPRITE_TILE_GRASS) continue;
-            if (too_close_to_any(cpx, cpy, 4)) continue;  /* tighter spacing in cluster */
+            if (cbot_col >= 0 && cbot_col < MAP_WIDTH && cbot_row >= 0 && cbot_row < MAP_HEIGHT) {
+                if (map_get_tile(cbot_row, cbot_col) != SPRITE_TILE_GRASS) continue;
+            }
+            if (too_close_to_any(cpx, cpy, 4)) continue;
             if (place_deco(ctype, cpx, cpy)) trees_placed++;
         }
     }
@@ -4947,7 +4977,20 @@ void decoration_init(int map_index){
         if (temp != SPRITE_TILE_GRASS && temp != SPRITE_TILE_STONE) continue;
 
         //give random offset
-        int type = ROCK_TABLE[rand() % ROCK_COUNT];
+        int type;
+        if (cfg->prefer_big_rocks == 2) {
+            type = ROCK_TABLE_BIG[rand() % ROCK_COUNT_BIG];
+        } else if (cfg->prefer_big_rocks == 1) {
+            type = (rand() % 4 != 0)
+                ? ROCK_TABLE_BIG[rand() % ROCK_COUNT_BIG]
+                : ROCK_TABLE_SMALL[rand() % ROCK_COUNT_SMALL];
+        } else {
+            int all_count = ROCK_COUNT_BIG + ROCK_COUNT_SMALL;
+            int pick = rand() % all_count;
+            type = (pick < ROCK_COUNT_BIG)
+                ? ROCK_TABLE_BIG[pick]
+                : ROCK_TABLE_SMALL[pick - ROCK_COUNT_BIG];
+        }
         const DecoType *info = &DECO_LOOKUP[type];
         int px = col * TILE_W + (rand() % TILE_W);
         int py = row * TILE_H + (rand() % TILE_H);
@@ -4978,6 +5021,10 @@ void decoration_init(int map_index){
             };
             int ctype = small_rocks[(rand() % (cfg->use_grey_rocks >= 1 ? 6 : 3))];
             const DecoType *ci_info = &DECO_LOOKUP[ctype];
+
+            if (cpy + ci_info->h <= 0 || cpy >= SCREEN_HEIGHT) continue;
+            if (cpx + ci_info->w <= 0 || cpx >= SCREEN_WIDTH)  continue;
+
             int cbot_col = (cpx + ci_info->w / 2) >> 4;
             int cbot_row = (cpy + ci_info->h - 1) >> 4;
 
@@ -5074,6 +5121,12 @@ void decoration_init(int map_index){
         if (place_deco(type, px, py)) ferns_placed++;
     }
 
+    canopy_count = 0;
+    for (int i = 0; i < deco_count; i++) {
+        if (deco_has_canopy(decorations[i].type))
+            canopy_indices[canopy_count++] = i;
+    }
+
     deco_map_build();
 }
 
@@ -5090,27 +5143,38 @@ void decoration_draw_all(void){
 }
 
 //need to redraw decor if a sprite overlaps it
-void decoration_redraw_region(int row0, int col0, int row1, int col1) {   
+void decoration_redraw_region(int row0, int col0, int row1, int col1) {
     int clip_x0 = col0 * TILE_W;
     int clip_x1 = col1 * TILE_W - 1;
     int clip_y0 = row0 * TILE_H;
     int clip_y1 = row1 * TILE_H - 1;
-    
+
     for (int i = 0; i < deco_count; i++) {
         const DecoType *d = &DECO_LOOKUP[decorations[i].type];
         int sx = decorations[i].x;
         int sy = decorations[i].y;
-        /* Check overlaps with clipped — skip decorations with no pixels in the clip rect */
-        if (sx + d->w <= clip_x0 || sx >= clip_x1 + 1) continue;
-        if (sy + d->h <= clip_y0 || sy >= clip_y1 + 1) continue;
-        /* Draw pixels inside the clip rect only */
-        for (int row = 0; row < d->h; row++) {
+
+        /* Broad phase — skip entirely if no overlap */
+        if (sx + d->w <= clip_x0 || sx > clip_x1) continue;
+        if (sy + d->h <= clip_y0 || sy > clip_y1) continue;
+
+        /* Tight row bounds — only iterate rows inside the clip rect */
+        int row_start = clip_y0 - sy;
+        int row_end   = clip_y1 - sy + 1;
+        if (row_start < 0) row_start = 0;
+        if (row_end > d->h) row_end = d->h;
+
+        /* Tight col bounds */
+        int col_start = clip_x0 - sx;
+        int col_end   = clip_x1 - sx + 1;
+        if (col_start < 0) col_start = 0;
+        if (col_end > d->w) col_end = d->w;
+
+        for (int row = row_start; row < row_end; row++) {
             int py = sy + row;
-            if (py < clip_y0 || py > clip_y1) continue;
             if (py < 0 || py >= SCREEN_HEIGHT) continue;
-            for (int col = 0; col < d->w; col++) {
+            for (int col = col_start; col < col_end; col++) {
                 int px = sx + col;
-                if (px < clip_x0 || px > clip_x1) continue;
                 if (px < 0 || px >= SCREEN_WIDTH) continue;
                 short colour = d->data[row * d->w + col];
                 if ((unsigned short)colour != (unsigned short)TRANSPARENT)
@@ -5130,35 +5194,38 @@ int deco_has_canopy(int deco_type) {
         case DECO_STICK_TREE_MED:
         case DECO_ROCK_BIG_GREY:
         case DECO_ROCK_BIG_BROWN:
+        case DECO_ROCK_MED_BROWN:
+        case DECO_ROCK_MED_GREY:
             return 1;
         default:
             return 0;
     }
 }
 
-/* Draw only the top portion of tall trees — called AFTER entities are drawn */
-void decoration_draw_canopies(void) {
-    for (int i = 0; i < deco_count; i++) {
-        if (!deco_has_canopy(decorations[i].type)) continue;
+void decoration_draw_canopies_near(int px1, int py1, int px2, int py2) {
+    for (int i = 0; i < canopy_count; i++) {
+        const Decoration *d = &decorations[canopy_indices[i]];
+        const DecoType *dt = &DECO_LOOKUP[d->type];
+        int sx = d->x;
+        int sy = d->y;
 
-        const DecoType *dt = &DECO_LOOKUP[decorations[i].type];
-        int sx = decorations[i].x;
-        int sy = decorations[i].y;
+        /* Only redraw canopy if a player overlaps this decoration's x range */
+        int near = 0;
+        if (px1 >= sx - SOLDIER_H && px1 <= sx + dt->w) near = 1;
+        if (px2 >= sx - SOLDIER_W && px2 <= sx + dt->w) near = 1;
+        if (!near) continue;
 
-        /* Cut off at the top of the solid hitbox zone (bottom 8px of sprite)
-           Everything above this draws over the player */
-        int cutoff_py = sy + dt->h - 8;
-
+        int cutoff_py = sy + dt->h - 6;
         for (int row = 0; row < dt->h; row++) {
             int py = sy + row;
-            if (py >= cutoff_py) break;  /* stop at base tile, trunk is not drawn over player */
+            if (py >= cutoff_py) break;
             if (py < 0 || py >= SCREEN_HEIGHT) continue;
             for (int col = 0; col < dt->w; col++) {
-                int px = sx + col;
-                if (px < 0 || px >= SCREEN_WIDTH) continue;
+                int ppx = sx + col;
+                if (ppx < 0 || ppx >= SCREEN_WIDTH) continue;
                 short colour = dt->data[row * dt->w + col];
                 if ((unsigned short)colour != (unsigned short)TRANSPARENT)
-                    plot_pixel(px, py, colour);
+                    plot_pixel(ppx, py, colour);
             }
         }
     }
@@ -5724,13 +5791,13 @@ void player_update(Entity *p, int cur_buf){
 
     /* Attack input (takes priority over movement) */
     const PlayerConfig *cfg = p->player_cfg;
-    if (key_pressed(cfg->key_atk1) && p->atk1_cooldown == 0) {
+    if (key_pressed(cfg->key_atk1) && p->atk1_cooldown == 0 && p->anim.anim != SOLDIER_ATK1) {
         anim_play(&p->anim, p->anim_def, SOLDIER_ATK1);
         p->atk1_cooldown = ATK1_COOLDOWN;
         p->attack_s1 = 1;
         return;
     }
-    if (key_pressed(cfg->key_atk2) && p->atk2_cooldown == 0) {
+    if (key_pressed(cfg->key_atk2) && p->atk2_cooldown == 0 && p->anim.anim != SOLDIER_ATK2) {
         anim_play(&p->anim, p->anim_def, SOLDIER_ATK2);
         p->atk2_cooldown = ATK2_COOLDOWN;
         p->attack_s2 = 1;
@@ -6209,8 +6276,8 @@ static const PlayerConfig p2_cfg = PLAYER2_CONFIG;
 static int bg_drawn = 0; //draw full background once at startup
 
 void game_init(){
-    map_init(1);
-    decoration_init(1);
+    map_init(2);
+    decoration_init(2);
     obstacle_map_init();
     /*Spawn Player 1*/
     //on the left, faces right
@@ -6341,9 +6408,16 @@ void draw_game(int cur_buf){
     }
 
     /* Erase each entity first */
+    int px1 = 0, py1 = 0, px2 = 0, py2 = 0;
+    for (int i = 0; i < MAX_ENTITIES; i++) {
+        if (!entities[i].active || entities[i].type != ENTITY_PLAYER) continue;
+        if (entities[i].player_cfg == &p1_cfg) { px1 = entities[i].x; py1 = entities[i].y; }
+        else                                   { px2 = entities[i].x; py2 = entities[i].y; }
+    }
+
     entity_erase_all(cur_buf);
     entity_draw_all();
-    decoration_draw_canopies();
+    decoration_draw_canopies_near(px1, py1, px2, py2);
 }
 
 

@@ -20,8 +20,8 @@ static const PlayerConfig p2_cfg = PLAYER2_CONFIG;
 static int bg_drawn = 0; //draw full background once at startup
 
 void game_init(){
-    map_init(1);
-    decoration_init(1);
+    map_init(2);
+    decoration_init(2);
     obstacle_map_init();
     /*Spawn Player 1*/
     //on the left, faces right
@@ -152,7 +152,14 @@ void draw_game(int cur_buf){
     }
 
     /* Erase each entity first */
+    int px1 = 0, py1 = 0, px2 = 0, py2 = 0;
+    for (int i = 0; i < MAX_ENTITIES; i++) {
+        if (!entities[i].active || entities[i].type != ENTITY_PLAYER) continue;
+        if (entities[i].player_cfg == &p1_cfg) { px1 = entities[i].x; py1 = entities[i].y; }
+        else                                   { px2 = entities[i].x; py2 = entities[i].y; }
+    }
+
     entity_erase_all(cur_buf);
     entity_draw_all();
-    decoration_draw_canopies();
+    decoration_draw_canopies_near(px1, py1, px2, py2);
 }

@@ -21,6 +21,9 @@ typedef struct {
     int tree_cluster_size;
     int rock_cluster_size;
 
+    int prefer_big_trees; // 0 mixed, 1 big trees first, 2 big trees only
+    int prefer_big_rocks; //0 mixed, 1 big rocks first, 2 big rocks only
+
     /* Which decoration variants to use*/
     int use_autumn_trees; //1 = include autumn variants
     int use_grey_rocks; //1 = grey rocks only, 0 = brown only, 2 both
