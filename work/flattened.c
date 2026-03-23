@@ -3,23 +3,14 @@
  * Source files (47):
  *   address_map.h
  *   src/hardware/vga.h
- *   src/hardware/vga.c
  *   src/hardware/timer.h
- *   src/hardware/timer.c
  *   src/hardware/keyboard.h
- *   src/hardware/keyboard.c
  *   src/hardware/audio.h
- *   src/hardware/audio.c
  *   src/assets/tile_sprites.h
- *   src/assets/tile_sprites.c
  *   src/assets/player_sprites.h
- *   src/assets/player_sprites.c
  *   src/assets/soldier_frames.h
- *   src/assets/soldier_frames.c
  *   src/assets/decoration_sprites.h
- *   src/assets/decoration_sprites.c
  *   src/assets/projectile_sprites.h
- *   src/assets/projectile_sprites.c
  *   src/game/sprite.h
  *   src/engine/animator.h
  *   src/game/map.h
@@ -34,6 +25,15 @@
  *   src/engine/renderer.h
  *   src/ai/ai.h
  *   src/game/game.h
+ *   src/hardware/vga.c
+ *   src/hardware/timer.c
+ *   src/hardware/keyboard.c
+ *   src/hardware/audio.c
+ *   src/assets/tile_sprites.c
+ *   src/assets/player_sprites.c
+ *   src/assets/soldier_frames.c
+ *   src/assets/decoration_sprites.c
+ *   src/assets/projectile_sprites.c
  *   src/game/sprite.c
  *   src/engine/animator.c
  *   src/game/map.c
@@ -137,9 +137,786 @@ void fill_screen(short colour);
 
 
 /* ===========================================================================
+ * src/hardware/timer.h
+ * =========================================================================*/
+volatile int frame_flag;
+
+void timer_init();
+void timer_irq();
+
+
+/* ===========================================================================
+ * src/hardware/keyboard.h
+ * =========================================================================*/
+//Arrow keys are extened (0xE0 prefix) - stores with bit 7 set
+#define KEY_UP      0xF5
+#define KEY_DOWN    0xF2
+#define KEY_LEFT    0xEB
+#define KEY_RIGHT   0xF4
+
+#define KEY_SPACE   0x29
+#define KEY_ESC     0x76
+#define KEY_LSHIFT  0x12
+#define KEY_RSHIFT  0x59
+#define KEY_LCTRL   0x14
+#define KEY_CAPS    0x58
+#define KEY_ENTER   0x5A
+#define KET_BKSP    0x66 
+
+#define KEY_A       0x1C
+#define KEY_B       0x32
+#define KEY_C       0x21
+#define KEY_D       0x23
+#define KEY_E       0x24
+#define KEY_F       0x2B    
+#define KEY_G       0x34    
+#define KEY_H       0x33    
+#define KEY_I       0x43    
+#define KEY_J       0x3B
+#define KEY_K       0x42    
+#define KEY_L       0x4B    
+#define KEY_M       0x3A    
+#define KEY_N       0x31    
+#define KEY_O       0x44
+#define KEY_P       0x4D    
+#define KEY_Q       0x15    
+#define KEY_R       0x2D    
+#define KEY_S       0x1B    
+#define KEY_T       0x2C
+#define KEY_U       0x3C    
+#define KEY_V       0x2A    
+#define KEY_W       0x1D    
+#define KEY_X       0x22    
+#define KEY_Y       0x35
+#define KEY_Z       0x1A
+
+#define KEY_1       0x16    
+#define KEY_2       0x1E    
+#define KEY_3       0x26    
+#define KEY_4       0x25    
+#define KEY_5       0x2E
+#define KEY_6       0x36    
+#define KEY_7       0x3D    
+#define KEY_8       0x3E    
+#define KEY_9       0x46    
+#define KEY_0       0x45
+/* Returns 1 if the key with the given scancode is currently held down */
+int key_pressed(unsigned char scancode);
+
+/* Call once per frame to drain the PS/2 FIFO and update key state */
+void keyboard_update(void);
+
+
+/* ===========================================================================
+ * src/hardware/audio.h
+ * =========================================================================*/
+
+
+/* ===========================================================================
+ * src/assets/tile_sprites.h
+ * =========================================================================*/
+#define TILE_SPRITIES_H
+
+#define TILE_W 16
+#define TILE_H 16
+
+const short grass_sprite[TILE_H*TILE_W];
+const short stone_sprite[TILE_H*TILE_W];
+const short water_sprite[TILE_H*TILE_W];
+const short dirt_sprite[TILE_W * TILE_H];
+const short sand_sprite[TILE_W * TILE_H];
+const short snow_sprite[TILE_W  * TILE_H];
+const short water_bright_sprite[TILE_W * TILE_H];
+const short lava_sprite[TILE_W * TILE_H]; 
+
+
+/* ===========================================================================
+ * src/assets/player_sprites.h
+ * =========================================================================*/
+#define PLAYER_SPRITIES_H
+
+#define OLD_PLAYER_W 16
+#define OLD_PLAYER_H 16
+
+#define WOOD_SHIELD_W  14
+#define WOOD_SHIELD_H  16
+
+#define LIFE_POT_SPRITE_W  9
+#define LIFE_POT_SPRITE_H  11
+
+#define POSION_CLOUD_W  16
+#define POSION_CLOUD_H  16
+
+const short player_sprite[OLD_PLAYER_W * OLD_PLAYER_H];
+/* removed fwd decl: static const short wood_shield[WOOD_SHIELD_W * WOOD_SHIELD_H]; */
+/* removed fwd decl: static const short life_pot_sprite[LIFE_POT_SPRITE_W * LIFE_POT_SPRITE_H]; */
+/* removed fwd decl: static const short posion_cloud[POSION_CLOUD_W * POSION_CLOUD_H]; */
+
+
+/* ===========================================================================
+ * src/assets/soldier_frames.h
+ * =========================================================================*/
+/* soldier_frames.h — generated from Soldier.aseprite
+ * Tight crop: 41x29px per frame (was 100x100, 88% empty removed)
+ * Format: RGB565, 0xF81F = transparent (magenta key)
+ * All frames are const -> placed in SDRAM .rodata, zero on-chip SRAM cost
+ * Per-entity runtime state: ~16 bytes (just indices)
+ */
+
+#define SOLDIER_W      41
+#define SOLDIER_H      29
+#define SOLDIER_FRAMES 43
+
+/* #include "sprite.h" -- merged */
+
+typedef enum {
+    SOLIDER_IDLE,
+    SOLDIER_WALK,
+    SOLDIER_ATK1,
+    SOLDIER_ATK2,
+    SOLDIER_ATK3,
+    SOLDIER_HURT,
+    SOLDIER_DEATH,
+    SOLDIER_COUNT
+} SoldierID;
+
+typedef struct {
+    unsigned char start;  /* first frame index */
+    unsigned char end;    /* last frame index (inclusive) */
+    unsigned char loop;   /* 1=loop, 0=play once */
+    unsigned char fps;
+} AnimDef;
+
+const AnimDef SOLDIER_ANIMS[SOLDIER_COUNT];
+const short soldier_f00[41*29];
+const short soldier_f01[41*29];
+const short soldier_f02[41*29];
+const short soldier_f03[41*29];
+const short soldier_f04[41*29];
+const short soldier_f05[41*29];
+const short soldier_f06[41*29];
+const short soldier_f07[41*29];
+const short soldier_f08[41*29];
+const short soldier_f09[41*29];
+const short soldier_f10[41*29];
+const short soldier_f11[41*29];
+const short soldier_f12[41*29];
+const short soldier_f13[41*29];
+const short soldier_f14[41*29];
+const short soldier_f15[41*29];
+const short soldier_f16[41*29];
+const short soldier_f17[41*29];
+const short soldier_f18[41*29];
+const short soldier_f19[41*29];
+const short soldier_f20[41*29];
+const short soldier_f21[41*29];
+const short soldier_f22[41*29];
+const short soldier_f23[41*29];
+const short soldier_f24[41*29];
+const short soldier_f25[41*29];
+
+const short soldier_f26[41*29];
+const short soldier_f27[41*29];
+const short soldier_f28[41*29];
+const short soldier_f29[41*29];
+const short soldier_f30[41*29];
+const short soldier_f31[41*29];
+const short soldier_f32[41*29];
+const short soldier_f33[41*29];
+const short soldier_f34[41*29];
+
+const short soldier_f35[41*29];
+const short soldier_f36[41*29];
+const short soldier_f37[41*29];
+const short soldier_f38[41*29];
+const short soldier_f39[41*29];
+const short soldier_f40[41*29];
+const short soldier_f41[41*29];
+const short soldier_f42[41*29];
+
+const short * const soldier_frames[SOLDIER_FRAMES];
+
+
+/* ===========================================================================
+ * src/assets/decoration_sprites.h
+ * =========================================================================*/
+#define DECORATIONS_SPRTIES_H
+
+/*Rocks/bushes/flowers on grass only. Trees on grass only.*/
+
+typedef enum {
+    DECO_ROCK_BIG_BROWN, 
+    DECO_ROCK_MED_BROWN, 
+    DECO_ROCK_SM_A_BROWN, 
+    DECO_ROCK_SM_B_BROWN,
+    DECO_ROCK_SM_C_BROWN,
+    DECO_ROCK_BIG_GREY,
+    DECO_ROCK_MED_GREY, 
+    DECO_ROCK_SM_A_GREY,
+    DECO_ROCK_SM_B_GREY, 
+    DECO_ROCK_SM_C_GREY,
+
+    DECO_BUSH_GREEN_SM, 
+    DECO_BUSH_OLIVE_SM, 
+    DECO_BUSH_RED_SM,
+    DECO_BUSH_GREEN_LG,
+    DECO_BUSH_OLIVE_LG, 
+
+    DECO_STICK_TREE_MED,
+    DECO_FLOWER_PURPLE,
+
+    DECO_TREE_GREEN_A,
+    DECO_GREEN_PLANT_TREE_A,
+
+    DECO_AUTUMN_TREE_RED_MED, DECO_AUTUMN_TREE_RED_SM,
+    DECO_AUTUMN_TREE_YELLOW_MED, DECO_AUTUMN_TREE_YELLOW_SM,
+
+    DECO_TREE_GREEN_B,
+
+    DECO_CATTAIL_GREEN_LG, DECO_CATTAIL_GREEN_MED, DECO_CATTAIL_GREEN_SM,
+    DECO_FERN_GREEN_LG, DECO_FERN_GREEN_MED,
+    DECO_COUNT
+} DecoID;
+
+typedef struct{
+    const short* data;
+    int w, h;
+} DecoType;
+
+/* removed fwd decl: static const DecoType DECO_LOOKUP[DECO_COUNT]; */
+
+#define ROCK_BIG_BROWN_W  28
+#define ROCK_BIG_BROWN_H  43
+#define ROCK_MED_BROWN_W  26
+#define ROCK_MED_BROWN_H  27
+#define ROCK_SM_A_BROWN_W  14
+#define ROCK_SM_A_BROWN_H  11
+#define ROCK_SM_B_BROWN_W  15
+#define ROCK_SM_B_BROWN_H  10
+#define ROCK_SM_C_BROWN_W  7
+#define ROCK_SM_C_BROWN_H  7
+
+#define ROCK_BIG_GREY_W  28
+#define ROCK_BIG_GREY_H  43
+#define ROCK_MED_GREY_W  26
+#define ROCK_MED_GREY_H  27
+#define ROCK_SM_A_GREY_W  14
+#define ROCK_SM_A_GREY_H  11
+#define ROCK_SM_B_GREY_W  15
+#define ROCK_SM_B_GREY_H  10
+#define ROCK_SM_C_GREY_W  7
+#define ROCK_SM_C_GREY_H  7
+
+#define BUSH_GREEN_SM_W  29
+#define BUSH_GREEN_SM_H  26
+
+#define BUSH_OLIVE_SM_W  29
+#define BUSH_OLIVE_SM_H  26
+
+#define BUSH_RED_SM_W  29
+#define BUSH_RED_SM_H  26
+
+#define BUSH_GREEN_LG_W  42
+#define BUSH_GREEN_LG_H  32
+
+#define BUSH_OLIVE_LG_W  42
+#define BUSH_OLIVE_LG_H  32
+
+/* #define BUSH_OLIVE_LG_W -- duplicate removed */
+/* #define BUSH_OLIVE_LG_H -- duplicate removed */
+
+#define STICK_TREE_MED_W  26
+#define STICK_TREE_MED_H  47
+
+#define FLOWER_PURPLE_W  26
+#define FLOWER_PURPLE_H  31
+
+#define TREE_GREEN_A_W  29
+#define TREE_GREEN_A_H  47
+
+#define GREEN_PLANT_TREE_A_W  16
+#define GREEN_PLANT_TREE_A_H  31
+
+#define TREE_GREEN_B_W  36
+#define TREE_GREEN_B_H  76
+
+#define AUTUMN_TREE_RED_MED_W  32
+#define AUTUMN_TREE_RED_MED_H  62
+#define AUTUMN_TREE_RED_SM_W  16
+#define AUTUMN_TREE_RED_SM_H  32
+
+#define AUTUMN_TREE_YELLOW_MED_W  32
+#define AUTUMN_TREE_YELLOW_MED_H  62
+#define AUTUMN_TREE_YELLOW_SM_W  16
+#define AUTUMN_TREE_YELLOW_SM_H  32
+
+#define CATTAIL_GREEN_LG_W  16
+#define CATTAIL_GREEN_LG_H  26
+#define CATTAIL_GREEN_MED_W  15
+#define CATTAIL_GREEN_MED_H  26
+#define CATTAIL_GREEN_SM_W  9
+#define CATTAIL_GREEN_SM_H  16
+
+#define FERN_GREEN_LG_W  16
+#define FERN_GREEN_LG_H  22
+#define FERN_GREEN_MED_W  14
+#define FERN_GREEN_MED_H  15
+
+/* removed fwd decl: static const short rock_big_brown[ROCK_BIG_BROWN_W * ROCK_BIG_BROWN_W]; */
+/* removed fwd decl: static const short rock_med_brown[ROCK_MED_BROWN_W * ROCK_MED_BROWN_H]; */
+/* removed fwd decl: static const short rock_sm_a_brown[ROCK_SM_A_BROWN_W * ROCK_SM_A_BROWN_H]; */
+/* removed fwd decl: static const short rock_sm_b_brown[ROCK_SM_B_BROWN_W * ROCK_SM_B_BROWN_H]; */
+/* removed fwd decl: static const short rock_sm_c_brown[ROCK_SM_C_BROWN_W * ROCK_SM_C_BROWN_H]; */
+
+/* removed fwd decl: static const short rock_big_grey[ROCK_BIG_GREY_W * ROCK_BIG_GREY_H]; */
+/* removed fwd decl: static const short rock_med_grey[ROCK_MED_GREY_W * ROCK_BIG_GREY_H]; */
+/* removed fwd decl: static const short rock_sm_a_grey[ROCK_SM_A_GREY_W * ROCK_SM_A_GREY_H]; */
+/* removed fwd decl: static const short rock_sm_b_grey[ROCK_SM_B_GREY_W * ROCK_SM_B_GREY_H]; */
+/* removed fwd decl: static const short rock_sm_c_grey[ROCK_SM_C_GREY_W * ROCK_SM_C_GREY_H]; */
+
+/* removed fwd decl: static const short bush_green_sm[BUSH_GREEN_SM_W * BUSH_GREEN_SM_H]; */
+/* removed fwd decl: static const short bush_olive_sm[BUSH_OLIVE_SM_W * BUSH_OLIVE_SM_H]; */
+/* removed fwd decl: static const short bush_red_sm[BUSH_RED_SM_W * BUSH_RED_SM_H]; */
+
+/* removed fwd decl: static const short bush_green_lg[BUSH_GREEN_LG_W * BUSH_GREEN_LG_H]; */
+/* removed fwd decl: static const short bush_olive_lg[BUSH_OLIVE_LG_W * BUSH_OLIVE_LG_H]; */
+
+/* removed fwd decl: static const short stick_tree_med[STICK_TREE_MED_W * STICK_TREE_MED_H]; */
+
+/* removed fwd decl: static const short flower_purple[806]; */
+
+/* removed fwd decl: static const short tree_green_a[TREE_GREEN_A_W * TREE_GREEN_A_H]; */
+/* removed fwd decl: static const short green_plant_tree_a[GREEN_PLANT_TREE_A_H * GREEN_PLANT_TREE_A_W]; */
+/* removed fwd decl: static const short tree_green_b[TREE_GREEN_B_W * TREE_GREEN_B_H]; */
+
+/* removed fwd decl: static const short autumn_tree_red_med[AUTUMN_TREE_RED_MED_W * AUTUMN_TREE_RED_MED_H]; */
+/* removed fwd decl: static const short autumn_tree_red_sm[AUTUMN_TREE_RED_SM_W * AUTUMN_TREE_RED_SM_H]; */
+
+/* removed fwd decl: static const short autumn_tree_yellow_med[AUTUMN_TREE_YELLOW_MED_W * AUTUMN_TREE_YELLOW_MED_H]; */
+/* removed fwd decl: static const short autumn_tree_yellow_sm[AUTUMN_TREE_YELLOW_SM_W * AUTUMN_TREE_YELLOW_SM_H]; */
+
+/* removed fwd decl: static const short cattail_green_lg[CATTAIL_GREEN_LG_W * CATTAIL_GREEN_LG_H]; */
+/* removed fwd decl: static const short cattail_green_med[CATTAIL_GREEN_MED_W * CATTAIL_GREEN_MED_H]; */
+/* removed fwd decl: static const short cattail_green_sm[CATTAIL_GREEN_SM_W * CATTAIL_GREEN_SM_H]; */
+
+/* removed fwd decl: static const short fern_green_lg[FERN_GREEN_LG_W * FERN_GREEN_LG_H]; */
+/* removed fwd decl: static const short fern_green_med[FERN_GREEN_MED_W * FERN_GREEN_MED_H]; */
+
+
+/* ===========================================================================
+ * src/assets/projectile_sprites.h
+ * =========================================================================*/
+#define PROJECTILE_W  20
+#define PROJECTILE_H  7
+
+const short arrow_sprite[PROJECTILE_W * PROJECTILE_H];
+
+
+/* ===========================================================================
+ * src/game/sprite.h
+ * =========================================================================*/
+//this will be used to determine if we should not draw that pixel
+#define TRANSPARENT 0xF81F //magenta
+
+typedef enum {
+    //Player
+    SPRITE_PLAYER,
+
+    //Enemies
+    SPRITE_ENEMY,
+
+    //Projectiles
+    SPRITE_PROJECTILE,
+
+    //Background tiles
+    SPRITE_TILE_GRASS,
+    SPRITE_TILE_DIRT,
+    SPRITE_TILE_STONE,
+
+    SPRITE_TILE_WATER,
+    SPRITE_TILE_SAND,
+    SPRITE_TILE_LAVA,
+
+    SPRITE_POSION_CLOUD,
+    SPRITE_WOOD_SHIELD,
+    SPRITE_LIFE_POT,
+    SPRITE_COUNT
+} SpriteID;
+
+typedef struct{
+    int width;
+    int height;
+    const short *data;
+} Sprite;
+
+Sprite sprites[SPRITE_COUNT];
+
+
+/* ===========================================================================
+ * src/engine/animator.h
+ * =========================================================================*/
+/* #include "soldier_frames.h" -- merged */
+
+#define GAME_FPS 60
+
+typedef struct{
+    unsigned char anim; //current animation ID
+    unsigned char frame; //current animation frame index
+    unsigned char tick; //ticks until next frame
+    unsigned char flip; //1 to mirror horizontally (Ex facing left)
+} Animator;
+
+static inline void anim_init(Animator *a, const AnimDef *defs, int start_anim);
+
+static inline int anim_tick(Animator *a, const AnimDef *defs);
+
+static inline const short *anim_frame(const Animator *a, const short * const *frames);
+
+static inline void anim_play(Animator *a, const AnimDef *defs, int id);
+
+static inline void anim_restart(Animator *a, const AnimDef *def);
+
+
+/* ===========================================================================
+ * src/game/map.h
+ * =========================================================================*/
+/* #include "sprite.h" -- merged */
+
+#define MAP_WIDTH 20
+#define MAP_HEIGHT 15
+
+typedef struct {
+    /* Budgets: how much of each category to place*/
+    int tree_budget;
+    int rock_budget;
+    int bush_budget;
+    int small_budget;
+    int cattail_budget;
+    int fern_budget;
+
+    /* Now clusters*/
+    /*if > 1 trees/rocks placed in tight groups*/
+    // 1 = scattered, 2-4 = cluster
+    int tree_cluster_size;
+    int rock_cluster_size;
+
+    int prefer_big_trees; // 0 mixed, 1 big trees first, 2 big trees only
+    int prefer_big_rocks; //0 mixed, 1 big rocks first, 2 big rocks only
+
+    /* Which decoration variants to use*/
+    int use_autumn_trees; //1 = include autumn variants
+    int use_grey_rocks; //1 = grey rocks only, 0 = brown only, 2 both
+} MapConfig;
+
+//to be indexed by map_index when selecting map
+#define NUM_MAPS 2
+const MapConfig MAP_CONFIGS[NUM_MAPS + 1];
+
+void map_init(int map_index);
+SpriteID map_get_tile(int row, int col);
+void map_set_tile(int row, int col, SpriteID id);
+
+
+/* ===========================================================================
+ * src/game/player_config.h
+ * =========================================================================*/
+/* #include "keyboard.h" -- merged */
+
+/* ------------------------------------------------------------------
+ * PlayerConfig — one of these per player.
+ * To re-bind keys, just change the values here
+ * ------------------------------------------------------------------ */
+typedef struct {
+    unsigned char key_up;
+    unsigned char key_down;
+    unsigned char key_left;
+    unsigned char key_right;
+    unsigned char key_atk1;
+    unsigned char key_atk2;
+    unsigned char key_atkp;
+    unsigned char key_dash;
+    unsigned char key_block;
+    int health_x;
+    int health_y;
+} PlayerConfig;
+
+/* Player 1: WASD + Z/X attacks */
+#define PLAYER1_CONFIG { \
+    .key_up    = KEY_W,     \
+    .key_down  = KEY_S,     \
+    .key_left  = KEY_A,     \
+    .key_right = KEY_D,     \
+    .key_atk1  = KEY_Q,     \
+    .key_atk2  = KEY_E,      \
+    .key_atkp = KEY_R,   \
+    .key_dash = KEY_Z,   \
+    .key_block = KEY_X,   \
+    .health_x = 20,    \
+    .health_y = 20    \
+}
+
+/* Player 2: Arrow keys + Q/E attacks */
+#define PLAYER2_CONFIG { \
+    .key_up    = KEY_UP,    \
+    .key_down  = KEY_DOWN,  \
+    .key_left  = KEY_LEFT,  \
+    .key_right = KEY_RIGHT, \
+    .key_atk1  = KEY_M,     \
+    .key_atk2  = KEY_K,      \
+    .key_atkp = KEY_L,     \
+    .key_dash = KEY_N,       \
+    .key_block = KEY_J,      \
+    .health_x = 270,   /*manual calculations for (SCREEN_WIDTH - 20 - full_health)*/ \
+    .health_y = 20     \
+}
+
+
+/* ===========================================================================
+ * src/game/entity.h
+ * =========================================================================*/
+#define MAX_ENTITIES 64
+/* #include "animator.h" -- merged */
+/* #include "player_config.h" -- merged */
+
+typedef enum{
+    ENTITY_NONE,
+    ENTITY_PLAYER,
+    ENTITY_ENEMY,
+    ENTITY_PROJECTILE
+} EntityType;
+
+typedef struct{
+    int x;
+    int y;
+
+    int prev_x[2];
+    int prev_y[2];
+
+    int dx;
+    int dy;
+
+    int width;
+    int height;
+
+    char facing; //this will be used to determine which direction they are facing
+
+    int hitbox_x;
+    int hitbox_y;
+    int hitbox_w;
+    int hitbox_h;
+
+    int health;
+    int sprite_id;
+
+    short colour;
+    
+    EntityType type;
+
+    Animator anim;
+    const AnimDef *anim_def; //points to SOLDIER_ANIMS, PROJECTILE, etc
+
+    const PlayerConfig *player_cfg;
+
+    int active;
+
+    //flags to know if certain actions need to happen
+    int attack_s1;
+    int attack_s2;
+    int attack_p;
+
+    //hit flag
+    int was_hit;
+    int damage;
+
+    /* Set when dying: keep drawing death anim until it finishes*/
+    int dying;
+
+    int pending_erase;
+    int pending_erase_b1; //to check both buffers for pending
+    int pending_erase_b2;
+
+    /* cooldowns (number of frames) */
+    int atk1_cooldown;
+    int atk2_cooldown;
+
+    int shoot_cooldown;
+    int arrow_fired;
+
+    int dash_cooldown;
+    int dash_timer;
+    int is_dashing; //use to check if speed needs to be *2
+
+    int block_cooldown;
+    int block_timer;
+    int blocking;
+
+    struct Entity* owner;
+
+} Entity;
+
+Entity entities[MAX_ENTITIES];
+
+Entity* spawn_entity(EntityType type);
+void entity_update_all(int cur_buf);
+void entity_draw_all();
+void entity_erase_all(int cur_buf);
+void draw_entity(Entity *e);
+
+
+/* ===========================================================================
+ * src/game/player.h
+ * =========================================================================*/
+/* #include "soldier_frames.h" -- merged */
+
+#define HEALTH 100
+#define PLAYER_SPEED 2
+#define PLAYER_HITBOX_OFFSET_X 7
+#define PLAYER_HITBOX_OFFSET_Y 8
+#define PLAYER_HITBOX_W 13
+#define PLAYER_HITBOX_H 18
+#define PLAYER_W SOLDIER_W
+#define PLAYER_H SOLDIER_H
+
+#define ATTACK_1_DAMAGE 10
+#define ATK1_COOLDOWN 20
+
+#define ATTACK_2_DAMAGE 18
+#define ATK2_COOLDOWN 30
+
+#define PROJECTILE_DAMAGE 12
+#define SHOOT_COOLDOWN 45
+
+#define DASH_COOLDOWN 60
+#define DASH_TIMER 15
+
+#define BLOCK_COOLDOWN 30
+#define BLOCK_TIMER 15
+
+/* #include "entity.h" -- merged */
+/* #include "sprite.h" -- merged */
+/* #include "player_config.h" -- merged */
+
+void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg, int x_start, int flip);
+void player_update(Entity *p, int cur_buf);
+void player_draw(const Entity *p);
+
+
+/* ===========================================================================
+ * src/game/enemy.h
+ * =========================================================================*/
+/* #include "entity.h" -- merged */
+
+void enemy_update(Entity *e);
+void enemy_draw(Entity *e);
+
+
+/* ===========================================================================
+ * src/game/projectile.h
+ * =========================================================================*/
+/* #include "entity.h" -- merged */
+
+/* #include "player.h" -- merged */
+
+#define PROJECTILE_SPEED 4
+
+void projectile_update(Entity *e, int cur_buf);
+void projectile_draw(Entity *e);
+void projectile_init(Entity *e, Entity *owner, SpriteID sprite, int x, int y, char facing);
+
+
+/* ===========================================================================
+ * src/engine/decorations.h
+ * =========================================================================*/
+/* #include "decoration_sprites.h" -- merged */
+
+#define MAX_DECORATIONS 20
+#define DECO_CELL_CAP 4
+
+typedef struct{
+    short x, y;
+    unsigned char type;
+} Decoration;
+
+int deco_count;
+
+typedef struct{
+    //this will hold which indicies in decor corrsepond to this cell
+    unsigned char indices[DECO_CELL_CAP];
+    unsigned char count; //amount of decor in this cell
+} DecoCell;
+
+int canopy_indices[MAX_DECORATIONS];
+int canopy_count;
+
+Decoration decorations[MAX_DECORATIONS];
+const DecoCell *deco_map_get_cell(int row, int col);
+
+void decoration_init(int map_index);
+void decoration_redraw_region(int row0, int col0, int row1, int col1);
+void decoration_draw_canopies_near(int px1, int py1, int px2, int py2);
+int deco_has_canopy(int deco_type);
+
+
+/* ===========================================================================
+ * src/game/obstacle_map.h
+ * =========================================================================*/
+/* #include "map.h" -- merged */
+
+/* Bit flags, combine with | when setting, test with & */
+#define TILE_FLAG_SOLID    (1 << 0)  // blocks movement entirely */
+#define TILE_FLAG_SLOW     (1 << 1)  //water halves speed */
+#define TILE_FLAG_DAMAGE   (1 << 2)  // storm zone — drains HP */
+
+unsigned char obstacle_map[MAP_HEIGHT][MAP_WIDTH];
+
+void obstacle_map_init(void);
+
+void obstacle_map_set(int row, int col, unsigned char flags);
+void obstacle_map_clear(int row, int col, unsigned char flags);
+unsigned char obstacle_map_get(int row, int col);
+
+int pixel_to_col(int px);
+int pixel_to_row(int py);
+
+unsigned char obstacle_map_at_pixel(int px, int py);
+
+
+/* ===========================================================================
+ * src/engine/collision.h
+ * =========================================================================*/
+
+
+/* ===========================================================================
+ * src/engine/renderer.h
+ * =========================================================================*/
+/* #include "sprite.h" -- merged */
+
+void draw_background();
+void draw_sprite(const Sprite *s, int x, int y, int flip_h, int flip_v);
+void erase_sprite(int x, int y, int w, int h);
+
+
+/* ===========================================================================
+ * src/ai/ai.h
+ * =========================================================================*/
+
+
+/* ===========================================================================
+ * src/game/game.h
+ * =========================================================================*/
+int game_winner; //0 = no winner, 1 p1 wins, 2 p2 wins
+
+void game_init();
+void update_game(int cur_buf);
+void draw_game(int cur_buf);
+
+
+/* ===========================================================================
  * src/hardware/vga.c
  * =========================================================================*/
 /* #include "vga.h" -- merged */
+/* #include "player_config.h" -- merged */
+/* #include "entity.h" -- merged */
 
 /*Global pixel buffer pointer */
 volatile int pixel_buffer_start; // global variable
@@ -280,13 +1057,17 @@ void draw_rect_outline(int x, int y, int width, int height, short colour){
 }
 
 
-/* ===========================================================================
- * src/hardware/timer.h
- * =========================================================================*/
-volatile int frame_flag;
+void draw_health_bar(Entity* p) {   //call this function twice, pass in each player 
+    int health = p->health; // get current health 
+    int health_bar = health * (30 / 100); // divide so that 100 health = 30 pixels 
+    int full_health = 30;
+    int x_coord = p->player_cfg->health_x;
+    int y_coord = p->player_cfg->health_y;
 
-void timer_init();
-void timer_irq();
+    draw_rect(x_coord, y_coord, full_health, 6, 0); // draw black background for health bar 
+    draw_rect(x_coord, y_coord, health_bar, 6, 0xF800); // width is scaled version of health 
+    draw_rect_outline(x_coord, y_coord, full_health, 6, 0);   // black outline on top of red 
+}
 
 
 /* ===========================================================================
@@ -325,68 +1106,6 @@ void timer_irq(){
    timer_ptr[0] = 1;
    frame_flag = 1;
 }
-
-
-/* ===========================================================================
- * src/hardware/keyboard.h
- * =========================================================================*/
-//Arrow keys are extened (0xE0 prefix) - stores with bit 7 set
-#define KEY_UP      0xF5
-#define KEY_DOWN    0xF2
-#define KEY_LEFT    0xEB
-#define KEY_RIGHT   0xF4
-
-#define KEY_SPACE   0x29
-#define KEY_ESC     0x76
-#define KEY_LSHIFT  0x12
-#define KEY_RSHIFT  0x59
-#define KEY_LCTRL   0x14
-#define KEY_CAPS    0x58
-#define KEY_ENTER   0x5A
-#define KET_BKSP    0x66 
-
-#define KEY_A       0x1C
-#define KEY_B       0x32
-#define KEY_C       0x21
-#define KEY_D       0x23
-#define KEY_E       0x24
-#define KEY_F       0x2B    
-#define KEY_G       0x34    
-#define KEY_H       0x33    
-#define KEY_I       0x43    
-#define KEY_J       0x3B
-#define KEY_K       0x42    
-#define KEY_L       0x4B    
-#define KEY_M       0x3A    
-#define KEY_N       0x31    
-#define KEY_O       0x44
-#define KEY_P       0x4D    
-#define KEY_Q       0x15    
-#define KEY_R       0x2D    
-#define KEY_S       0x1B    
-#define KEY_T       0x2C
-#define KEY_U       0x3C    
-#define KEY_V       0x2A    
-#define KEY_W       0x1D    
-#define KEY_X       0x22    
-#define KEY_Y       0x35
-#define KEY_Z       0x1A
-
-#define KEY_1       0x16    
-#define KEY_2       0x1E    
-#define KEY_3       0x26    
-#define KEY_4       0x25    
-#define KEY_5       0x2E
-#define KEY_6       0x36    
-#define KEY_7       0x3D    
-#define KEY_8       0x3E    
-#define KEY_9       0x46    
-#define KEY_0       0x45
-/* Returns 1 if the key with the given scancode is currently held down */
-int key_pressed(unsigned char scancode);
-
-/* Call once per frame to drain the PS/2 FIFO and update key state */
-void keyboard_update(void);
 
 
 /* ===========================================================================
@@ -437,31 +1156,8 @@ void keyboard_update(void) {
 
 
 /* ===========================================================================
- * src/hardware/audio.h
- * =========================================================================*/
-
-
-/* ===========================================================================
  * src/hardware/audio.c
  * =========================================================================*/
-
-
-/* ===========================================================================
- * src/assets/tile_sprites.h
- * =========================================================================*/
-#define TILE_SPRITIES_H
-
-#define TILE_W 16
-#define TILE_H 16
-
-const short grass_sprite[TILE_H*TILE_W];
-const short stone_sprite[TILE_H*TILE_W];
-const short water_sprite[TILE_H*TILE_W];
-const short dirt_sprite[TILE_W * TILE_H];
-const short sand_sprite[TILE_W * TILE_H];
-const short snow_sprite[TILE_W  * TILE_H];
-const short water_bright_sprite[TILE_W * TILE_H];
-const short lava_sprite[TILE_W * TILE_H]; 
 
 
 /* ===========================================================================
@@ -622,29 +1318,6 @@ const short lava_sprite[256] = {
 
 
 /* ===========================================================================
- * src/assets/player_sprites.h
- * =========================================================================*/
-#define PLAYER_SPRITIES_H
-
-#define OLD_PLAYER_W 16
-#define OLD_PLAYER_H 16
-
-#define WOOD_SHIELD_W  14
-#define WOOD_SHIELD_H  16
-
-#define LIFE_POT_SPRITE_W  9
-#define LIFE_POT_SPRITE_H  11
-
-#define POSION_CLOUD_W  16
-#define POSION_CLOUD_H  16
-
-const short player_sprite[OLD_PLAYER_W * OLD_PLAYER_H];
-/* removed fwd decl: static const short wood_shield[WOOD_SHIELD_W * WOOD_SHIELD_H]; */
-/* removed fwd decl: static const short life_pot_sprite[LIFE_POT_SPRITE_W * LIFE_POT_SPRITE_H]; */
-/* removed fwd decl: static const short posion_cloud[POSION_CLOUD_W * POSION_CLOUD_H]; */
-
-
-/* ===========================================================================
  * src/assets/player_sprites.c
  * =========================================================================*/
 /* #include "player_sprites.h" -- merged */
@@ -716,90 +1389,6 @@ const short posion_cloud[256] = {
     0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xAE17,0xAE17,0xAE17,0xAE17,0xAE17,0xAE17,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,
     0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xAE17,0xAE17,0xAE17,0xAE17,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,
 };
-
-
-/* ===========================================================================
- * src/assets/soldier_frames.h
- * =========================================================================*/
-/* soldier_frames.h — generated from Soldier.aseprite
- * Tight crop: 41x29px per frame (was 100x100, 88% empty removed)
- * Format: RGB565, 0xF81F = transparent (magenta key)
- * All frames are const -> placed in SDRAM .rodata, zero on-chip SRAM cost
- * Per-entity runtime state: ~16 bytes (just indices)
- */
-
-#define SOLDIER_W      41
-#define SOLDIER_H      29
-#define SOLDIER_FRAMES 43
-
-/* #include "sprite.h" -- merged */
-
-typedef enum {
-    SOLIDER_IDLE,
-    SOLDIER_WALK,
-    SOLDIER_ATK1,
-    SOLDIER_ATK2,
-    SOLDIER_ATK3,
-    SOLDIER_HURT,
-    SOLDIER_DEATH,
-    SOLDIER_COUNT
-} SoldierID;
-
-typedef struct {
-    unsigned char start;  /* first frame index */
-    unsigned char end;    /* last frame index (inclusive) */
-    unsigned char loop;   /* 1=loop, 0=play once */
-    unsigned char fps;
-} AnimDef;
-
-const AnimDef SOLDIER_ANIMS[SOLDIER_COUNT];
-const short soldier_f00[41*29];
-const short soldier_f01[41*29];
-const short soldier_f02[41*29];
-const short soldier_f03[41*29];
-const short soldier_f04[41*29];
-const short soldier_f05[41*29];
-const short soldier_f06[41*29];
-const short soldier_f07[41*29];
-const short soldier_f08[41*29];
-const short soldier_f09[41*29];
-const short soldier_f10[41*29];
-const short soldier_f11[41*29];
-const short soldier_f12[41*29];
-const short soldier_f13[41*29];
-const short soldier_f14[41*29];
-const short soldier_f15[41*29];
-const short soldier_f16[41*29];
-const short soldier_f17[41*29];
-const short soldier_f18[41*29];
-const short soldier_f19[41*29];
-const short soldier_f20[41*29];
-const short soldier_f21[41*29];
-const short soldier_f22[41*29];
-const short soldier_f23[41*29];
-const short soldier_f24[41*29];
-const short soldier_f25[41*29];
-
-const short soldier_f26[41*29];
-const short soldier_f27[41*29];
-const short soldier_f28[41*29];
-const short soldier_f29[41*29];
-const short soldier_f30[41*29];
-const short soldier_f31[41*29];
-const short soldier_f32[41*29];
-const short soldier_f33[41*29];
-const short soldier_f34[41*29];
-
-const short soldier_f35[41*29];
-const short soldier_f36[41*29];
-const short soldier_f37[41*29];
-const short soldier_f38[41*29];
-const short soldier_f39[41*29];
-const short soldier_f40[41*29];
-const short soldier_f41[41*29];
-const short soldier_f42[41*29];
-
-const short * const soldier_frames[SOLDIER_FRAMES];
 
 
 /* ===========================================================================
@@ -2657,172 +3246,6 @@ const short * const soldier_frames[SOLDIER_FRAMES] = {
 
 
 /* ===========================================================================
- * src/assets/decoration_sprites.h
- * =========================================================================*/
-#define DECORATIONS_SPRTIES_H
-
-/*Rocks/bushes/flowers on grass only. Trees on grass only.*/
-
-typedef enum {
-    DECO_ROCK_BIG_BROWN, 
-    DECO_ROCK_MED_BROWN, 
-    DECO_ROCK_SM_A_BROWN, 
-    DECO_ROCK_SM_B_BROWN,
-    DECO_ROCK_SM_C_BROWN,
-    DECO_ROCK_BIG_GREY,
-    DECO_ROCK_MED_GREY, 
-    DECO_ROCK_SM_A_GREY,
-    DECO_ROCK_SM_B_GREY, 
-    DECO_ROCK_SM_C_GREY,
-
-    DECO_BUSH_GREEN_SM, 
-    DECO_BUSH_OLIVE_SM, 
-    DECO_BUSH_RED_SM,
-    DECO_BUSH_GREEN_LG,
-    DECO_BUSH_OLIVE_LG, 
-
-    DECO_STICK_TREE_MED,
-    DECO_FLOWER_PURPLE,
-
-    DECO_TREE_GREEN_A,
-    DECO_GREEN_PLANT_TREE_A,
-
-    DECO_AUTUMN_TREE_RED_MED, DECO_AUTUMN_TREE_RED_SM,
-    DECO_AUTUMN_TREE_YELLOW_MED, DECO_AUTUMN_TREE_YELLOW_SM,
-
-    DECO_TREE_GREEN_B,
-
-    DECO_CATTAIL_GREEN_LG, DECO_CATTAIL_GREEN_MED, DECO_CATTAIL_GREEN_SM,
-    DECO_FERN_GREEN_LG, DECO_FERN_GREEN_MED,
-    DECO_COUNT
-} DecoID;
-
-typedef struct{
-    const short* data;
-    int w, h;
-} DecoType;
-
-/* removed fwd decl: static const DecoType DECO_LOOKUP[DECO_COUNT]; */
-
-#define ROCK_BIG_BROWN_W  28
-#define ROCK_BIG_BROWN_H  43
-#define ROCK_MED_BROWN_W  26
-#define ROCK_MED_BROWN_H  27
-#define ROCK_SM_A_BROWN_W  14
-#define ROCK_SM_A_BROWN_H  11
-#define ROCK_SM_B_BROWN_W  15
-#define ROCK_SM_B_BROWN_H  10
-#define ROCK_SM_C_BROWN_W  7
-#define ROCK_SM_C_BROWN_H  7
-
-#define ROCK_BIG_GREY_W  28
-#define ROCK_BIG_GREY_H  43
-#define ROCK_MED_GREY_W  26
-#define ROCK_MED_GREY_H  27
-#define ROCK_SM_A_GREY_W  14
-#define ROCK_SM_A_GREY_H  11
-#define ROCK_SM_B_GREY_W  15
-#define ROCK_SM_B_GREY_H  10
-#define ROCK_SM_C_GREY_W  7
-#define ROCK_SM_C_GREY_H  7
-
-#define BUSH_GREEN_SM_W  29
-#define BUSH_GREEN_SM_H  26
-
-#define BUSH_OLIVE_SM_W  29
-#define BUSH_OLIVE_SM_H  26
-
-#define BUSH_RED_SM_W  29
-#define BUSH_RED_SM_H  26
-
-#define BUSH_GREEN_LG_W  42
-#define BUSH_GREEN_LG_H  32
-
-#define BUSH_OLIVE_LG_W  42
-#define BUSH_OLIVE_LG_H  32
-
-/* #define BUSH_OLIVE_LG_W -- duplicate removed */
-/* #define BUSH_OLIVE_LG_H -- duplicate removed */
-
-#define STICK_TREE_MED_W  26
-#define STICK_TREE_MED_H  47
-
-#define FLOWER_PURPLE_W  26
-#define FLOWER_PURPLE_H  31
-
-#define TREE_GREEN_A_W  29
-#define TREE_GREEN_A_H  47
-
-#define GREEN_PLANT_TREE_A_W  16
-#define GREEN_PLANT_TREE_A_H  31
-
-#define TREE_GREEN_B_W  36
-#define TREE_GREEN_B_H  76
-
-#define AUTUMN_TREE_RED_MED_W  32
-#define AUTUMN_TREE_RED_MED_H  62
-#define AUTUMN_TREE_RED_SM_W  16
-#define AUTUMN_TREE_RED_SM_H  32
-
-#define AUTUMN_TREE_YELLOW_MED_W  32
-#define AUTUMN_TREE_YELLOW_MED_H  62
-#define AUTUMN_TREE_YELLOW_SM_W  16
-#define AUTUMN_TREE_YELLOW_SM_H  32
-
-#define CATTAIL_GREEN_LG_W  16
-#define CATTAIL_GREEN_LG_H  26
-#define CATTAIL_GREEN_MED_W  15
-#define CATTAIL_GREEN_MED_H  26
-#define CATTAIL_GREEN_SM_W  9
-#define CATTAIL_GREEN_SM_H  16
-
-#define FERN_GREEN_LG_W  16
-#define FERN_GREEN_LG_H  22
-#define FERN_GREEN_MED_W  14
-#define FERN_GREEN_MED_H  15
-
-/* removed fwd decl: static const short rock_big_brown[ROCK_BIG_BROWN_W * ROCK_BIG_BROWN_W]; */
-/* removed fwd decl: static const short rock_med_brown[ROCK_MED_BROWN_W * ROCK_MED_BROWN_H]; */
-/* removed fwd decl: static const short rock_sm_a_brown[ROCK_SM_A_BROWN_W * ROCK_SM_A_BROWN_H]; */
-/* removed fwd decl: static const short rock_sm_b_brown[ROCK_SM_B_BROWN_W * ROCK_SM_B_BROWN_H]; */
-/* removed fwd decl: static const short rock_sm_c_brown[ROCK_SM_C_BROWN_W * ROCK_SM_C_BROWN_H]; */
-
-/* removed fwd decl: static const short rock_big_grey[ROCK_BIG_GREY_W * ROCK_BIG_GREY_H]; */
-/* removed fwd decl: static const short rock_med_grey[ROCK_MED_GREY_W * ROCK_BIG_GREY_H]; */
-/* removed fwd decl: static const short rock_sm_a_grey[ROCK_SM_A_GREY_W * ROCK_SM_A_GREY_H]; */
-/* removed fwd decl: static const short rock_sm_b_grey[ROCK_SM_B_GREY_W * ROCK_SM_B_GREY_H]; */
-/* removed fwd decl: static const short rock_sm_c_grey[ROCK_SM_C_GREY_W * ROCK_SM_C_GREY_H]; */
-
-/* removed fwd decl: static const short bush_green_sm[BUSH_GREEN_SM_W * BUSH_GREEN_SM_H]; */
-/* removed fwd decl: static const short bush_olive_sm[BUSH_OLIVE_SM_W * BUSH_OLIVE_SM_H]; */
-/* removed fwd decl: static const short bush_red_sm[BUSH_RED_SM_W * BUSH_RED_SM_H]; */
-
-/* removed fwd decl: static const short bush_green_lg[BUSH_GREEN_LG_W * BUSH_GREEN_LG_H]; */
-/* removed fwd decl: static const short bush_olive_lg[BUSH_OLIVE_LG_W * BUSH_OLIVE_LG_H]; */
-
-/* removed fwd decl: static const short stick_tree_med[STICK_TREE_MED_W * STICK_TREE_MED_H]; */
-
-/* removed fwd decl: static const short flower_purple[806]; */
-
-/* removed fwd decl: static const short tree_green_a[TREE_GREEN_A_W * TREE_GREEN_A_H]; */
-/* removed fwd decl: static const short green_plant_tree_a[GREEN_PLANT_TREE_A_H * GREEN_PLANT_TREE_A_W]; */
-/* removed fwd decl: static const short tree_green_b[TREE_GREEN_B_W * TREE_GREEN_B_H]; */
-
-/* removed fwd decl: static const short autumn_tree_red_med[AUTUMN_TREE_RED_MED_W * AUTUMN_TREE_RED_MED_H]; */
-/* removed fwd decl: static const short autumn_tree_red_sm[AUTUMN_TREE_RED_SM_W * AUTUMN_TREE_RED_SM_H]; */
-
-/* removed fwd decl: static const short autumn_tree_yellow_med[AUTUMN_TREE_YELLOW_MED_W * AUTUMN_TREE_YELLOW_MED_H]; */
-/* removed fwd decl: static const short autumn_tree_yellow_sm[AUTUMN_TREE_YELLOW_SM_W * AUTUMN_TREE_YELLOW_SM_H]; */
-
-/* removed fwd decl: static const short cattail_green_lg[CATTAIL_GREEN_LG_W * CATTAIL_GREEN_LG_H]; */
-/* removed fwd decl: static const short cattail_green_med[CATTAIL_GREEN_MED_W * CATTAIL_GREEN_MED_H]; */
-/* removed fwd decl: static const short cattail_green_sm[CATTAIL_GREEN_SM_W * CATTAIL_GREEN_SM_H]; */
-
-/* removed fwd decl: static const short fern_green_lg[FERN_GREEN_LG_W * FERN_GREEN_LG_H]; */
-/* removed fwd decl: static const short fern_green_med[FERN_GREEN_MED_W * FERN_GREEN_MED_H]; */
-
-
-/* ===========================================================================
  * src/assets/decoration_sprites.c
  * =========================================================================*/
 /* #include "decoration_sprites.h" -- merged */
@@ -4399,15 +4822,6 @@ const DecoType DECO_LOOKUP[DECO_COUNT] = {
 
 
 /* ===========================================================================
- * src/assets/projectile_sprites.h
- * =========================================================================*/
-#define PROJECTILE_W  20
-#define PROJECTILE_H  7
-
-const short arrow_sprite[PROJECTILE_W * PROJECTILE_H];
-
-
-/* ===========================================================================
  * src/assets/projectile_sprites.c
  * =========================================================================*/
 /* #include "projectile_sprites.h" -- merged */
@@ -4423,399 +4837,6 @@ const short arrow_sprite[140] = {
     0xF81F,0xF81F,0xF81F,0x2003,0x2003,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0x2003,0x2003,0xF81F,0xF81F,0xF81F,0xF81F,
     0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,
 };
-
-
-/* ===========================================================================
- * src/game/sprite.h
- * =========================================================================*/
-//this will be used to determine if we should not draw that pixel
-#define TRANSPARENT 0xF81F //magenta
-
-typedef enum {
-    //Player
-    SPRITE_PLAYER,
-
-    //Enemies
-    SPRITE_ENEMY,
-
-    //Projectiles
-    SPRITE_PROJECTILE,
-
-    //Background tiles
-    SPRITE_TILE_GRASS,
-    SPRITE_TILE_DIRT,
-    SPRITE_TILE_STONE,
-
-    SPRITE_TILE_WATER,
-    SPRITE_TILE_SAND,
-    SPRITE_TILE_LAVA,
-
-    SPRITE_POSION_CLOUD,
-    SPRITE_WOOD_SHIELD,
-    SPRITE_LIFE_POT,
-    SPRITE_COUNT
-} SpriteID;
-
-typedef struct{
-    int width;
-    int height;
-    const short *data;
-} Sprite;
-
-Sprite sprites[SPRITE_COUNT];
-
-
-/* ===========================================================================
- * src/engine/animator.h
- * =========================================================================*/
-/* #include "soldier_frames.h" -- merged */
-
-#define GAME_FPS 60
-
-typedef struct{
-    unsigned char anim; //current animation ID
-    unsigned char frame; //current animation frame index
-    unsigned char tick; //ticks until next frame
-    unsigned char flip; //1 to mirror horizontally (Ex facing left)
-} Animator;
-
-static inline void anim_init(Animator *a, const AnimDef *defs, int start_anim);
-
-static inline int anim_tick(Animator *a, const AnimDef *defs);
-
-static inline const short *anim_frame(const Animator *a, const short * const *frames);
-
-static inline void anim_play(Animator *a, const AnimDef *defs, int id);
-
-static inline void anim_restart(Animator *a, const AnimDef *def);
-
-
-/* ===========================================================================
- * src/game/map.h
- * =========================================================================*/
-/* #include "sprite.h" -- merged */
-
-#define MAP_WIDTH 20
-#define MAP_HEIGHT 15
-
-typedef struct {
-    /* Budgets: how much of each category to place*/
-    int tree_budget;
-    int rock_budget;
-    int bush_budget;
-    int small_budget;
-    int cattail_budget;
-    int fern_budget;
-
-    /* Now clusters*/
-    /*if > 1 trees/rocks placed in tight groups*/
-    // 1 = scattered, 2-4 = cluster
-    int tree_cluster_size;
-    int rock_cluster_size;
-
-    int prefer_big_trees; // 0 mixed, 1 big trees first, 2 big trees only
-    int prefer_big_rocks; //0 mixed, 1 big rocks first, 2 big rocks only
-
-    /* Which decoration variants to use*/
-    int use_autumn_trees; //1 = include autumn variants
-    int use_grey_rocks; //1 = grey rocks only, 0 = brown only, 2 both
-} MapConfig;
-
-//to be indexed by map_index when selecting map
-#define NUM_MAPS 2
-const MapConfig MAP_CONFIGS[NUM_MAPS + 1];
-
-void map_init(int map_index);
-SpriteID map_get_tile(int row, int col);
-void map_set_tile(int row, int col, SpriteID id);
-
-
-/* ===========================================================================
- * src/game/player_config.h
- * =========================================================================*/
-/* #include "keyboard.h" -- merged */
-
-/* ------------------------------------------------------------------
- * PlayerConfig — one of these per player.
- * To re-bind keys, just change the values here
- * ------------------------------------------------------------------ */
-typedef struct {
-    unsigned char key_up;
-    unsigned char key_down;
-    unsigned char key_left;
-    unsigned char key_right;
-    unsigned char key_atk1;
-    unsigned char key_atk2;
-    unsigned char key_atkp;
-    unsigned char key_dash;
-    unsigned char key_block;
-} PlayerConfig;
-
-/* Player 1: WASD + Z/X attacks */
-#define PLAYER1_CONFIG { \
-    .key_up    = KEY_W,     \
-    .key_down  = KEY_S,     \
-    .key_left  = KEY_A,     \
-    .key_right = KEY_D,     \
-    .key_atk1  = KEY_Q,     \
-    .key_atk2  = KEY_E,      \
-    .key_atkp = KEY_R,   \
-    .key_dash = KEY_Z,   \
-    .key_block = KEY_X   \
-}
-
-/* Player 2: Arrow keys + Q/E attacks */
-#define PLAYER2_CONFIG { \
-    .key_up    = KEY_UP,    \
-    .key_down  = KEY_DOWN,  \
-    .key_left  = KEY_LEFT,  \
-    .key_right = KEY_RIGHT, \
-    .key_atk1  = KEY_M,     \
-    .key_atk2  = KEY_K,      \
-    .key_atkp = KEY_L,     \
-    .key_dash = KEY_N,       \
-    .key_block = KEY_J      \
-}
-
-
-/* ===========================================================================
- * src/game/entity.h
- * =========================================================================*/
-#define MAX_ENTITIES 64
-/* #include "animator.h" -- merged */
-/* #include "player_config.h" -- merged */
-
-typedef enum{
-    ENTITY_NONE,
-    ENTITY_PLAYER,
-    ENTITY_ENEMY,
-    ENTITY_PROJECTILE
-} EntityType;
-
-typedef struct{
-    int x;
-    int y;
-
-    int prev_x[2];
-    int prev_y[2];
-
-    int dx;
-    int dy;
-
-    int width;
-    int height;
-
-    char facing; //this will be used to determine which direction they are facing
-
-    int hitbox_x;
-    int hitbox_y;
-    int hitbox_w;
-    int hitbox_h;
-
-    int health;
-    int sprite_id;
-
-    short colour;
-    
-    EntityType type;
-
-    Animator anim;
-    const AnimDef *anim_def; //points to SOLDIER_ANIMS, PROJECTILE, etc
-
-    const PlayerConfig *player_cfg;
-
-    int active;
-
-    //flags to know if certain actions need to happen
-    int attack_s1;
-    int attack_s2;
-    int attack_p;
-
-    //hit flag
-    int was_hit;
-    int damage;
-
-    /* Set when dying: keep drawing death anim until it finishes*/
-    int dying;
-
-    int pending_erase;
-    int pending_erase_b1; //to check both buffers for pending
-    int pending_erase_b2;
-
-    /* cooldowns (number of frames) */
-    int atk1_cooldown;
-    int atk2_cooldown;
-
-    int shoot_cooldown;
-    int arrow_fired;
-
-    int dash_cooldown;
-    int dash_timer;
-    int is_dashing; //use to check if speed needs to be *2
-
-    int block_cooldown;
-    int block_timer;
-    int blocking;
-
-    struct Entity* owner;
-
-} Entity;
-
-Entity entities[MAX_ENTITIES];
-
-Entity* spawn_entity(EntityType type);
-void entity_update_all(int cur_buf);
-void entity_draw_all();
-void entity_erase_all(int cur_buf);
-void draw_entity(Entity *e);
-
-
-/* ===========================================================================
- * src/game/player.h
- * =========================================================================*/
-/* #include "soldier_frames.h" -- merged */
-
-#define HEALTH 100
-#define PLAYER_SPEED 2
-#define PLAYER_HITBOX_OFFSET_X 7
-#define PLAYER_HITBOX_OFFSET_Y 8
-#define PLAYER_HITBOX_W 13
-#define PLAYER_HITBOX_H 18
-#define PLAYER_W SOLDIER_W
-#define PLAYER_H SOLDIER_H
-
-#define ATTACK_1_DAMAGE 10
-#define ATK1_COOLDOWN 20
-
-#define ATTACK_2_DAMAGE 18
-#define ATK2_COOLDOWN 30
-
-#define PROJECTILE_DAMAGE 12
-#define SHOOT_COOLDOWN 45
-
-#define DASH_COOLDOWN 60
-#define DASH_TIMER 15
-
-#define BLOCK_COOLDOWN 30
-#define BLOCK_TIMER 15
-
-/* #include "entity.h" -- merged */
-/* #include "sprite.h" -- merged */
-/* #include "player_config.h" -- merged */
-
-void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg, int x_start, int flip);
-void player_update(Entity *p, int cur_buf);
-void player_draw(const Entity *p);
-
-
-/* ===========================================================================
- * src/game/enemy.h
- * =========================================================================*/
-/* #include "entity.h" -- merged */
-
-void enemy_update(Entity *e);
-void enemy_draw(Entity *e);
-
-
-/* ===========================================================================
- * src/game/projectile.h
- * =========================================================================*/
-/* #include "entity.h" -- merged */
-
-/* #include "player.h" -- merged */
-
-#define PROJECTILE_SPEED 4
-
-void projectile_update(Entity *e, int cur_buf);
-void projectile_draw(Entity *e);
-void projectile_init(Entity *e, Entity *owner, SpriteID sprite, int x, int y, char facing);
-
-
-/* ===========================================================================
- * src/engine/decorations.h
- * =========================================================================*/
-/* #include "decoration_sprites.h" -- merged */
-
-#define MAX_DECORATIONS 20
-#define DECO_CELL_CAP 4
-
-typedef struct{
-    short x, y;
-    unsigned char type;
-} Decoration;
-
-int deco_count;
-
-typedef struct{
-    //this will hold which indicies in decor corrsepond to this cell
-    unsigned char indices[DECO_CELL_CAP];
-    unsigned char count; //amount of decor in this cell
-} DecoCell;
-
-int canopy_indices[MAX_DECORATIONS];
-int canopy_count;
-
-Decoration decorations[MAX_DECORATIONS];
-const DecoCell *deco_map_get_cell(int row, int col);
-
-void decoration_init(int map_index);
-void decoration_redraw_region(int row0, int col0, int row1, int col1);
-void decoration_draw_canopies_near(int px1, int py1, int px2, int py2);
-int deco_has_canopy(int deco_type);
-
-
-/* ===========================================================================
- * src/game/obstacle_map.h
- * =========================================================================*/
-/* #include "map.h" -- merged */
-
-/* Bit flags, combine with | when setting, test with & */
-#define TILE_FLAG_SOLID    (1 << 0)  // blocks movement entirely */
-#define TILE_FLAG_SLOW     (1 << 1)  //water halves speed */
-#define TILE_FLAG_DAMAGE   (1 << 2)  // storm zone — drains HP */
-
-unsigned char obstacle_map[MAP_HEIGHT][MAP_WIDTH];
-
-void obstacle_map_init(void);
-
-void obstacle_map_set(int row, int col, unsigned char flags);
-void obstacle_map_clear(int row, int col, unsigned char flags);
-unsigned char obstacle_map_get(int row, int col);
-
-int pixel_to_col(int px);
-int pixel_to_row(int py);
-
-unsigned char obstacle_map_at_pixel(int px, int py);
-
-
-/* ===========================================================================
- * src/engine/collision.h
- * =========================================================================*/
-
-
-/* ===========================================================================
- * src/engine/renderer.h
- * =========================================================================*/
-/* #include "sprite.h" -- merged */
-
-void draw_background();
-void draw_sprite(const Sprite *s, int x, int y, int flip_h, int flip_v);
-void erase_sprite(int x, int y, int w, int h);
-
-
-/* ===========================================================================
- * src/ai/ai.h
- * =========================================================================*/
-
-
-/* ===========================================================================
- * src/game/game.h
- * =========================================================================*/
-int game_winner; //0 = no winner, 1 p1 wins, 2 p2 wins
-
-void game_init();
-void update_game(int cur_buf);
-void draw_game(int cur_buf);
 
 
 /* ===========================================================================
