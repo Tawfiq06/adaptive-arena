@@ -372,10 +372,6 @@ void draw_game(int cur_buf){
     entity_draw_all();
     decoration_draw_canopies_near(px1, py1, px2, py2);
 
-    /* draw health bars on top of background */
-    draw_health_bar(g_p1);
-    draw_health_bar(g_p2);
-
     /*draw potions*/
     for (int i = 0; i < MAX_POTIONS; i++){ 
         //erase if flagged
@@ -475,4 +471,8 @@ void draw_game(int cur_buf){
             draw_sprite(&ct->sprite, px, py, 0, 0);
         }
     }
+
+    /* draw health bars on top of background */
+    draw_health_bar(g_p1);
+    draw_health_bar(g_p2);
 }

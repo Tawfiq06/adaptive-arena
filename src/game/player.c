@@ -363,7 +363,7 @@ void player_draw(const Entity *p){
 
 void draw_health_bar(Entity* p) {   //call this function twice, pass in each player 
     int health = p->health; // get current health 
-    int health_bar = health * (30 / 100); // divide so that 100 health = 30 pixels 
+    int health_bar = (health * 30) / 100; // divide so that 100 health = 30 pixels 
     int full_health = 30;
     int x_coord = p->player_cfg->health_x;
     int y_coord = p->player_cfg->health_y;
