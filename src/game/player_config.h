@@ -47,7 +47,7 @@ typedef struct {
     .key_atkp = KEY_L,     \
     .key_dash = KEY_N,       \
     .key_block = KEY_J,      \
-    .health_x = 270,     \  //manual calculations for (SCREEN_WIDTH - 20 - full_health)
+    .health_x = 270,   /*manual calculations for (SCREEN_WIDTH - 20 - full_health)*/ \
     .health_y = 20     \
 }
 
