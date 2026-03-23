@@ -34,7 +34,7 @@
 void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg, int x_start, int flip);
 void player_update(Entity *p, int cur_buf);
 void player_draw(const Entity *p);
-void draw_health_bar(Entity* p) 
+void draw_health_bar(Entity* p); 
   
 
 #endif
