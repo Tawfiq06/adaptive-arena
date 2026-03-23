@@ -478,7 +478,7 @@ void decoration_redraw_region(int row0, int col0, int row1, int col1) {
 }
 
 /* Which types have a tall canopy that should draw over players */
-static int deco_has_canopy(int deco_type) {
+int deco_has_canopy(int deco_type) {
     switch (deco_type) {
         case DECO_TREE_GREEN_A:
         case DECO_TREE_GREEN_B:

@@ -21,31 +21,31 @@
  *   src/assets/projectile_sprites.h
  *   src/assets/projectile_sprites.c
  *   src/game/sprite.h
- *   src/game/sprite.c
  *   src/engine/animator.h
- *   src/engine/animator.c
  *   src/game/map.h
- *   src/game/map.c
- *   src/engine/decorations.h
- *   src/engine/decorations.c
- *   src/game/obstacle_map.h
- *   src/game/obstacle_map.c
  *   src/game/player_config.h
  *   src/game/entity.h
- *   src/game/entity.c
  *   src/game/player.h
- *   src/game/player.c
  *   src/game/enemy.h
- *   src/game/enemy.c
  *   src/game/projectile.h
- *   src/game/projectile.c
+ *   src/engine/decorations.h
+ *   src/game/obstacle_map.h
  *   src/engine/collision.h
- *   src/engine/collision.c
  *   src/engine/renderer.h
- *   src/engine/renderer.c
  *   src/ai/ai.h
- *   src/ai/ai.c
  *   src/game/game.h
+ *   src/game/sprite.c
+ *   src/engine/animator.c
+ *   src/game/map.c
+ *   src/engine/decorations.c
+ *   src/game/obstacle_map.c
+ *   src/game/entity.c
+ *   src/game/player.c
+ *   src/game/enemy.c
+ *   src/game/projectile.c
+ *   src/engine/collision.c
+ *   src/engine/renderer.c
+ *   src/ai/ai.c
  *   src/game/game.c
  *   src/main.c
  * DO NOT EDIT � regenerate with:  python3 tools/flatten.py
@@ -461,6 +461,7 @@ const short dirt_sprite[TILE_W * TILE_H];
 const short sand_sprite[TILE_W * TILE_H];
 const short snow_sprite[TILE_W  * TILE_H];
 const short water_bright_sprite[TILE_W * TILE_H];
+const short lava_sprite[TILE_W * TILE_H]; 
 
 
 /* ===========================================================================
@@ -600,6 +601,25 @@ const short water_bright_sprite[TILE_W * TILE_H] = {
     0x44DA,0x44DA,0x44DA,0x44DA,0x44DA,0x44DA,0x3C9A,0x3C9A,0x44DA,0x3C9A,0x3C9A,0x3C9A,0x3C9A,0x3C9A,0x44DA,0x44DA,
 };
 
+const short lava_sprite[256] = {
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+    0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,0xFBE0,
+};
+
 
 /* ===========================================================================
  * src/assets/player_sprites.h
@@ -615,9 +635,13 @@ const short water_bright_sprite[TILE_W * TILE_H] = {
 #define LIFE_POT_SPRITE_W  9
 #define LIFE_POT_SPRITE_H  11
 
+#define POSION_CLOUD_W  16
+#define POSION_CLOUD_H  16
+
 const short player_sprite[OLD_PLAYER_W * OLD_PLAYER_H];
 /* removed fwd decl: static const short wood_shield[WOOD_SHIELD_W * WOOD_SHIELD_H]; */
 /* removed fwd decl: static const short life_pot_sprite[LIFE_POT_SPRITE_W * LIFE_POT_SPRITE_H]; */
+/* removed fwd decl: static const short posion_cloud[POSION_CLOUD_W * POSION_CLOUD_H]; */
 
 
 /* ===========================================================================
@@ -672,6 +696,25 @@ const short life_pot_sprite[99] = {
     0xF75E,0xF81F,0xE367,0xE367,0xE367,0xF81F,0xF75E,0x10C3,0x10C3,0xF75E,0xF81F,0xF81F,0xE367,0xF81F,0xF81F,0xF75E,
     0x10C3,0x10C3,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0x10C3,0xF81F,0x10C3,0x10C3,0x10C3,0x10C3,0x10C3,
     0x10C3,0x10C3,0xF81F,
+};
+
+const short posion_cloud[256] = {
+    0xF81F,0xF81F,0xF81F,0xF75E,0xF75E,0xF75E,0xF75E,0xF81F,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF81F,0xF81F,0xF81F,
+    0xF81F,0xF81F,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xAE17,0xF81F,
+    0xF81F,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xAE17,0xF81F,
+    0xF81F,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xAE17,0xAE17,0xAE17,
+    0xF81F,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xAE17,0xF75E,0xF75E,0xAE17,0xAE17,0xAE17,0xAE17,0xAE17,
+    0xF81F,0xF81F,0xF75E,0xF75E,0xF75E,0xF75E,0xAE17,0x8CAF,0xAE17,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,
+    0xF81F,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0x8CAF,0x8CAF,0x8CAF,0xAE17,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,
+    0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0x8CAF,0x8CAF,0x8CAF,0xAE17,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,
+    0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xAE17,0xAE17,0xAE17,0xAE17,0xAE17,0xAE17,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,
+    0xF75E,0xF75E,0xF75E,0xF75E,0xAE17,0xAE17,0xF75E,0xF75E,0xF75E,0xAE17,0xAE17,0xF75E,0xF75E,0xF75E,0xF75E,0xAE17,
+    0xAE17,0xAE17,0xAE17,0xAE17,0xAE17,0xF75E,0xF75E,0xF75E,0xF75E,0xF75E,0xAE17,0x8CAF,0xAE17,0xAE17,0xAE17,0xAE17,
+    0xF81F,0xAE17,0xAE17,0xAE17,0xAE17,0xF75E,0xF75E,0xF75E,0xF75E,0xAE17,0xAE17,0x8CAF,0x8CAF,0xAE17,0xAE17,0xAE17,
+    0xF81F,0xF81F,0xF81F,0xF81F,0xAE17,0xAE17,0xF75E,0xAE17,0xAE17,0xAE17,0xAE17,0x8CAF,0xF81F,0xF81F,0xF81F,0xF81F,
+    0xF81F,0xF81F,0xF81F,0xF81F,0xAE17,0xAE17,0xAE17,0xAE17,0xAE17,0xAE17,0xAE17,0x8CAF,0xF81F,0xF81F,0xF81F,0xF81F,
+    0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xAE17,0xAE17,0xAE17,0xAE17,0xAE17,0xAE17,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,
+    0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xAE17,0xAE17,0xAE17,0xAE17,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,0xF81F,
 };
 
 
@@ -4405,7 +4448,9 @@ typedef enum {
 
     SPRITE_TILE_WATER,
     SPRITE_TILE_SAND,
+    SPRITE_TILE_LAVA,
 
+    SPRITE_POSION_CLOUD,
     SPRITE_WOOD_SHIELD,
     SPRITE_LIFE_POT,
     SPRITE_COUNT
@@ -4418,30 +4463,6 @@ typedef struct{
 } Sprite;
 
 Sprite sprites[SPRITE_COUNT];
-
-
-/* ===========================================================================
- * src/game/sprite.c
- * =========================================================================*/
-/* #include "sprite.h" -- merged */
-/* #include "player_sprites.h" -- merged */
-/* #include "tile_sprites.h" -- merged */
-/* #include "vga.h" -- merged */
-/* #include "soldier_frames.h" -- merged */
-/* #include "projectile_sprites.h" -- merged */
-
-Sprite sprites[SPRITE_COUNT] = {
-   [SPRITE_PLAYER]     = {SOLDIER_W, SOLDIER_H, NULL}, //drawn using draw solider
-    [SPRITE_ENEMY]      = {TILE_W, TILE_H, stone_sprite},  // placeholder
-    [SPRITE_PROJECTILE] = {PROJECTILE_W, PROJECTILE_H, arrow_sprite},
-    [SPRITE_TILE_GRASS] = {TILE_W,   TILE_H,   grass_sprite},
-    [SPRITE_TILE_DIRT]  = {TILE_W,   TILE_H,   dirt_sprite},
-    [SPRITE_TILE_STONE] = {TILE_W,   TILE_H,   stone_sprite},
-    [SPRITE_TILE_WATER] = {TILE_W,   TILE_H,   water_sprite},
-    [SPRITE_TILE_SAND] = {TILE_W, TILE_H, sand_sprite},
-    [SPRITE_WOOD_SHIELD] = {WOOD_SHIELD_W, WOOD_SHIELD_H, wood_shield},
-    [SPRITE_LIFE_POT] = {LIFE_POT_SPRITE_W, LIFE_POT_SPRITE_H, life_pot_sprite},
-};
 
 
 /* ===========================================================================
@@ -4467,6 +4488,360 @@ static inline const short *anim_frame(const Animator *a, const short * const *fr
 static inline void anim_play(Animator *a, const AnimDef *defs, int id);
 
 static inline void anim_restart(Animator *a, const AnimDef *def);
+
+
+/* ===========================================================================
+ * src/game/map.h
+ * =========================================================================*/
+/* #include "sprite.h" -- merged */
+
+#define MAP_WIDTH 20
+#define MAP_HEIGHT 15
+
+typedef struct {
+    /* Budgets: how much of each category to place*/
+    int tree_budget;
+    int rock_budget;
+    int bush_budget;
+    int small_budget;
+    int cattail_budget;
+    int fern_budget;
+
+    /* Now clusters*/
+    /*if > 1 trees/rocks placed in tight groups*/
+    // 1 = scattered, 2-4 = cluster
+    int tree_cluster_size;
+    int rock_cluster_size;
+
+    int prefer_big_trees; // 0 mixed, 1 big trees first, 2 big trees only
+    int prefer_big_rocks; //0 mixed, 1 big rocks first, 2 big rocks only
+
+    /* Which decoration variants to use*/
+    int use_autumn_trees; //1 = include autumn variants
+    int use_grey_rocks; //1 = grey rocks only, 0 = brown only, 2 both
+} MapConfig;
+
+//to be indexed by map_index when selecting map
+#define NUM_MAPS 2
+const MapConfig MAP_CONFIGS[NUM_MAPS + 1];
+
+void map_init(int map_index);
+SpriteID map_get_tile(int row, int col);
+void map_set_tile(int row, int col, SpriteID id);
+
+
+/* ===========================================================================
+ * src/game/player_config.h
+ * =========================================================================*/
+/* #include "keyboard.h" -- merged */
+
+/* ------------------------------------------------------------------
+ * PlayerConfig — one of these per player.
+ * To re-bind keys, just change the values here
+ * ------------------------------------------------------------------ */
+typedef struct {
+    unsigned char key_up;
+    unsigned char key_down;
+    unsigned char key_left;
+    unsigned char key_right;
+    unsigned char key_atk1;
+    unsigned char key_atk2;
+    unsigned char key_atkp;
+    unsigned char key_dash;
+    unsigned char key_block;
+} PlayerConfig;
+
+/* Player 1: WASD + Z/X attacks */
+#define PLAYER1_CONFIG { \
+    .key_up    = KEY_W,     \
+    .key_down  = KEY_S,     \
+    .key_left  = KEY_A,     \
+    .key_right = KEY_D,     \
+    .key_atk1  = KEY_Q,     \
+    .key_atk2  = KEY_E,      \
+    .key_atkp = KEY_R,   \
+    .key_dash = KEY_Z,   \
+    .key_block = KEY_X   \
+}
+
+/* Player 2: Arrow keys + Q/E attacks */
+#define PLAYER2_CONFIG { \
+    .key_up    = KEY_UP,    \
+    .key_down  = KEY_DOWN,  \
+    .key_left  = KEY_LEFT,  \
+    .key_right = KEY_RIGHT, \
+    .key_atk1  = KEY_M,     \
+    .key_atk2  = KEY_K,      \
+    .key_atkp = KEY_L,     \
+    .key_dash = KEY_N,       \
+    .key_block = KEY_J      \
+}
+
+
+/* ===========================================================================
+ * src/game/entity.h
+ * =========================================================================*/
+#define MAX_ENTITIES 64
+/* #include "animator.h" -- merged */
+/* #include "player_config.h" -- merged */
+
+typedef enum{
+    ENTITY_NONE,
+    ENTITY_PLAYER,
+    ENTITY_ENEMY,
+    ENTITY_PROJECTILE
+} EntityType;
+
+typedef struct{
+    int x;
+    int y;
+
+    int prev_x[2];
+    int prev_y[2];
+
+    int dx;
+    int dy;
+
+    int width;
+    int height;
+
+    char facing; //this will be used to determine which direction they are facing
+
+    int hitbox_x;
+    int hitbox_y;
+    int hitbox_w;
+    int hitbox_h;
+
+    int health;
+    int sprite_id;
+
+    short colour;
+    
+    EntityType type;
+
+    Animator anim;
+    const AnimDef *anim_def; //points to SOLDIER_ANIMS, PROJECTILE, etc
+
+    const PlayerConfig *player_cfg;
+
+    int active;
+
+    //flags to know if certain actions need to happen
+    int attack_s1;
+    int attack_s2;
+    int attack_p;
+
+    //hit flag
+    int was_hit;
+    int damage;
+
+    /* Set when dying: keep drawing death anim until it finishes*/
+    int dying;
+
+    int pending_erase;
+    int pending_erase_b1; //to check both buffers for pending
+    int pending_erase_b2;
+
+    /* cooldowns (number of frames) */
+    int atk1_cooldown;
+    int atk2_cooldown;
+
+    int shoot_cooldown;
+    int arrow_fired;
+
+    int dash_cooldown;
+    int dash_timer;
+    int is_dashing; //use to check if speed needs to be *2
+
+    int block_cooldown;
+    int block_timer;
+    int blocking;
+
+    struct Entity* owner;
+
+} Entity;
+
+Entity entities[MAX_ENTITIES];
+
+Entity* spawn_entity(EntityType type);
+void entity_update_all(int cur_buf);
+void entity_draw_all();
+void entity_erase_all(int cur_buf);
+void draw_entity(Entity *e);
+
+
+/* ===========================================================================
+ * src/game/player.h
+ * =========================================================================*/
+/* #include "soldier_frames.h" -- merged */
+
+#define HEALTH 100
+#define PLAYER_SPEED 2
+#define PLAYER_HITBOX_OFFSET_X 7
+#define PLAYER_HITBOX_OFFSET_Y 8
+#define PLAYER_HITBOX_W 13
+#define PLAYER_HITBOX_H 18
+#define PLAYER_W SOLDIER_W
+#define PLAYER_H SOLDIER_H
+
+#define ATTACK_1_DAMAGE 10
+#define ATK1_COOLDOWN 20
+
+#define ATTACK_2_DAMAGE 18
+#define ATK2_COOLDOWN 30
+
+#define PROJECTILE_DAMAGE 12
+#define SHOOT_COOLDOWN 45
+
+#define DASH_COOLDOWN 60
+#define DASH_TIMER 15
+
+#define BLOCK_COOLDOWN 30
+#define BLOCK_TIMER 15
+
+/* #include "entity.h" -- merged */
+/* #include "sprite.h" -- merged */
+/* #include "player_config.h" -- merged */
+
+void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg, int x_start, int flip);
+void player_update(Entity *p, int cur_buf);
+void player_draw(const Entity *p);
+
+
+/* ===========================================================================
+ * src/game/enemy.h
+ * =========================================================================*/
+/* #include "entity.h" -- merged */
+
+void enemy_update(Entity *e);
+void enemy_draw(Entity *e);
+
+
+/* ===========================================================================
+ * src/game/projectile.h
+ * =========================================================================*/
+/* #include "entity.h" -- merged */
+
+/* #include "player.h" -- merged */
+
+#define PROJECTILE_SPEED 4
+
+void projectile_update(Entity *e, int cur_buf);
+void projectile_draw(Entity *e);
+void projectile_init(Entity *e, Entity *owner, SpriteID sprite, int x, int y, char facing);
+
+
+/* ===========================================================================
+ * src/engine/decorations.h
+ * =========================================================================*/
+/* #include "decoration_sprites.h" -- merged */
+
+#define MAX_DECORATIONS 20
+#define DECO_CELL_CAP 4
+
+typedef struct{
+    short x, y;
+    unsigned char type;
+} Decoration;
+
+int deco_count;
+
+typedef struct{
+    //this will hold which indicies in decor corrsepond to this cell
+    unsigned char indices[DECO_CELL_CAP];
+    unsigned char count; //amount of decor in this cell
+} DecoCell;
+
+int canopy_indices[MAX_DECORATIONS];
+int canopy_count;
+
+Decoration decorations[MAX_DECORATIONS];
+const DecoCell *deco_map_get_cell(int row, int col);
+
+void decoration_init(int map_index);
+void decoration_redraw_region(int row0, int col0, int row1, int col1);
+void decoration_draw_canopies_near(int px1, int py1, int px2, int py2);
+int deco_has_canopy(int deco_type);
+
+
+/* ===========================================================================
+ * src/game/obstacle_map.h
+ * =========================================================================*/
+/* #include "map.h" -- merged */
+
+/* Bit flags, combine with | when setting, test with & */
+#define TILE_FLAG_SOLID    (1 << 0)  // blocks movement entirely */
+#define TILE_FLAG_SLOW     (1 << 1)  //water halves speed */
+#define TILE_FLAG_DAMAGE   (1 << 2)  // storm zone — drains HP */
+
+unsigned char obstacle_map[MAP_HEIGHT][MAP_WIDTH];
+
+void obstacle_map_init(void);
+
+void obstacle_map_set(int row, int col, unsigned char flags);
+void obstacle_map_clear(int row, int col, unsigned char flags);
+unsigned char obstacle_map_get(int row, int col);
+
+int pixel_to_col(int px);
+int pixel_to_row(int py);
+
+unsigned char obstacle_map_at_pixel(int px, int py);
+
+
+/* ===========================================================================
+ * src/engine/collision.h
+ * =========================================================================*/
+
+
+/* ===========================================================================
+ * src/engine/renderer.h
+ * =========================================================================*/
+/* #include "sprite.h" -- merged */
+
+void draw_background();
+void draw_sprite(const Sprite *s, int x, int y, int flip_h, int flip_v);
+void erase_sprite(int x, int y, int w, int h);
+
+
+/* ===========================================================================
+ * src/ai/ai.h
+ * =========================================================================*/
+
+
+/* ===========================================================================
+ * src/game/game.h
+ * =========================================================================*/
+int game_winner; //0 = no winner, 1 p1 wins, 2 p2 wins
+
+void game_init();
+void update_game(int cur_buf);
+void draw_game(int cur_buf);
+
+
+/* ===========================================================================
+ * src/game/sprite.c
+ * =========================================================================*/
+/* #include "sprite.h" -- merged */
+/* #include "player_sprites.h" -- merged */
+/* #include "tile_sprites.h" -- merged */
+/* #include "vga.h" -- merged */
+/* #include "soldier_frames.h" -- merged */
+/* #include "projectile_sprites.h" -- merged */
+
+Sprite sprites[SPRITE_COUNT] = {
+   [SPRITE_PLAYER]     = {SOLDIER_W, SOLDIER_H, NULL}, //drawn using draw solider
+    [SPRITE_ENEMY]      = {TILE_W, TILE_H, stone_sprite},  // placeholder
+    [SPRITE_PROJECTILE] = {PROJECTILE_W, PROJECTILE_H, arrow_sprite},
+    [SPRITE_TILE_GRASS] = {TILE_W,   TILE_H,   grass_sprite},
+    [SPRITE_TILE_DIRT]  = {TILE_W,   TILE_H,   dirt_sprite},
+    [SPRITE_TILE_STONE] = {TILE_W,   TILE_H,   stone_sprite},
+    [SPRITE_TILE_WATER] = {TILE_W,   TILE_H,   water_sprite},
+    [SPRITE_TILE_SAND] = {TILE_W, TILE_H, sand_sprite},
+    [SPRITE_TILE_LAVA] = {TILE_W, TILE_H, lava_sprite},
+    [SPRITE_POSION_CLOUD] = {POSION_CLOUD_W, POSION_CLOUD_H, posion_cloud},
+    [SPRITE_WOOD_SHIELD] = {WOOD_SHIELD_W, WOOD_SHIELD_H, wood_shield},
+    [SPRITE_LIFE_POT] = {LIFE_POT_SPRITE_W, LIFE_POT_SPRITE_H, life_pot_sprite},
+};
 
 
 /* ===========================================================================
@@ -4539,46 +4914,6 @@ void draw_soldier(const Animator *a, int x, int y){
         }
     }
 }
-
-
-/* ===========================================================================
- * src/game/map.h
- * =========================================================================*/
-/* #include "sprite.h" -- merged */
-
-#define MAP_WIDTH 20
-#define MAP_HEIGHT 15
-
-typedef struct {
-    /* Budgets: how much of each category to place*/
-    int tree_budget;
-    int rock_budget;
-    int bush_budget;
-    int small_budget;
-    int cattail_budget;
-    int fern_budget;
-
-    /* Now clusters*/
-    /*if > 1 trees/rocks placed in tight groups*/
-    // 1 = scattered, 2-4 = cluster
-    int tree_cluster_size;
-    int rock_cluster_size;
-
-    int prefer_big_trees; // 0 mixed, 1 big trees first, 2 big trees only
-    int prefer_big_rocks; //0 mixed, 1 big rocks first, 2 big rocks only
-
-    /* Which decoration variants to use*/
-    int use_autumn_trees; //1 = include autumn variants
-    int use_grey_rocks; //1 = grey rocks only, 0 = brown only, 2 both
-} MapConfig;
-
-//to be indexed by map_index when selecting map
-#define NUM_MAPS 2
-const MapConfig MAP_CONFIGS[NUM_MAPS + 1];
-
-void map_init(int map_index);
-SpriteID map_get_tile(int row, int col);
-void map_set_tile(int row, int col, SpriteID id);
 
 
 /* ===========================================================================
@@ -4685,39 +5020,6 @@ SpriteID map_get_tile(int row, int col){
     }
     return (SpriteID)current_map[row][col];
 }
-
-
-/* ===========================================================================
- * src/engine/decorations.h
- * =========================================================================*/
-/* #include "decoration_sprites.h" -- merged */
-
-#define MAX_DECORATIONS 20
-#define DECO_CELL_CAP 4
-
-typedef struct{
-    short x, y;
-    unsigned char type;
-} Decoration;
-
-int deco_count;
-
-typedef struct{
-    //this will hold which indicies in decor corrsepond to this cell
-    unsigned char indices[DECO_CELL_CAP];
-    unsigned char count; //amount of decor in this cell
-} DecoCell;
-
-int canopy_indices[MAX_DECORATIONS];
-int canopy_count;
-
-Decoration decorations[MAX_DECORATIONS];
-const DecoCell *deco_map_get_cell(int row, int col);
-
-void decoration_init(int map_index);
-void decoration_redraw_region(int row0, int col0, int row1, int col1);
-void decoration_draw_canopies(void);
-void decoration_draw_canopies_near(int px1, int py1, int px2, int py2);
 
 
 /* ===========================================================================
@@ -5250,30 +5552,6 @@ void decoration_draw_canopies_near(int px1, int py1, int px2, int py2) {
 
 
 /* ===========================================================================
- * src/game/obstacle_map.h
- * =========================================================================*/
-/* #include "map.h" -- merged */
-
-/* Bit flags, combine with | when setting, test with & */
-#define TILE_FLAG_SOLID    (1 << 0)  // blocks movement entirely */
-#define TILE_FLAG_SLOW     (1 << 1)  //water halves speed */
-#define TILE_FLAG_DAMAGE   (1 << 2)  // storm zone — drains HP */
-
-unsigned char obstacle_map[MAP_HEIGHT][MAP_WIDTH];
-
-void obstacle_map_init(void);
-
-void obstacle_map_set(int row, int col, unsigned char flags);
-void obstacle_map_clear(int row, int col, unsigned char flags);
-unsigned char obstacle_map_get(int row, int col);
-
-int pixel_to_col(int px);
-int pixel_to_row(int py);
-
-unsigned char obstacle_map_at_pixel(int px, int py);
-
-
-/* ===========================================================================
  * src/game/obstacle_map.c
  * =========================================================================*/
 /* #include "obstacle_map.h" -- merged */
@@ -5356,145 +5634,6 @@ int pixel_to_row(int py) { return py / TILE_H; }
 unsigned char obstacle_map_at_pixel(int px, int py) {
     return obstacle_map_get(pixel_to_row(py), pixel_to_col(px));
 }
-
-
-/* ===========================================================================
- * src/game/player_config.h
- * =========================================================================*/
-/* #include "keyboard.h" -- merged */
-
-/* ------------------------------------------------------------------
- * PlayerConfig — one of these per player.
- * To re-bind keys, just change the values here
- * ------------------------------------------------------------------ */
-typedef struct {
-    unsigned char key_up;
-    unsigned char key_down;
-    unsigned char key_left;
-    unsigned char key_right;
-    unsigned char key_atk1;
-    unsigned char key_atk2;
-    unsigned char key_atkp;
-    unsigned char key_dash;
-    unsigned char key_block;
-} PlayerConfig;
-
-/* Player 1: WASD + Z/X attacks */
-#define PLAYER1_CONFIG { \
-    .key_up    = KEY_W,     \
-    .key_down  = KEY_S,     \
-    .key_left  = KEY_A,     \
-    .key_right = KEY_D,     \
-    .key_atk1  = KEY_Q,     \
-    .key_atk2  = KEY_E,      \
-    .key_atkp = KEY_R,   \
-    .key_dash = KEY_Z,   \
-    .key_block = KEY_X   \
-}
-
-/* Player 2: Arrow keys + Q/E attacks */
-#define PLAYER2_CONFIG { \
-    .key_up    = KEY_UP,    \
-    .key_down  = KEY_DOWN,  \
-    .key_left  = KEY_LEFT,  \
-    .key_right = KEY_RIGHT, \
-    .key_atk1  = KEY_M,     \
-    .key_atk2  = KEY_K,      \
-    .key_atkp = KEY_L,     \
-    .key_dash = KEY_N,       \
-    .key_block = KEY_J      \
-}
-
-
-/* ===========================================================================
- * src/game/entity.h
- * =========================================================================*/
-#define MAX_ENTITIES 64
-/* #include "animator.h" -- merged */
-/* #include "player_config.h" -- merged */
-
-typedef enum{
-    ENTITY_NONE,
-    ENTITY_PLAYER,
-    ENTITY_ENEMY,
-    ENTITY_PROJECTILE
-} EntityType;
-
-typedef struct{
-    int x;
-    int y;
-
-    int prev_x[2];
-    int prev_y[2];
-
-    int dx;
-    int dy;
-
-    int width;
-    int height;
-
-    char facing; //this will be used to determine which direction they are facing
-
-    int hitbox_x;
-    int hitbox_y;
-    int hitbox_w;
-    int hitbox_h;
-
-    int health;
-    int sprite_id;
-
-    short colour;
-    
-    EntityType type;
-
-    Animator anim;
-    const AnimDef *anim_def; //points to SOLDIER_ANIMS, PROJECTILE, etc
-
-    const PlayerConfig *player_cfg;
-
-    int active;
-
-    //flags to know if certain actions need to happen
-    int attack_s1;
-    int attack_s2;
-    int attack_p;
-
-    //hit flag
-    int was_hit;
-    int damage;
-
-    /* Set when dying: keep drawing death anim until it finishes*/
-    int dying;
-
-    int pending_erase;
-    int pending_erase_b1; //to check both buffers for pending
-    int pending_erase_b2;
-
-    /* cooldowns (number of frames) */
-    int atk1_cooldown;
-    int atk2_cooldown;
-
-    int shoot_cooldown;
-    int arrow_fired;
-
-    int dash_cooldown;
-    int dash_timer;
-    int is_dashing; //use to check if speed needs to be *2
-
-    int block_cooldown;
-    int block_timer;
-    int blocking;
-
-    struct Entity* owner;
-
-} Entity;
-
-Entity entities[MAX_ENTITIES];
-
-Entity* spawn_entity(EntityType type);
-void entity_update_all(int cur_buf);
-void entity_draw_all();
-void entity_erase_all(int cur_buf);
 
 
 /* ===========================================================================
@@ -5589,7 +5728,7 @@ void draw_entity(Entity *e){
         default:
             if (e->sprite_id >= 0)
                 draw_sprite(&sprites[e->sprite_id], e->x, e->y, 0, 0);
-                break;
+            break;
     }
 }
 
@@ -5615,44 +5754,6 @@ void entity_erase_all(int cur_buf){
         }
     }
 }
-
-
-/* ===========================================================================
- * src/game/player.h
- * =========================================================================*/
-/* #include "soldier_frames.h" -- merged */
-
-#define HEALTH 100
-#define PLAYER_SPEED 2
-#define PLAYER_HITBOX_OFFSET_X 7
-#define PLAYER_HITBOX_OFFSET_Y 8
-#define PLAYER_HITBOX_W 13
-#define PLAYER_HITBOX_H 18
-#define PLAYER_W SOLDIER_W
-#define PLAYER_H SOLDIER_H
-
-#define ATTACK_1_DAMAGE 10
-#define ATK1_COOLDOWN 20
-
-#define ATTACK_2_DAMAGE 18
-#define ATK2_COOLDOWN 30
-
-#define PROJECTILE_DAMAGE 12
-#define SHOOT_COOLDOWN 45
-
-#define DASH_COOLDOWN 60
-#define DASH_TIMER 15
-
-#define BLOCK_COOLDOWN 30
-#define BLOCK_TIMER 15
-
-/* #include "entity.h" -- merged */
-/* #include "sprite.h" -- merged */
-/* #include "player_config.h" -- merged */
-
-void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *cfg, int x_start, int flip);
-void player_update(Entity *p, int cur_buf);
-void player_draw(const Entity *p);
 
 
 /* ===========================================================================
@@ -5731,8 +5832,8 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
 
 void player_update(Entity *p, int cur_buf){
     /*Save postion before returning so erase works*/
-        p->prev_x[cur_buf] = p->x;
-        p->prev_y[cur_buf] = p->y;
+    p->prev_x[cur_buf] = p->x;
+    p->prev_y[cur_buf] = p->y;
     
     /* 1. Tick animation first - returns 1 when one shot is done*/
     int anim_finished = anim_tick(&p->anim, p->anim_def);
@@ -5902,8 +6003,6 @@ void player_update(Entity *p, int cur_buf){
 
     //check for colisions with decor
     int feet_y  = p->hitbox_y + p->hitbox_h;
-    int left_x  = p->hitbox_x;
-    int right_x = p->hitbox_x + p->hitbox_w - 1;
     int mid_x   = p->hitbox_x + (p->hitbox_w >> 1);
 
     if (p->dx != 0) {
@@ -6025,15 +6124,6 @@ void player_draw(const Entity *p){
 
 
 /* ===========================================================================
- * src/game/enemy.h
- * =========================================================================*/
-/* #include "entity.h" -- merged */
-
-void enemy_update(Entity *e);
-void enemy_draw(Entity *e);
-
-
-/* ===========================================================================
  * src/game/enemy.c
  * =========================================================================*/
 /* #include "enemy.h" -- merged */
@@ -6045,20 +6135,6 @@ void enemy_update(Entity *e){
 void enemy_draw(Entity *e){
     (void)e;
 }
-
-
-/* ===========================================================================
- * src/game/projectile.h
- * =========================================================================*/
-/* #include "entity.h" -- merged */
-
-/* #include "player.h" -- merged */
-
-#define PROJECTILE_SPEED 4
-
-void projectile_update(Entity *e, int cur_buf);
-void projectile_draw(Entity *e);
-void projectile_init(Entity *e, Entity *owner, SpriteID sprite, int x, int y, char facing);
 
 
 /* ===========================================================================
@@ -6144,23 +6220,8 @@ void projectile_draw(Entity *e){
 
 
 /* ===========================================================================
- * src/engine/collision.h
- * =========================================================================*/
-
-
-/* ===========================================================================
  * src/engine/collision.c
  * =========================================================================*/
-
-
-/* ===========================================================================
- * src/engine/renderer.h
- * =========================================================================*/
-/* #include "sprite.h" -- merged */
-
-void draw_background();
-void draw_sprite(const Sprite *s, int x, int y, int flip_h, int flip_v);
-void erase_sprite(int x, int y, int w, int h);
 
 
 /* ===========================================================================
@@ -6252,23 +6313,8 @@ void erase_sprite(int x, int y, int w, int h){
 
 
 /* ===========================================================================
- * src/ai/ai.h
- * =========================================================================*/
-
-
-/* ===========================================================================
  * src/ai/ai.c
  * =========================================================================*/
-
-
-/* ===========================================================================
- * src/game/game.h
- * =========================================================================*/
-int game_winner; //0 = no winner, 1 p1 wins, 2 p2 wins
-
-void game_init();
-void update_game(int cur_buf);
-void draw_game(int cur_buf);
 
 
 /* ===========================================================================
@@ -6324,6 +6370,37 @@ typedef struct{
 Potion potions[MAX_POTIONS];
 int next_potion_spawn = 900; /*first one at 15s*/
 
+/* Storm cloud */
+#define MAX_CLOUD_TILES (MAP_WIDTH * MAP_HEIGHT)
+#define STORM_START_TIME  1800
+#define STORM_TILE_INTERVAL 1800
+
+typedef struct {
+    short row, col;
+    int draw_b0;
+    int draw_b1;
+    Sprite sprite;
+} CloudTile;
+
+CloudTile cloud_tiles[MAX_CLOUD_TILES];
+
+int cloud_tile_count = 0;
+int storm_ring = 0;
+int next_storm_tick = STORM_START_TIME;
+int storm_damage = 3;
+int max_rings = 6;
+
+void add_cloud_tile(int row, int col){
+    if (cloud_tile_count >= MAX_CLOUD_TILES) return;
+    cloud_tiles[cloud_tile_count].row    = (short)row;
+    cloud_tiles[cloud_tile_count].col    = (short)col;
+    cloud_tiles[cloud_tile_count].draw_b0 = 1;
+    cloud_tiles[cloud_tile_count].draw_b1 = 1;
+    cloud_tiles[cloud_tile_count].sprite = sprites[SPRITE_POSION_CLOUD];
+    cloud_tile_count++;
+    obstacle_map_set(row, col, TILE_FLAG_DAMAGE | TILE_FLAG_SLOW);
+}
+
 void game_init(){
     map_init(2);
     decoration_init(2);
@@ -6358,9 +6435,6 @@ void update_game(int cur_buf){
     for (int i = 0; i < player_count; i++){
         Entity *attacker = players[i];
         if (!attacker->attack_s1 && !attacker->attack_s2) continue;
-        
-        int weapon_x, weapon_y, weapon_length;
-        int weapon_height = SOLDIER_H;
 
         if (attacker->type == ENTITY_PLAYER){
             int weapon_x = 0;
@@ -6539,6 +6613,44 @@ void update_game(int cur_buf){
                }
         }
     }
+
+    /* Storm cloud */
+    if(game_timer == next_storm_tick && storm_ring < max_rings){
+        int r_top = storm_ring; //top row
+        int r_bottom = MAP_HEIGHT - 1 - storm_ring; //bottom row
+
+        int c_left = storm_ring;
+        int c_right = MAP_WIDTH - 1 - storm_ring;
+
+        /* top and bottom rows*/
+        for(int c = c_left; c <= c_right; c++){
+            add_cloud_tile(r_top, c);
+            add_cloud_tile(r_bottom, c);
+        }
+        /*left and right cols*/
+        for(int row = r_top; row <= r_bottom; row++){
+            add_cloud_tile(row, c_left);
+            add_cloud_tile(row, c_right);
+        }
+
+        storm_ring++;
+        next_storm_tick = game_timer + STORM_TILE_INTERVAL;
+    }
+
+    /* damage players in the storm*/
+    if(game_timer % 60 == 0){
+        for(int i = 0; i < player_count; i++){
+            Entity *p = players[i];
+            if(!p->active || p->dying) continue;
+
+            int row = (p->hitbox_y + p->hitbox_h) / TILE_H;
+            int col = (p->hitbox_x + p->hitbox_w / 2) / TILE_W;
+            if (obstacle_map_get(row, col) & TILE_FLAG_DAMAGE) {
+                p->was_hit = 1;
+                p->damage += storm_damage;
+            }
+        }
+    }
 }
 
 void draw_game(int cur_buf){
@@ -6632,6 +6744,54 @@ void draw_game(int cur_buf){
         }
        
     }
+
+    /*now draw storm clouds*/
+
+    for(int i = 0; i < cloud_tile_count; i++){
+        CloudTile *ct = &cloud_tiles[i];
+        int px = ct->col * TILE_W;
+        int py = ct->row * TILE_H;
+
+        if(cur_buf == 0 && ct->draw_b0){
+            draw_sprite(&ct->sprite, px, py, 0, 0);
+            ct->draw_b0 = 0;
+            continue;
+        }
+        if(cur_buf == 1 && ct->draw_b1){
+            draw_sprite(&ct->sprite, px, py, 1, 0);
+            ct->draw_b1 = 0;
+            continue;
+        }
+
+        //now only redraw the tiles the player overlaps
+        int player_overlap = 0;
+        int tile_x0 = px;
+        int tile_x1 = px + TILE_W;
+        int tile_y0 = py;
+        int tile_y1 = py + TILE_H;
+
+        Entity *players[2] = {g_p1, g_p2};
+        for(int j = 0; j < 2; j++){
+            Entity *p = players[j];
+
+             /* Current position */
+            if (p->x < tile_x1 && p->x + PLAYER_W > tile_x0 &&
+                p->y < tile_y1 && p->y + PLAYER_H > tile_y0) {
+                player_overlap = 1;
+                break;
+            }
+            /* Previous position (cuz erases restores this region) */
+            if (p->prev_x[cur_buf] < tile_x1 && p->prev_x[cur_buf] + PLAYER_W > tile_x0 &&
+                p->prev_y[cur_buf] < tile_y1 && p->prev_y[cur_buf] + PLAYER_H > tile_y0) {
+                player_overlap = 1;
+                break;
+            }
+        }
+
+        if (player_overlap){
+            draw_sprite(&ct->sprite, px, py, 0, 0);
+        }
+    }
 }
 
 
@@ -6718,7 +6878,7 @@ typedef enum{
 } MODE;
 
 int main(void){
-    int mode = START_SCREEN; //will control if we are start screen etc
+    //int mode = START_SCREEN; //will control if we are start screen etc
 
     vga_init();
     timer_init();

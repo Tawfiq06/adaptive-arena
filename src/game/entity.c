@@ -88,7 +88,7 @@ void draw_entity(Entity *e){
         default:
             if (e->sprite_id >= 0)
                 draw_sprite(&sprites[e->sprite_id], e->x, e->y, 0, 0);
-                break;
+            break;
     }
 }
 

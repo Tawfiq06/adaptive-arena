@@ -71,8 +71,8 @@ void player_init(Entity *p, SpriteID sprite, short _colour, const PlayerConfig *
 
 void player_update(Entity *p, int cur_buf){
     /*Save postion before returning so erase works*/
-        p->prev_x[cur_buf] = p->x;
-        p->prev_y[cur_buf] = p->y;
+    p->prev_x[cur_buf] = p->x;
+    p->prev_y[cur_buf] = p->y;
     
     /* 1. Tick animation first - returns 1 when one shot is done*/
     int anim_finished = anim_tick(&p->anim, p->anim_def);
@@ -242,8 +242,6 @@ void player_update(Entity *p, int cur_buf){
 
     //check for colisions with decor
     int feet_y  = p->hitbox_y + p->hitbox_h;
-    int left_x  = p->hitbox_x;
-    int right_x = p->hitbox_x + p->hitbox_w - 1;
     int mid_x   = p->hitbox_x + (p->hitbox_w >> 1);
 
     if (p->dx != 0) {

@@ -87,5 +87,6 @@ Entity* spawn_entity(EntityType type);
 void entity_update_all(int cur_buf);
 void entity_draw_all();
 void entity_erase_all(int cur_buf);
+void draw_entity(Entity *e);
 
 #endif

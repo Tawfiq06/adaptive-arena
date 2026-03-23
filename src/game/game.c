@@ -49,6 +49,37 @@ typedef struct{
 Potion potions[MAX_POTIONS];
 int next_potion_spawn = 900; /*first one at 15s*/
 
+/* Storm cloud */
+#define MAX_CLOUD_TILES (MAP_WIDTH * MAP_HEIGHT)
+#define STORM_START_TIME  1800
+#define STORM_TILE_INTERVAL 1800
+
+typedef struct {
+    short row, col;
+    int draw_b0;
+    int draw_b1;
+    Sprite sprite;
+} CloudTile;
+
+CloudTile cloud_tiles[MAX_CLOUD_TILES];
+
+int cloud_tile_count = 0;
+int storm_ring = 0;
+int next_storm_tick = STORM_START_TIME;
+int storm_damage = 3;
+int max_rings = 6;
+
+void add_cloud_tile(int row, int col){
+    if (cloud_tile_count >= MAX_CLOUD_TILES) return;
+    cloud_tiles[cloud_tile_count].row    = (short)row;
+    cloud_tiles[cloud_tile_count].col    = (short)col;
+    cloud_tiles[cloud_tile_count].draw_b0 = 1;
+    cloud_tiles[cloud_tile_count].draw_b1 = 1;
+    cloud_tiles[cloud_tile_count].sprite = sprites[SPRITE_POSION_CLOUD];
+    cloud_tile_count++;
+    obstacle_map_set(row, col, TILE_FLAG_DAMAGE | TILE_FLAG_SLOW);
+}
+
 void game_init(){
     map_init(2);
     decoration_init(2);
@@ -83,9 +114,6 @@ void update_game(int cur_buf){
     for (int i = 0; i < player_count; i++){
         Entity *attacker = players[i];
         if (!attacker->attack_s1 && !attacker->attack_s2) continue;
-        
-        int weapon_x, weapon_y, weapon_length;
-        int weapon_height = SOLDIER_H;
 
         if (attacker->type == ENTITY_PLAYER){
             int weapon_x = 0;
@@ -264,6 +292,44 @@ void update_game(int cur_buf){
                }
         }
     }
+
+    /* Storm cloud */
+    if(game_timer == next_storm_tick && storm_ring < max_rings){
+        int r_top = storm_ring; //top row
+        int r_bottom = MAP_HEIGHT - 1 - storm_ring; //bottom row
+
+        int c_left = storm_ring;
+        int c_right = MAP_WIDTH - 1 - storm_ring;
+
+        /* top and bottom rows*/
+        for(int c = c_left; c <= c_right; c++){
+            add_cloud_tile(r_top, c);
+            add_cloud_tile(r_bottom, c);
+        }
+        /*left and right cols*/
+        for(int row = r_top; row <= r_bottom; row++){
+            add_cloud_tile(row, c_left);
+            add_cloud_tile(row, c_right);
+        }
+
+        storm_ring++;
+        next_storm_tick = game_timer + STORM_TILE_INTERVAL;
+    }
+
+    /* damage players in the storm*/
+    if(game_timer % 60 == 0){
+        for(int i = 0; i < player_count; i++){
+            Entity *p = players[i];
+            if(!p->active || p->dying) continue;
+
+            int row = (p->hitbox_y + p->hitbox_h) / TILE_H;
+            int col = (p->hitbox_x + p->hitbox_w / 2) / TILE_W;
+            if (obstacle_map_get(row, col) & TILE_FLAG_DAMAGE) {
+                p->was_hit = 1;
+                p->damage += storm_damage;
+            }
+        }
+    }
 }
 
 void draw_game(int cur_buf){
@@ -356,5 +422,53 @@ void draw_game(int cur_buf){
             potions[i].flash_drawn = 0;
         }
        
+    }
+
+    /*now draw storm clouds*/
+
+    for(int i = 0; i < cloud_tile_count; i++){
+        CloudTile *ct = &cloud_tiles[i];
+        int px = ct->col * TILE_W;
+        int py = ct->row * TILE_H;
+
+        if(cur_buf == 0 && ct->draw_b0){
+            draw_sprite(&ct->sprite, px, py, 0, 0);
+            ct->draw_b0 = 0;
+            continue;
+        }
+        if(cur_buf == 1 && ct->draw_b1){
+            draw_sprite(&ct->sprite, px, py, 1, 0);
+            ct->draw_b1 = 0;
+            continue;
+        }
+
+        //now only redraw the tiles the player overlaps
+        int player_overlap = 0;
+        int tile_x0 = px;
+        int tile_x1 = px + TILE_W;
+        int tile_y0 = py;
+        int tile_y1 = py + TILE_H;
+
+        Entity *players[2] = {g_p1, g_p2};
+        for(int j = 0; j < 2; j++){
+            Entity *p = players[j];
+
+             /* Current position */
+            if (p->x < tile_x1 && p->x + PLAYER_W > tile_x0 &&
+                p->y < tile_y1 && p->y + PLAYER_H > tile_y0) {
+                player_overlap = 1;
+                break;
+            }
+            /* Previous position (cuz erases restores this region) */
+            if (p->prev_x[cur_buf] < tile_x1 && p->prev_x[cur_buf] + PLAYER_W > tile_x0 &&
+                p->prev_y[cur_buf] < tile_y1 && p->prev_y[cur_buf] + PLAYER_H > tile_y0) {
+                player_overlap = 1;
+                break;
+            }
+        }
+
+        if (player_overlap){
+            draw_sprite(&ct->sprite, px, py, 0, 0);
+        }
     }
 }

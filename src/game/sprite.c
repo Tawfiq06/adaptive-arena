@@ -15,6 +15,8 @@ Sprite sprites[SPRITE_COUNT] = {
     [SPRITE_TILE_STONE] = {TILE_W,   TILE_H,   stone_sprite},
     [SPRITE_TILE_WATER] = {TILE_W,   TILE_H,   water_sprite},
     [SPRITE_TILE_SAND] = {TILE_W, TILE_H, sand_sprite},
+    [SPRITE_TILE_LAVA] = {TILE_W, TILE_H, lava_sprite},
+    [SPRITE_POSION_CLOUD] = {POSION_CLOUD_W, POSION_CLOUD_H, posion_cloud},
     [SPRITE_WOOD_SHIELD] = {WOOD_SHIELD_W, WOOD_SHIELD_H, wood_shield},
     [SPRITE_LIFE_POT] = {LIFE_POT_SPRITE_W, LIFE_POT_SPRITE_H, life_pot_sprite},
 };

@@ -78,7 +78,7 @@ typedef enum{
 } MODE;
 
 int main(void){
-    int mode = START_SCREEN; //will control if we are start screen etc
+    //int mode = START_SCREEN; //will control if we are start screen etc
 
     vga_init();
     timer_init();
