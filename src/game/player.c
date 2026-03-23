@@ -360,3 +360,15 @@ void player_draw(const Entity *p){
     /*Use this to show player hitboxes*/
     draw_rect_outline(p->hitbox_x, p->hitbox_y, p->hitbox_w, p->hitbox_h, 0x0000);
 }
+
+void draw_health_bar(Entity* p) {   //call this function twice, pass in each player 
+    int health = p->health; // get current health 
+    int health_bar = health * (30 / 100); // divide so that 100 health = 30 pixels 
+    int full_health = 30;
+    int x_coord = p->player_cfg->health_x;
+    int y_coord = p->player_cfg->health_y;
+
+    draw_rect(x_coord, y_coord, full_health, 6, 0); // draw black background for health bar 
+    draw_rect(x_coord, y_coord, health_bar, 6, 0xF800); // width is scaled version of health 
+    draw_rect_outline(x_coord, y_coord, full_health, 6, 0);   // black outline on top of red 
+}
