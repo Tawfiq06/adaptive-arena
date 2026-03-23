@@ -17,6 +17,8 @@ typedef struct {
     unsigned char key_atkp;
     unsigned char key_dash;
     unsigned char key_block;
+    int health_x;
+    int health_y;
 } PlayerConfig;
 
 /* Player 1: WASD + Z/X attacks */
@@ -29,7 +31,9 @@ typedef struct {
     .key_atk2  = KEY_E,      \
     .key_atkp = KEY_R,   \
     .key_dash = KEY_Z,   \
-    .key_block = KEY_X   \
+    .key_block = KEY_X,   \
+    .health_x = 20,    \
+    .health_y = 20    \
 }
 
 /* Player 2: Arrow keys + Q/E attacks */
@@ -42,7 +46,9 @@ typedef struct {
     .key_atk2  = KEY_K,      \
     .key_atkp = KEY_L,     \
     .key_dash = KEY_N,       \
-    .key_block = KEY_J      \
+    .key_block = KEY_J,      \
+    .health_x = 270,     \  //manual calculations for (SCREEN_WIDTH - 20 - full_health)
+    .health_y = 20     \
 }
 
 #endif
