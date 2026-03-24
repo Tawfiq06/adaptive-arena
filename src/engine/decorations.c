@@ -523,3 +523,11 @@ void decoration_draw_canopies_near(int px1, int py1, int px2, int py2) {
         }
     }
 }
+
+void deco_canopy_rebuild(void){
+    canopy_count = 0;
+    for (int i = 0; i < deco_count; i++){
+        if (deco_has_canopy(decorations[i].type))
+            canopy_indices[canopy_count++] = i;
+    }
+}

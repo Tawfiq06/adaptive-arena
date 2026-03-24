@@ -7,6 +7,7 @@
 #define TILE_FLAG_SOLID    (1 << 0)  // blocks movement entirely */
 #define TILE_FLAG_SLOW     (1 << 1)  //water halves speed */
 #define TILE_FLAG_DAMAGE   (1 << 2)  // storm zone — drains HP */
+#define TILE_FLAG_ICE      (1 << 3) //slippery, player keeps momentum
 
 extern unsigned char obstacle_map[MAP_HEIGHT][MAP_WIDTH];
 

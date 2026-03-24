@@ -29,4 +29,6 @@ void decoration_init(int map_index);
 void decoration_redraw_region(int row0, int col0, int row1, int col1);
 void decoration_draw_canopies_near(int px1, int py1, int px2, int py2);
 int deco_has_canopy(int deco_type);
+void deco_canopy_rebuild(void);
+
 #endif

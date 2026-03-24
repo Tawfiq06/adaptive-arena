@@ -44,8 +44,8 @@ void projectile_init(Entity *e, Entity *owner, SpriteID sprite, int x, int y, ch
 }
 
 void projectile_update(Entity *e, int cur_buf){
-    e->prev_x[cur_buf] = e->x - e->dx;
-    e->prev_y[cur_buf] = e->y - e->dy;
+    e->prev_x[cur_buf] = e->x;
+    e->prev_y[cur_buf] = e->y;
 
     e->x += e->dx;
     e->y += e->dy;

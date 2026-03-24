@@ -11,6 +11,7 @@
 #include "projectile.h"
 #include "decorations.h"
 #include "obstacle_map.h"
+#include "map_evolution.h"
 
 #define WEAPON_OFFSET (SOLDIER_W >> 2)
 
@@ -84,6 +85,7 @@ void game_init(){
     map_init(2);
     decoration_init(2);
     obstacle_map_init();
+    map_evolution_init(2);
     /*Spawn Player 1*/
     //on the left, faces right
     g_p1 = spawn_entity(ENTITY_PLAYER);
@@ -105,6 +107,7 @@ void game_init(){
 }
 
 void update_game(int cur_buf){
+    map_evolution_update();
     keyboard_update();
 
     /*Check collisions before updating*/
@@ -369,6 +372,7 @@ void draw_game(int cur_buf){
     }
 
     entity_erase_all(cur_buf);
+    map_evolution_draw(cur_buf);
     entity_draw_all();
     decoration_draw_canopies_near(px1, py1, px2, py2);
 
