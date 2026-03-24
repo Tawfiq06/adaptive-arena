@@ -652,7 +652,7 @@ typedef struct {
     .key_dash = KEY_Z,   \
     .key_block = KEY_X,   \
     .health_x = 20,    \
-    .health_y = 20    \
+    .health_y = 10    \
 }
 
 /* Player 2: Arrow keys + Q/E attacks */
@@ -667,7 +667,7 @@ typedef struct {
     .key_dash = KEY_N,       \
     .key_block = KEY_J,      \
     .health_x = 270,   /*manual calculations for (SCREEN_WIDTH - 20 - full_health)*/ \
-    .health_y = 20     \
+    .health_y = 10     \
 }
 
 
@@ -6779,7 +6779,7 @@ void draw_game(int cur_buf){
             continue;
         }
         if(cur_buf == 1 && ct->draw_b1){
-            draw_sprite(&ct->sprite, px, py, 1, 0);
+            draw_sprite(&ct->sprite, px, py, 0, 0);
             ct->draw_b1 = 0;
             continue;
         }

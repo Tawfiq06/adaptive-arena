@@ -437,7 +437,7 @@ void draw_game(int cur_buf){
             continue;
         }
         if(cur_buf == 1 && ct->draw_b1){
-            draw_sprite(&ct->sprite, px, py, 1, 0);
+            draw_sprite(&ct->sprite, px, py, 0, 0);
             ct->draw_b1 = 0;
             continue;
         }
