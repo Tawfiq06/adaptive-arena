@@ -6556,14 +6556,14 @@ void update_game(int cur_buf){
                 alive_count++;
                 last_alive = players[i];
             }
-            else if (players[i]->dying){
+            else if (players[i]->dying && players[i]->active){
                 dying_count++;
             }
         }
 
         /* Only when all dying animations are done (active goes false) */
-        if (alive_count + dying_count < player_count){
-            if      (alive_count == 1) game_winner = (last_alive == g_p1) ? 1 :
+        if (alive_count < player_count && dying_count == 0){
+            if (alive_count == 1) game_winner = (last_alive == g_p1) ? 1 :
                                                     (last_alive == g_p2) ? 2 : 4;
             else if (alive_count == 0) game_winner = 3;  /* draw */
         }
