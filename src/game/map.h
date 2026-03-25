@@ -25,7 +25,9 @@ typedef struct {
     int prefer_big_rocks; //0 mixed, 1 big rocks first, 2 big rocks only
 
     /* Which decoration variants to use*/
-    int use_autumn_trees; //1 = include autumn variants
+    int use_autumn_trees; //1 = include autumn variants, 2 = only autumn
+    int use_stick_trees; // 1 = include stick trees, 2 = only stick trees
+    int use_ice_trees;  // 1 = include ice trees, 2 = only ice trees
     int use_grey_rocks; //1 = grey rocks only, 0 = brown only, 2 both
 } MapConfig;
 

@@ -106,23 +106,44 @@ void decoration_init(int map_index){
     const int MIN_SPACING = 0;
 
     /* ---- Build tree table from config ---- */
-    int TREE_TABLE_BIG[4];
+    int TREE_TABLE_BIG[12];
     int TREE_TABLE_SMALL[8];
     int TREE_COUNT_BIG = 0;
     int TREE_COUNT_SMALL = 0;
 
-    TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_TREE_GREEN_B;      /* tallest */
-    TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_TREE_GREEN_A;
-    if (cfg->use_autumn_trees) {
+    if(cfg->use_ice_trees != 2 && cfg->use_autumn_trees != 2 && cfg->use_stick_trees != 2){ //if 2 only use ice trees
+        TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_GREEN_TREE_LG;
+        TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_TREE_GREEN_B;     
+        TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_TREE_GREEN_A;
+    }
+    if (cfg->use_autumn_trees && cfg->use_ice_trees != 2 && cfg->use_stick_trees != 2) {
+        TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_AUTUMN_TREE_RED_LG;
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_AUTUMN_TREE_RED_MED;
+        TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_AUTUMN_TREE_YELLOW_LG;
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_AUTUMN_TREE_YELLOW_MED;
     }
+    if (cfg->use_ice_trees && cfg->use_autumn_trees != 2 && cfg->use_stick_trees != 2){
+        TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_ICE_TREE_LG;
+        TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_ICE_TREE_MED;
+    }
+    if (cfg->use_stick_trees && cfg->use_ice_trees != 2 && cfg->use_autumn_trees != 2){
+        TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_STICK_TREE_B;
+        TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_STICK_TREE_LG;
+        TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_STICK_TREE_MED;
+    }
 
-    TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_STICK_TREE_MED;
-    TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_GREEN_PLANT_TREE_A;
-    if (cfg->use_autumn_trees) {
+    if(cfg->use_autumn_trees != 2 && cfg->use_ice_trees != 2 && cfg->use_stick_trees != 2){
+        TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_GREEN_PLANT_TREE_A;
+    }
+    if (cfg->use_autumn_trees && cfg->use_ice_trees != 2 && cfg->use_stick_trees != 2) {
         TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_AUTUMN_TREE_RED_SM;
         TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_AUTUMN_TREE_YELLOW_SM;
+    }
+    if(cfg->use_ice_trees && cfg->use_autumn_trees != 2 && cfg->use_stick_trees != 2){
+        TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_ICE_TREE_SM;
+    }
+    if(cfg->use_stick_trees && cfg->use_autumn_trees != 2 && cfg->use_ice_trees != 2){
+        TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_STICK_TREE_SM;
     }
 
     /* ---- Build rock table ---- */
@@ -289,8 +310,8 @@ void decoration_init(int map_index){
         int py = row * TILE_H + (rand() % TILE_H);
 
         //check bottom of rock
-        int bot_col = (px + info->w / 2) / TILE_W;
-        int bot_row = (py + info->h - 1) / TILE_H;
+        int bot_col = (px + info->w / 2) >> 4;
+        int bot_row = (py + info->h - 1) >> 4;
         if (bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
 
         temp = map_get_tile(bot_row, bot_col);
@@ -361,8 +382,8 @@ void decoration_init(int map_index){
         const DecoType *info = &DECO_LOOKUP[type];
         int px = col * TILE_W + (rand() % TILE_W);
         int py = row * TILE_H + (rand() % TILE_H);
-        int bot_col = (px + info->w / 2) / TILE_W;
-        int bot_row = (py + info->h - 1) / TILE_H;
+        int bot_col = (px + info->w / 2) >> 4;
+        int bot_row = (py + info->h - 1) >> 4;
 
         if (bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
         if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
@@ -482,9 +503,20 @@ int deco_has_canopy(int deco_type) {
     switch (deco_type) {
         case DECO_TREE_GREEN_A:
         case DECO_TREE_GREEN_B:
+        case DECO_GREEN_TREE_LG:
+
+        case DECO_AUTUMN_TREE_RED_LG:
         case DECO_AUTUMN_TREE_RED_MED:
+        case DECO_AUTUMN_TREE_YELLOW_LG:
         case DECO_AUTUMN_TREE_YELLOW_MED:
+
+        case DECO_STICK_TREE_B:
+        case DECO_STICK_TREE_LG:
         case DECO_STICK_TREE_MED:
+
+        case DECO_ICE_TREE_LG:
+        case DECO_ICE_TREE_MED:
+
         case DECO_ROCK_BIG_GREY:
         case DECO_ROCK_BIG_BROWN:
         case DECO_ROCK_MED_BROWN:

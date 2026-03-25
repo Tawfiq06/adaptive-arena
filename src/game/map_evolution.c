@@ -277,7 +277,10 @@ void wetland_queue_nearby_tree_burns(int lava_row, int lava_col) {
     for (int i = 0; i < deco_count; i++) {
         int dtype = decorations[i].type;
         if (dtype != DECO_TREE_GREEN_A       && dtype != DECO_TREE_GREEN_B &&
-            dtype != DECO_AUTUMN_TREE_RED_MED && dtype != DECO_AUTUMN_TREE_YELLOW_MED)
+            dtype != DECO_GREEN_TREE_LG      && dtype != DECO_AUTUMN_TREE_RED_LG &&
+            dtype  != DECO_AUTUMN_TREE_YELLOW_LG && dtype != DECO_ICE_TREE_LG &&
+            dtype != DECO_ICE_TREE_MED &&
+            dtype != DECO_AUTUMN_TREE_RED_MED && dtype != DECO_AUTUMN_TREE_YELLOW_MED )
             continue;
  
         int already = 0;

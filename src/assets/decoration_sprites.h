@@ -21,14 +21,28 @@ typedef enum {
     DECO_BUSH_GREEN_LG,
     DECO_BUSH_OLIVE_LG, 
 
+    DECO_STICK_TREE_B,
+    DECO_STICK_TREE_LG,
     DECO_STICK_TREE_MED,
+    DECO_STICK_TREE_SM,
+
+    DECO_ICE_TREE_LG,
+    DECO_ICE_TREE_MED,
+    DECO_ICE_TREE_SM,
+    
     DECO_FLOWER_PURPLE,
 
+    DECO_GREEN_TREE_LG,
     DECO_TREE_GREEN_A,
     DECO_GREEN_PLANT_TREE_A,
 
-    DECO_AUTUMN_TREE_RED_MED, DECO_AUTUMN_TREE_RED_SM,
-    DECO_AUTUMN_TREE_YELLOW_MED, DECO_AUTUMN_TREE_YELLOW_SM,
+    DECO_AUTUMN_TREE_RED_LG,
+    DECO_AUTUMN_TREE_RED_MED, 
+    DECO_AUTUMN_TREE_RED_SM,
+
+    DECO_AUTUMN_TREE_YELLOW_LG,
+    DECO_AUTUMN_TREE_YELLOW_MED, 
+    DECO_AUTUMN_TREE_YELLOW_SM,
 
     DECO_TREE_GREEN_B,
 
@@ -84,11 +98,27 @@ static const DecoType DECO_LOOKUP[DECO_COUNT];
 #define BUSH_OLIVE_LG_W  30
 #define BUSH_OLIVE_LG_H  43
 
+#define STICK_TREE_B_W  43
+#define STICK_TREE_B_H  96
+#define STICK_TREE_LG_W  48
+#define STICK_TREE_LG_H  96
 #define STICK_TREE_MED_W  26
 #define STICK_TREE_MED_H  47
+#define STICK_TREE_SM_W  16
+#define STICK_TREE_SM_H  32
+
+#define ICE_TREE_LG_W  48
+#define ICE_TREE_LG_H  96
+#define ICE_TREE_MED_W  25
+#define ICE_TREE_MED_H  48
+#define ICE_TREE_SM_W  16
+#define ICE_TREE_SM_H  32
 
 #define FLOWER_PURPLE_W  26
 #define FLOWER_PURPLE_H  31
+
+#define GREEN_TREE_LG_W  48
+#define GREEN_TREE_LG_H  96
 
 #define TREE_GREEN_A_W  29
 #define TREE_GREEN_A_H  47
@@ -99,11 +129,15 @@ static const DecoType DECO_LOOKUP[DECO_COUNT];
 #define TREE_GREEN_B_W  36
 #define TREE_GREEN_B_H  76
 
+#define AUTUMN_TREE_RED_LG_W  48
+#define AUTUMN_TREE_RED_LG_H  96
 #define AUTUMN_TREE_RED_MED_W  32
 #define AUTUMN_TREE_RED_MED_H  62
 #define AUTUMN_TREE_RED_SM_W  16
 #define AUTUMN_TREE_RED_SM_H  32
 
+#define AUTUMN_TREE_YELLOW_LG_W  48
+#define AUTUMN_TREE_YELLOW_LG_H  96
 #define AUTUMN_TREE_YELLOW_MED_W  32
 #define AUTUMN_TREE_YELLOW_MED_H  62
 #define AUTUMN_TREE_YELLOW_SM_W  16
@@ -140,17 +174,27 @@ static const short bush_red_sm[BUSH_RED_SM_W * BUSH_RED_SM_H];
 static const short bush_green_lg[BUSH_GREEN_LG_W * BUSH_GREEN_LG_H];
 static const short bush_olive_lg[BUSH_OLIVE_LG_W * BUSH_OLIVE_LG_H];
 
+static const short stick_tree_b[STICK_TREE_B_W * STICK_TREE_B_H];
+static const short stick_tree_lg[STICK_TREE_LG_W * STICK_TREE_LG_H];
 static const short stick_tree_med[STICK_TREE_MED_W * STICK_TREE_MED_H];
+static const short stick_tree_sm[STICK_TREE_SM_W * STICK_TREE_SM_H];
+
+static const short ice_tree_lg[ICE_TREE_LG_W * ICE_TREE_LG_H];
+static const short ice_tree_med[ICE_TREE_MED_W * ICE_TREE_MED_H];
+static const short ice_tree_sm[ICE_TREE_SM_W * ICE_TREE_SM_H];
 
 static const short flower_purple[806];
 
+static const short green_tree_lg[GREEN_TREE_LG_W * GREEN_TREE_LG_H];
 static const short tree_green_a[TREE_GREEN_A_W * TREE_GREEN_A_H];
 static const short green_plant_tree_a[GREEN_PLANT_TREE_A_H * GREEN_PLANT_TREE_A_W];
 static const short tree_green_b[TREE_GREEN_B_W * TREE_GREEN_B_H];
 
+static const short autumn_tree_red_lg[AUTUMN_TREE_RED_LG_W * AUTUMN_TREE_RED_LG_H];
 static const short autumn_tree_red_med[AUTUMN_TREE_RED_MED_W * AUTUMN_TREE_RED_MED_H];
 static const short autumn_tree_red_sm[AUTUMN_TREE_RED_SM_W * AUTUMN_TREE_RED_SM_H];
 
+static const short autumn_tree_yellow_lg[AUTUMN_TREE_YELLOW_LG_W * AUTUMN_TREE_YELLOW_LG_H];
 static const short autumn_tree_yellow_med[AUTUMN_TREE_YELLOW_MED_W * AUTUMN_TREE_YELLOW_MED_H];
 static const short autumn_tree_yellow_sm[AUTUMN_TREE_YELLOW_SM_W * AUTUMN_TREE_YELLOW_SM_H];
 

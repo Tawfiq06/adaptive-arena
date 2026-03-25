@@ -13,11 +13,22 @@ static int deco_is_solid(int deco_type) {
         case DECO_ROCK_BIG_GREY:
         case DECO_ROCK_MED_BROWN:
         case DECO_ROCK_MED_GREY:
+
         case DECO_TREE_GREEN_A:
         case DECO_TREE_GREEN_B:
+        case DECO_GREEN_TREE_LG:
+
+        case DECO_AUTUMN_TREE_RED_LG:
         case DECO_AUTUMN_TREE_RED_MED:
+        case DECO_AUTUMN_TREE_YELLOW_LG:
         case DECO_AUTUMN_TREE_YELLOW_MED:
+
+        case DECO_STICK_TREE_B:
+        case DECO_STICK_TREE_LG:
         case DECO_STICK_TREE_MED:
+
+        case DECO_ICE_TREE_LG:
+        case DECO_ICE_TREE_MED:
             return 1;
         default:
             return 0;

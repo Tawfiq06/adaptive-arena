@@ -17,10 +17,12 @@ const MapConfig MAP_CONFIGS[] = {
         .prefer_big_trees = 1,
         .prefer_big_rocks = 0,
         .use_autumn_trees = 1,
+        .use_stick_trees = 0,
+        .use_ice_trees = 0,
         .use_grey_rocks = 2,
     },
 
-    /* Map 2: Stone map*/
+    /* Map 2: Beach map*/
     // rock clusters, no water, no cattails
     [2] = {
         .tree_budget = 15,
@@ -34,6 +36,8 @@ const MapConfig MAP_CONFIGS[] = {
         .prefer_big_trees = 2,
         .prefer_big_rocks = 1,
         .use_autumn_trees = 1,
+        .use_stick_trees = 0,
+        .use_ice_trees = 0,
         .use_grey_rocks = 1,
     },
 

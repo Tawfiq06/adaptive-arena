@@ -246,8 +246,8 @@ void player_update(Entity *p, int cur_buf){
 
     if (p->dx != 0) {
     int nx = (p->dx > 0) ? p->hitbox_x + p->hitbox_w + p->dx : p->hitbox_x + p->dx;
-    int row = (p->hitbox_y + p->hitbox_h - 1) / TILE_H;
-    int col = nx / TILE_W;
+    int row = (p->hitbox_y + p->hitbox_h - 1) >> 4;
+    int col = nx >> 4;
 
         if (obstacle_map_get(row, col) & TILE_FLAG_SOLID) {
             /* Tile is flagged, now check against decorations in that cell */
@@ -281,8 +281,8 @@ void player_update(Entity *p, int cur_buf){
 
     if (p->dy != 0) {
         int ny = (p->dy > 0) ? p->hitbox_y + p->hitbox_h + p->dy : p->hitbox_y + p->dy;
-        int row = ny / TILE_H;
-        int col = (p->hitbox_x + p->hitbox_w / 2) / TILE_W;
+        int row = ny >> 4;
+        int col = (p->hitbox_x + p->hitbox_w / 2) >> 4;
 
         if (obstacle_map_get(row, col) & TILE_FLAG_SOLID) {
             const DecoCell *cell = deco_map_get_cell(row, col);
