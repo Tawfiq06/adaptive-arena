@@ -358,7 +358,7 @@ void player_draw(const Entity *p){
         draw_sprite(&sprites[SPRITE_WOOD_SHIELD], p->hitbox_x + x_off, p->hitbox_y + 2, flip_h, 0);
     }
     /*Use this to show player hitboxes*/
-    draw_rect_outline(p->hitbox_x, p->hitbox_y, p->hitbox_w, p->hitbox_h, 0x0000);
+    //draw_rect_outline(p->hitbox_x, p->hitbox_y, p->hitbox_w, p->hitbox_h, 0x0000);
 }
 
 void draw_health_bar(Entity* p) {   //call this function twice, pass in each player 

@@ -98,9 +98,7 @@ void map_evolution_draw(int cur_buf){
     for(int i = 0; i < tile_redraw_count; i++){
         TileRedraw *tr = &tile_redraws[i];
 
-        int need = (cur_buf == 0) ? tr->draw_b0 : tr->draw_b1;
-
-        if(need){
+        if((cur_buf == 0 && tr->draw_b0) || (cur_buf == 1 && tr->draw_b1)){
             int r = tr->row;
             int c = tr->col;
             SpriteID id = map_get_tile(r,c);
@@ -125,8 +123,7 @@ void map_evolution_draw(int cur_buf){
     for(int i = 0; i < deco_redraw_count; i++){
         DecoRedraw *dr = &deco_redraws[i];
 
-        int need = (cur_buf == 0) ? dr->draw_b0 : dr->draw_b1;
-        if(need){
+        if((cur_buf == 0 && dr->draw_b0) || (cur_buf == 1 && dr->draw_b1)){
             int idx = dr->deco_idx;
 
             //need to erase using old bounding box
@@ -217,6 +214,42 @@ void deco_change_type(int idx, int new_type){
 }
 
 
+/* burn table, what each deco maps to when it burns */
+
+int deco_burn_target(int type){
+    switch(type){
+        case DECO_GREEN_TREE_LG:    return DECO_STICK_TREE_LG;
+        case DECO_AUTUMN_TREE_RED_LG:       return DECO_STICK_TREE_LG;
+        case DECO_AUTUMN_TREE_YELLOW_LG:    return DECO_STICK_TREE_LG;
+        case DECO_TREE_GREEN_B:             return DECO_STICK_TREE_B;
+        case DECO_TREE_GREEN_A:             return DECO_STICK_TREE_MED;
+        case DECO_AUTUMN_TREE_RED_MED:      return DECO_STICK_TREE_MED;
+        case DECO_AUTUMN_TREE_YELLOW_MED:   return DECO_STICK_TREE_MED;
+        case DECO_GREEN_PLANT_TREE_A:       return DECO_STICK_TREE_SM;
+        case DECO_AUTUMN_TREE_RED_SM:       return DECO_STICK_TREE_SM;
+        case DECO_AUTUMN_TREE_YELLOW_SM:    return DECO_STICK_TREE_SM;
+        default: return -1;
+    }
+}
+
+/* frozen table, what each deco maps to when it freezes*/
+int deco_ice_target(int type){
+    switch (type) {
+        case DECO_GREEN_TREE_LG:            return DECO_ICE_TREE_LG;
+        case DECO_AUTUMN_TREE_RED_LG:       return DECO_ICE_TREE_LG;
+        case DECO_AUTUMN_TREE_YELLOW_LG:    return DECO_ICE_TREE_LG;
+        case DECO_TREE_GREEN_B:             return DECO_ICE_TREE_MED; /* no ice B variant */
+        case DECO_TREE_GREEN_A:             return DECO_ICE_TREE_MED;
+        case DECO_AUTUMN_TREE_RED_MED:      return DECO_ICE_TREE_MED;
+        case DECO_AUTUMN_TREE_YELLOW_MED:   return DECO_ICE_TREE_MED;
+        case DECO_GREEN_PLANT_TREE_A:       return DECO_ICE_TREE_SM;
+        case DECO_AUTUMN_TREE_RED_SM:       return DECO_ICE_TREE_SM;
+        case DECO_AUTUMN_TREE_YELLOW_SM:    return DECO_ICE_TREE_SM;
+        default: return -1;
+        }
+}
+
+
 /* Per-Map evolution State */
 
 #define MAP_EVO_NONE 0
@@ -254,7 +287,7 @@ typedef struct {
 } BurnEntry;
 
 BurnEntry burn_queue[BURN_QUEUE_MAX];
-int       burn_queue_count = 0;
+int burn_queue_count = 0;
  
 void wetland_seed_lava(void) {
     int seeds = 1 + (rand() % 3);
@@ -273,21 +306,16 @@ void wetland_seed_lava(void) {
     }
 }
  
-void wetland_queue_nearby_tree_burns(int lava_row, int lava_col) {
+void queue_nearby_tree_burns(int lava_row, int lava_col) {
     for (int i = 0; i < deco_count; i++) {
-        int dtype = decorations[i].type;
-        if (dtype != DECO_TREE_GREEN_A       && dtype != DECO_TREE_GREEN_B &&
-            dtype != DECO_GREEN_TREE_LG      && dtype != DECO_AUTUMN_TREE_RED_LG &&
-            dtype  != DECO_AUTUMN_TREE_YELLOW_LG && dtype != DECO_ICE_TREE_LG &&
-            dtype != DECO_ICE_TREE_MED &&
-            dtype != DECO_AUTUMN_TREE_RED_MED && dtype != DECO_AUTUMN_TREE_YELLOW_MED )
-            continue;
+        if(deco_burn_target(decorations[i].type) == -1) continue;
  
         int already = 0;
         for (int q = 0; q < burn_queue_count; q++)
             if (burn_queue[q].deco_idx == i) { already = 1; break; }
         if (already) continue;
- 
+        
+        int dtype = decorations[i].type;
         int deco_col = (decorations[i].x + DECO_LOOKUP[dtype].w / 2) >> 4;
         int deco_row = (decorations[i].y + DECO_LOOKUP[dtype].h - 1) >> 4;
 
@@ -320,10 +348,17 @@ void wetland_update(void) {
  
         int dr[4] = {-1, 1, 0, 0};
         int dc[4] = { 0, 0,-1, 1};
-        for (int i = 3; i > 0; i--) {   /* Fisher-Yates shuffle */
+        for (int i = 3; i > 0; i--) {  
             int j = rand() % (i + 1);
-            int tmp; tmp = dr[i]; dr[i] = dr[j]; dr[j] = tmp;
-                     tmp = dc[i]; dc[i] = dc[j]; dc[j] = tmp;
+            int tmp; 
+
+            tmp = dr[i]; 
+            dr[i] = dr[j]; 
+            dr[j] = tmp;  
+
+            tmp = dc[i]; 
+            dc[i] = dc[j]; 
+            dc[j] = tmp;
         }
  
         for (int d = 0; d < 4; d++) {
@@ -337,12 +372,12 @@ void wetland_update(void) {
             lava_cells[lava_count].row = (short)nr;
             lava_cells[lava_count].col = (short)nc;
             lava_count++;
-            wetland_queue_nearby_tree_burns(nr, nc);
+            queue_nearby_tree_burns(nr, nc);
             break;
         }
     }
  
-    /* --- Deco tick: burn one tree per tick --- */
+    /* Deco tick: burn one tree per tick */
     evo_deco_timer++;
     if (evo_deco_timer >= EVO_DECO_INTERVAL) {
         evo_deco_timer = 0;
@@ -350,9 +385,13 @@ void wetland_update(void) {
         for (int q = 0; q < burn_queue_count; q++) {
             burn_queue[q].burn_delay -= EVO_DECO_INTERVAL;
             if (burn_queue[q].burn_delay <= 0) {
-                deco_change_type(burn_queue[q].deco_idx, DECO_STICK_TREE_MED);
+                int idx = burn_queue[q].deco_idx;
+                int target = deco_burn_target(decorations[idx].type);
+                if(target != -1){
+                    deco_change_type(idx, target);
+                }
                 burn_queue[q] = burn_queue[--burn_queue_count];
-                break;
+                break; //once tree per tick
             }
         }
     }
@@ -362,14 +401,27 @@ void wetland_update(void) {
 
 //right now using sand as a place holder because i dont have a ice tile yet
  
-#define ICE_MAX 80   /* beach map has a lot of water — allow more ice */
- 
-typedef struct { short row, col; } IceCell;
+#define ICE_MAX 80
+typedef struct { 
+    short row, col; 
+} IceCell;
+
 IceCell ice_cells[ICE_MAX];
 int     ice_count = 0;
- 
-/* Pick seed points: water tiles that are directly adjacent to a sand tile.
- * These are the natural coastline — exactly where ice would form first. */
+
+#define FREEZE_QUEUE_MAX 20
+
+typedef struct{
+    int deco_idx;
+    int freeze_delay;
+} FreezeEntry;
+
+FreezeEntry freeze_queue[FREEZE_QUEUE_MAX];
+int freeze_queue_count = 0;
+
+/* Pick seed points: water tiles that are next to a sand tile.
+(this is to make it more realistic cuz ice forms on coastlines)*/
+
 void beach_seed_ice(void) {
     int seeds = 2 + rand() % 3;   /* 2-4 seeds */
     for (int s = 0; s < seeds && ice_count < ICE_MAX; s++) {
@@ -394,40 +446,98 @@ void beach_seed_ice(void) {
         }
     }
 }
+
+void beach_queue_nearby_tree_freeze(int ice_row, int ice_col){
+    for(int i = 0; i < deco_count; i++){
+        if(deco_ice_target(decorations[i].type) == -1) continue;
+
+         int already = 0;
+        for (int q = 0; q < freeze_queue_count; q++)
+            if (freeze_queue[q].deco_idx == i) { already = 1; break; }
+        if (already) continue;
+        
+        int dtype = decorations[i].type;
+        int deco_col = (decorations[i].x + DECO_LOOKUP[dtype].w / 2) >> 4;
+        int deco_row = (decorations[i].y + DECO_LOOKUP[dtype].h - 1) >> 4;
+
+        int dist_r   = deco_row - ice_row; 
+        if (dist_r < 0) 
+            dist_r = -dist_r;
+
+        int dist_c   = deco_col - ice_col; 
+        if (dist_c < 0) 
+            dist_c = -dist_c;
+
+        if (dist_r > 2 || dist_c > 2) continue;
+ 
+        if (freeze_queue_count >= FREEZE_QUEUE_MAX) return;
+        freeze_queue[freeze_queue_count].deco_idx   = i;
+        freeze_queue[freeze_queue_count].freeze_delay = 180 + rand() % 300;
+        freeze_queue_count++;
+    }
+}
  
 void beach_update(void) {
     if (ice_count == 0) return;   /* nothing seeded yet — safety guard */
  
     evo_tile_timer++;
-    if (evo_tile_timer < EVO_TILE_INTERVAL || ice_count >= ICE_MAX) return;
-    evo_tile_timer = 0;
+    if (evo_tile_timer >= EVO_TILE_INTERVAL && ice_count < ICE_MAX){
+         evo_tile_timer = 0;
  
-    /* Pick a random existing ice cell to spread from */
-    int src = rand() % ice_count;
-    int sr  = ice_cells[src].row;
-    int sc  = ice_cells[src].col;
- 
-    /* Shuffled neighbour order — no directional bias */
-    int dr[4] = {-1,  1,  0,  0};
-    int dc[4] = { 0,  0, -1,  1};
-    for (int i = 3; i > 0; i--) {
-        int j   = rand() % (i + 1);
-        int tmp;
-        tmp = dr[i]; dr[i] = dr[j]; dr[j] = tmp;
-        tmp = dc[i]; dc[i] = dc[j]; dc[j] = tmp;
+        /* Pick a random existing ice cell to spread from */
+        int src = rand() % ice_count;
+        int sr  = ice_cells[src].row;
+        int sc  = ice_cells[src].col;
+    
+        //Shuffled neighbour order
+        int dr[4] = {-1,  1,  0,  0};
+        int dc[4] = { 0,  0, -1,  1};
+
+        for (int i = 3; i > 0; i--) {
+            int j   = rand() % (i + 1);
+            int tmp;
+
+            tmp = dr[i];
+            dr[i] = dr[j]; 
+            dr[j] = tmp;
+
+            tmp = dc[i]; 
+            dc[i] = dc[j]; 
+            dc[j] = tmp;
+        }
+    
+        for (int d = 0; d < 4; d++) {
+            int nr = sr + dr[d];
+            int nc = sc + dc[d];
+            /* Ice spreads only into water — not over sand/stone/grass */
+            if (map_get_tile(nr, nc) != SPRITE_TILE_WATER) continue;
+    
+            map_change_tile(nr, nc, SPRITE_TILE_ICE, TILE_FLAG_ICE);
+            ice_cells[ice_count].row = (short)nr;
+            ice_cells[ice_count].col = (short)nc;
+            ice_count++;
+            beach_queue_nearby_tree_freeze(nr, nc);
+            break;
+        }
     }
+   
+    /* Deco Tick: freeze one tree per tick */
+    evo_deco_timer++;
+    if (evo_deco_timer >= EVO_DECO_INTERVAL) {
+        evo_deco_timer = 0;
  
-    for (int d = 0; d < 4; d++) {
-        int nr = sr + dr[d];
-        int nc = sc + dc[d];
-        /* Ice spreads only into water — not over sand/stone/grass */
-        if (map_get_tile(nr, nc) != SPRITE_TILE_WATER) continue;
- 
-        map_change_tile(nr, nc, SPRITE_TILE_ICE, TILE_FLAG_ICE);
-        ice_cells[ice_count].row = (short)nr;
-        ice_cells[ice_count].col = (short)nc;
-        ice_count++;
-        break;
+        for (int q = 0; q < freeze_queue_count; q++) {
+            freeze_queue[q].freeze_delay -= EVO_DECO_INTERVAL;
+            if (freeze_queue[q].freeze_delay <= 0) {
+                int idx = freeze_queue[q].deco_idx;
+                int target = deco_ice_target(decorations[idx].type);
+                if(target != -1){
+                    deco_change_type(idx, target);
+                }
+                freeze_queue[q] = freeze_queue[--freeze_queue_count];
+                break; //once tree per tick
+            }
+        }
     }
 }
  
@@ -457,6 +567,32 @@ typedef struct {
 IceLavaCell ice_lava_cells[ICE_LAVA_MAX];
 int ice_lava_count = 0;
  
+void ice_burn_adjacent_trees(int lava_row, int lava_col){
+    for (int i = 0; i < deco_count; i++) {
+        int target = deco_burn_target(decorations[i].type);
+        if (target == -1) continue;
+ 
+        int dtype = decorations[i].type;
+        int deco_col = (decorations[i].x + DECO_LOOKUP[dtype].w / 2) >> 4;
+        int deco_row = (decorations[i].y + DECO_LOOKUP[dtype].h - 1) >> 4;
+
+        int dist_r = deco_row - lava_row; 
+        if (dist_r < 0){
+            dist_r = -dist_r;
+        }
+
+        int dist_c = deco_col - lava_col; 
+        if (dist_c < 0){
+            dist_c = -dist_c;
+        }
+
+        if (dist_r > 1 || dist_c > 1) continue; /* only directly adjacent */
+ 
+        deco_change_type(i, target);
+    }
+}
+
+
 /* Spawn one new vent on a random ice tile, far enough from existing vents */
 void ice_spawn_vent(void) {
     for (int attempt = 0; attempt < 120; attempt++) {
@@ -468,25 +604,35 @@ void ice_spawn_vent(void) {
         /* Enforce a minimum gap of 2 tiles between vents */
         int too_close = 0;
         for (int q = 0; q < ice_lava_count; q++) {
-            int dr = r - ice_lava_cells[q].row; if (dr < 0) dr = -dr;
-            int dc = c - ice_lava_cells[q].col; if (dc < 0) dc = -dc;
-            if (dr <= 2 && dc <= 2) { too_close = 1; break; }
+            int dr = r - ice_lava_cells[q].row; 
+            if (dr < 0){
+                dr = -dr;
+            }
+
+            int dc = c - ice_lava_cells[q].col; 
+            if (dc < 0){
+                dc = -dc;
+            }
+
+            if (dr <= 2 && dc <= 2) { 
+                too_close = 1; break; 
+            }
         }
         if (too_close) continue;
  
         map_change_tile(r, c, SPRITE_TILE_LAVA, TILE_FLAG_DAMAGE);
-        ice_lava_cells[ice_lava_count].row        = (short)r;
-        ice_lava_cells[ice_lava_count].col        = (short)c;
-        ice_lava_cells[ice_lava_count].melt_timer =
-            ICE_MELT_DELAY_MIN + rand() % (ICE_MELT_DELAY_MAX - ICE_MELT_DELAY_MIN);
+        ice_lava_cells[ice_lava_count].row = (short)r;
+        ice_lava_cells[ice_lava_count].col = (short)c;
+        ice_lava_cells[ice_lava_count].melt_timer = ICE_MELT_DELAY_MIN + rand() % (ICE_MELT_DELAY_MAX - ICE_MELT_DELAY_MIN);
         ice_lava_count++;
+        ice_burn_adjacent_trees(r, c);
         return;
     }
-    /* If no valid spot found this tick, just wait for the next interval */
+    // If no valid spot found this tick, just wait for the next interval
 }
  
 void ice_map_update(void) {
-    /* --- Tile tick: maybe spawn a new vent --- */
+    /* Tile tick: maybe spawn a new vent*/
     evo_tile_timer++;
     if (evo_tile_timer >= ICE_VENT_INTERVAL) {
         evo_tile_timer = 0;
@@ -494,19 +640,18 @@ void ice_map_update(void) {
             ice_spawn_vent();
     }
  
-    /* --- Cooldown tick: advance every vent's timer by 1 frame --- */
-    /* We tick every frame (not gated) so the timer is in real frames. */
+    // Cooldown tick: advance every vent's timer by 1 frame */
     int new_count = 0;
     for (int q = 0; q < ice_lava_count; q++) {
         ice_lava_cells[q].melt_timer--;
  
         if (ice_lava_cells[q].melt_timer <= 0) {
-            /* Vent cools: lava → scorched dirt */
+            // Vent cools: lava → scorched dirt
             int lr = ice_lava_cells[q].row;
             int lc = ice_lava_cells[q].col;
             map_change_tile(lr, lc, SPRITE_TILE_DIRT, 0);
  
-            /* Melt orthogonal ice neighbours → warm water */
+            // Melt orthogonal ice neighbours → warm water 
             const int dr[4] = {-1,  1,  0,  0};
             const int dc[4] = { 0,  0, -1,  1};
             for (int d = 0; d < 4; d++) {
@@ -515,7 +660,7 @@ void ice_map_update(void) {
                 if (map_get_tile(nr, nc) == SPRITE_TILE_SNOW)
                     map_change_tile(nr, nc, SPRITE_TILE_WATER_BRIGHT, TILE_FLAG_SLOW);
             }
-            /* Entry expires — don't carry it forward */
+            // Entry expires — don't carry it forward 
         } else {
             ice_lava_cells[new_count++] = ice_lava_cells[q];
         }

@@ -11,6 +11,7 @@ extern const short dirt_sprite[TILE_W * TILE_H];
 extern const short sand_sprite[TILE_W * TILE_H];
 const short snow_sprite[TILE_W  * TILE_H];
 const short water_bright_sprite[TILE_W * TILE_H];
+const short ice_sprite[TILE_W * TILE_H];
 const short lava_sprite[TILE_W * TILE_H]; 
 
 
