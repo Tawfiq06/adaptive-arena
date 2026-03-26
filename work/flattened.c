@@ -212,6 +212,40 @@ void keyboard_update(void);
 /* ===========================================================================
  * src/hardware/audio.h
  * =========================================================================*/
+#define MAX_ACTIVE_SOUNDS 8 //how many sounds to play at once
+#define AUDIO_SAMPLE_RATE 8000
+
+struct audio_t {
+    volatile unsigned int control;
+	volatile unsigned char rarc;
+	volatile unsigned char ralc;
+	volatile unsigned char wsrc;
+	volatile unsigned char wslc;
+	volatile unsigned int ldata;
+	volatile unsigned int rdata;
+};
+
+typedef struct {
+    const short *samples;
+    int length;
+    int position;
+    int loop;
+    int active; 
+    float volume; //0.0 to 1.0
+} SoundInstance;
+
+SoundInstance active_sounds[MAX_ACTIVE_SOUNDS];
+const short *bgm_data; //pointer to current background track
+int bgm_pos;
+int bgm_len;
+
+const short *current_bgm;
+int bgm_length;
+int bgm_position;
+
+void play_sfx(const short *data, int len, float volume, int loop);
+void play_bgm(const short *data, int len);
+void audio_update();
 
 
 /* ===========================================================================
@@ -945,6 +979,32 @@ void map_evolution_draw(int cur_buf);
 void map_change_tile(int row, int col, SpriteID new_id, unsigned char new_flags);
 void deco_change_type(int idx, int new_type);
 
+#define TILE_REDRAW_CAP 16
+
+typedef struct{
+    short row, col;
+    int draw_b0;  //needs redraw into buffer 2
+    int draw_b1; //needs redraw into buffer 1
+} TileRedraw;
+
+TileRedraw tile_redraws[TILE_REDRAW_CAP];
+int tile_redraw_count;
+
+#define DECO_REDRAW_CAP 8
+
+
+typedef struct{
+    int deco_idx;
+    int draw_b0;
+    int draw_b1;
+    //bounding box to erase old sprite
+    short erase_col0, erase_row0;
+    short erase_col1, erase_row1;
+} DecoRedraw;
+
+DecoRedraw deco_redraws[DECO_REDRAW_CAP];
+int deco_redraw_count;
+
 
 /* ===========================================================================
  * src/engine/collision.h
@@ -1210,6 +1270,72 @@ void keyboard_update(void) {
 /* ===========================================================================
  * src/hardware/audio.c
  * =========================================================================*/
+/* #include "audio.h" -- merged */
+/* #include "address_map.h" -- merged */
+
+
+void audio_update(){
+    struct audio_t* audio_ptr = ((struct audio_t*) AUDIO_BASE);
+
+    //only if there is space in output FIFO
+    while(audio_ptr->wsrc > 0 && audio_ptr->wslc > 0){
+        int mixed_sample = 0; 
+
+        /* 1. Add background music */
+        if(bgm_data != NULL){
+            mixed_sample += bgm_data[bgm_pos];
+            bgm_pos++;
+            //now loop bg music when it reaches the end
+            if(bgm_pos >= bgm_len) bgm_pos = 0; 
+        }
+
+        /* 2. add active SFX */
+        for(int i = 0; i < MAX_ACTIVE_SOUNDS; i++){
+            if(active_sounds[i].active){
+                short sample = active_sounds[i].samples[active_sounds[i].position];
+                mixed_sample += (int) (sample * active_sounds[i].volume);
+
+                active_sounds[i].position++;
+
+                if(active_sounds[i].position >= active_sounds[i].length){
+                    if(active_sounds[i].loop){
+                        active_sounds[i].position = 0;
+                    }
+                    else{
+                        active_sounds[i].active = 0;
+                    }
+                }
+            }   
+        }
+
+        // 3. Clipping
+        if (mixed_sample > 32767) mixed_sample = 32767;
+        if (mixed_sample < -32768) mixed_sample = -32768;
+
+        audio_ptr->ldata = mixed_sample;
+        audio_ptr->rdata = mixed_sample;
+    }
+}
+
+void play_bgm(const short *data, int length){
+    current_bgm = data;
+    bgm_length = length; 
+    bgm_position = 0; //start from beginning
+}
+
+void play_sfx(const short *data, int length, float volume, int loop){
+    for(int i = 0; i < MAX_ACTIVE_SOUNDS; i++){
+        if (!active_sounds[i].active) {
+            active_sounds[i].samples = data;
+            active_sounds[i].length = length;
+            active_sounds[i].position = 0;
+            active_sounds[i].volume = volume;
+            active_sounds[i].active = 1;
+            active_sounds[i].loop = loop;
+            return; // Found a slot, exit
+        }
+    }
+}
 
 
 /* ===========================================================================
@@ -7681,14 +7807,6 @@ unsigned char obstacle_map_at_pixel(int px, int py) {
 /* Part 1: Dirty tile queue*/
 //remember there is a double buffer
 
-#define TILE_REDRAW_CAP 16
-
-typedef struct{
-    short row, col;
-    int draw_b0;  //needs redraw into buffer 2
-    int draw_b1; //needs redraw into buffer 1
-} TileRedraw;
-
 TileRedraw tile_redraws[TILE_REDRAW_CAP];
 int tile_redraw_count = 0;
 
@@ -7712,18 +7830,7 @@ void tile_redraw_enqueue (int row, int col){
 }
 
 //pending deco type-change redraws
-#define DECO_REDRAW_CAP 8
 
-typedef struct{
-    int deco_idx;
-    int draw_b0;
-    int draw_b1;
-    //bounding box to erase old sprite
-    short erase_col0, erase_row0;
-    short erase_col1, erase_row1;
-} DecoRedraw;
-
-DecoRedraw deco_redraws[DECO_REDRAW_CAP];
 int deco_redraw_count = 0;
 
 void deco_redraw_enqueue(int idx){
@@ -9124,6 +9231,8 @@ void erase_sprite(int x, int y, int w, int h){
 
     /*Now handle redrawing decorations*/
     decoration_redraw_region(row0, col0, row1, col1);
+
+    //requeue
 }
 
 
@@ -9508,6 +9617,87 @@ void draw_game(int cur_buf){
     }
 
     entity_erase_all(cur_buf);
+
+
+    //flag the stuff that need to be redrawn due to the players
+    for(int i = 0; i < MAX_ENTITIES; i++){
+        if(!entities[i].active && !entities[i].pending_erase) continue;
+
+        int ex0 = entities[i].prev_x[cur_buf];
+        int ey0 = entities[i].prev_y[cur_buf];
+        int ex1 = ex0 + entities[i].width;
+        int ey1 = ey0 + entities[i].height;
+
+        for (int p = 0; p < MAX_POTIONS; p++) {
+            if (!potions[p].active) continue;
+            if (potions[p].x + potions[p].sprite.width  <= ex0 || potions[p].x >= ex1) continue;
+            if (potions[p].y + potions[p].sprite.height <= ey0 || potions[p].y >= ey1) continue;
+            potions[p].needs_draw_b0 = 1;
+            potions[p].needs_draw_b1 = 1;
+            potions[p].flash_drawn   = 0;
+        }
+        //now check clouds
+        for (int c = 0; c < cloud_tile_count; c++) {
+            int cpx = cloud_tiles[c].col << 4;
+            int cpy = cloud_tiles[c].row << 4;
+            if (cpx + TILE_W <= ex0 || cpx >= ex1) continue;
+            if (cpy + TILE_H <= ey0 || cpy >= ey1) continue;
+            cloud_tiles[c].draw_b0 = 1;
+            cloud_tiles[c].draw_b1 = 1;
+        }
+    }
+
+    for (int i = 0; i < MAX_POTIONS; i++) {
+        if (!potions[i].active) continue;
+        /* tile column/row range the potion occupies */
+        int pc0 = potions[i].x >> 4;
+        int pc1 = (potions[i].x + potions[i].sprite.width  - 1) >> 4;
+        int pr0 = potions[i].y >> 4;
+        int pr1 = (potions[i].y + potions[i].sprite.height - 1) >> 4;
+
+        int hit = 0;
+        for (int t = 0; t < tile_redraw_count && !hit; t++) {
+            if (tile_redraws[t].row >= pr0 && tile_redraws[t].row <= pr1 &&
+                tile_redraws[t].col >= pc0 && tile_redraws[t].col <= pc1){
+                hit = 1;
+            }
+        }
+        for (int d = 0; d < deco_redraw_count && !hit; d++) {
+            /* deco bounding box is in tile coords */
+            if (deco_redraws[d].erase_col1 > pc0 && deco_redraws[d].erase_col0 <= pc1 &&
+                deco_redraws[d].erase_row1 > pr0 && deco_redraws[d].erase_row0 <= pr1){
+                hit = 1;
+            }
+        }
+        if (hit) {
+            potions[i].needs_draw_b0 = 1;
+            potions[i].needs_draw_b1 = 1;
+            potions[i].flash_drawn   = 0;
+        }
+    }
+    for (int c = 0; c < cloud_tile_count; c++) {
+        int cp_c = cloud_tiles[c].col;
+        int cp_r = cloud_tiles[c].row;
+
+        int hit = 0;
+        for (int t = 0; t < tile_redraw_count && !hit; t++) {
+            if (tile_redraws[t].col == cp_c && tile_redraws[t].row == cp_r){
+                hit = 1;
+            }
+        }
+        for (int d = 0; d < deco_redraw_count && !hit; d++) {
+            /* deco bounding box is in tile coords */
+            if ((deco_redraws[d].erase_col1 >= cp_c && deco_redraws[d].erase_col0 <= cp_c) &&
+                (deco_redraws[d].erase_row1 >= cp_r && deco_redraws[d].erase_row0 <= cp_r)){
+                hit = 1;
+            }
+        }
+        if (hit) {
+            cloud_tiles[c].draw_b0 = 1;
+            cloud_tiles[c].draw_b1 = 1;
+        }
+    }
+
     map_evolution_draw(cur_buf);
     entity_draw_all();
     decoration_draw_canopies_near(px1, py1, px2, py2);
@@ -9574,41 +9764,22 @@ void draw_game(int cur_buf){
         if(cur_buf == 0 && ct->draw_b0){
             draw_sprite(&ct->sprite, px, py, 0, 0);
             ct->draw_b0 = 0;
-            continue;
         }
         if(cur_buf == 1 && ct->draw_b1){
             draw_sprite(&ct->sprite, px, py, 0, 0);
             ct->draw_b1 = 0;
-            continue;
         }
 
-        //now only redraw the tiles the player overlaps
-        int player_overlap = 0;
-        int tile_x0 = px;
-        int tile_x1 = px + TILE_W;
-        int tile_y0 = py;
-        int tile_y1 = py + TILE_H;
+        for(int j = 0; j < MAX_POTIONS; j++){
+            if (!potions[j].active) continue;
+            /* tile column/row range the potion occupies */
+            int pc0 = potions[j].x >> 4;
+            int pr0 = potions[j].y >> 4;
 
-        Entity *players[2] = {g_p1, g_p2};
-        for(int j = 0; j < 2; j++){
-            Entity *p = players[j];
-
-             /* Current position */
-            if (p->x < tile_x1 && p->x + PLAYER_W > tile_x0 &&
-                p->y < tile_y1 && p->y + PLAYER_H > tile_y0) {
-                player_overlap = 1;
-                break;
+            if(ct->col >= pc0 && ct->row >= pr0){
+                ct->draw_b0 = 1;
+                ct->draw_b1 = 1;
             }
-            /* Previous position (cuz erases restores this region) */
-            if (p->prev_x[cur_buf] < tile_x1 && p->prev_x[cur_buf] + PLAYER_W > tile_x0 &&
-                p->prev_y[cur_buf] < tile_y1 && p->prev_y[cur_buf] + PLAYER_H > tile_y0) {
-                player_overlap = 1;
-                break;
-            }
-        }
-
-        if (player_overlap){
-            draw_sprite(&ct->sprite, px, py, 0, 0);
         }
     }
 

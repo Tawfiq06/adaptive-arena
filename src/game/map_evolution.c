@@ -12,14 +12,6 @@
 /* Part 1: Dirty tile queue*/
 //remember there is a double buffer
 
-#define TILE_REDRAW_CAP 16
-
-typedef struct{
-    short row, col;
-    int draw_b0;  //needs redraw into buffer 2
-    int draw_b1; //needs redraw into buffer 1
-} TileRedraw;
-
 TileRedraw tile_redraws[TILE_REDRAW_CAP];
 int tile_redraw_count = 0;
 
@@ -43,18 +35,7 @@ void tile_redraw_enqueue (int row, int col){
 }
 
 //pending deco type-change redraws
-#define DECO_REDRAW_CAP 8
 
-typedef struct{
-    int deco_idx;
-    int draw_b0;
-    int draw_b1;
-    //bounding box to erase old sprite
-    short erase_col0, erase_row0;
-    short erase_col1, erase_row1;
-} DecoRedraw;
-
-DecoRedraw deco_redraws[DECO_REDRAW_CAP];
 int deco_redraw_count = 0;
 
 void deco_redraw_enqueue(int idx){
