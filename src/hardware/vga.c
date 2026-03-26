@@ -77,7 +77,7 @@ void draw_rect(int x, int y, int width, int height, short colour){
     }
 }
 
-static void swap(int* a, int* b) {
+void swap(int* a, int* b) {
   int temp = *a;
   *a = *b;
   *b = temp;

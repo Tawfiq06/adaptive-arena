@@ -11,6 +11,7 @@ Entity entities[MAX_ENTITIES];
 Entity* spawn_entity(EntityType type){
     for(int i = 0; i < MAX_ENTITIES; i++){
         if(!entities[i].active){
+            entities[i].is_ai = 0;
             entities[i].active = 1;
             entities[i].type = type;
             entities[i].player_cfg = NULL; //since not player, if player use player_init

@@ -116,7 +116,7 @@ void player_update(Entity *p, int cur_buf){
         anim_play(&p->anim, p->anim_def, SOLIDER_IDLE);
         locked = 0;
     }
-
+    
     /*decect release frame for arrow*/
     if (p->anim.anim == SOLDIER_ATK3 && p->anim.frame == SOLDIER_ANIMS[SOLDIER_ATK3].end - 1 && !p->attack_p && !p->arrow_fired){
         p->attack_p = 1;

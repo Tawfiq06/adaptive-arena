@@ -1,7 +1,7 @@
 #include "animator.h"
 #include "vga.h"
 
-static void anim_init(Animator *a, const AnimDef *def, int start_anim){
+void anim_init(Animator *a, const AnimDef *def, int start_anim){
     a->anim = (unsigned char) start_anim;
     a->frame = def[start_anim].start;
     a->tick = GAME_FPS / def[start_anim].fps;
@@ -10,7 +10,7 @@ static void anim_init(Animator *a, const AnimDef *def, int start_anim){
 }
 
 /*Returns 1 when a non loop animation finishes its last frame*/
-static inline int anim_tick(Animator *a, const AnimDef *defs) {
+int anim_tick(Animator *a, const AnimDef *defs) {
     if (a->tick > 0) { a->tick--; return 0; }
 
     const AnimDef *def = &defs[a->anim];
@@ -29,24 +29,24 @@ static inline int anim_tick(Animator *a, const AnimDef *defs) {
     return 1; 
 }
 
-static const short *anim_frame(const Animator *a, const short * const *frames) {
+const short *anim_frame(const Animator *a, const short * const *frames) {
     return frames[a->frame];
 }
 
 
-static void anim_play(Animator *a, const AnimDef *def, int id) {
+void anim_play(Animator *a, const AnimDef *def, int id) {
     if (a->anim == (unsigned char) id) return;
     a->anim  = (unsigned char)id;
     a->frame = def[id].start;
     a->tick  = GAME_FPS / def[id].fps;
 }
 
-static void anim_restart(Animator *a, const AnimDef *def) {
+void anim_restart(Animator *a, const AnimDef *def) {
     a->frame = def[a->anim].start;
     a->tick  = GAME_FPS / def[a->anim].fps;
 }
 
-static void draw_soldier(const Animator *a, int x, int y){
+void draw_soldier(const Animator *a, int x, int y){
     const short *frame = soldier_frames[a->frame];
     for (int row = 0; row < SOLDIER_H; row++){
         int py = y + row;
