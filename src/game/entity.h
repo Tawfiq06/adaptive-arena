@@ -13,6 +13,8 @@ typedef enum{
 } EntityType;
 
 typedef struct{
+    int is_ai;
+    
     int x;
     int y;
 

@@ -97,6 +97,7 @@ void game_init(){
     g_p2 = spawn_entity(ENTITY_PLAYER);
     g_p2->player_cfg = &p2_cfg;
     player_init(g_p2, SPRITE_PLAYER, (short)0xDC14, &p2_cfg, SCREEN_WIDTH - 16 - TILE_W - PLAYER_W, 1);
+    //g_p2->is_ai = 1; //make player 2 ai
 
     for (int i = 0; i < MAX_POTIONS; i++) {
         potions[i].active     = 0;
@@ -194,6 +195,10 @@ void update_game(int cur_buf){
     }
 
     entity_update_all(cur_buf);
+
+    if(g_p2 && g_p2->is_ai && g_p2->active && !g_p2->dying){
+        ai_inject_input(g_p2, g_p1);
+    }
 
     /* Now spawn projectiles*/
     for (int i = 0; i < player_count; i++){
@@ -541,4 +546,19 @@ void draw_game(int cur_buf){
     /* draw health bars on top of background */
     draw_health_bar(g_p1);
     draw_health_bar(g_p2);
+}
+
+void ai_get_nearest_potion(int agent_x, int agent_y,
+                           float *out_rx, float *out_ry, int *out_active) {
+    *out_rx     = 0.0f;
+    *out_ry     = 0.0f;
+    *out_active = 0;
+    for (int i = 0; i < MAX_POTIONS; i++) {
+        if (potions[i].active) {
+            *out_rx     = (potions[i].x - agent_x) / (float)SCREEN_WIDTH;
+            *out_ry     = (potions[i].y - agent_y) / (float)SCREEN_HEIGHT;
+            *out_active = 1;
+            return;   /* take the first active one */
+        }
+    }
 }
