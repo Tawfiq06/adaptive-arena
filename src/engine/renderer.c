@@ -80,4 +80,6 @@ void erase_sprite(int x, int y, int w, int h){
 
     /*Now handle redrawing decorations*/
     decoration_redraw_region(row0, col0, row1, col1);
+
+    //requeue
 }

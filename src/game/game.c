@@ -372,6 +372,87 @@ void draw_game(int cur_buf){
     }
 
     entity_erase_all(cur_buf);
+
+
+    //flag the stuff that need to be redrawn due to the players
+    for(int i = 0; i < MAX_ENTITIES; i++){
+        if(!entities[i].active && !entities[i].pending_erase) continue;
+
+        int ex0 = entities[i].prev_x[cur_buf];
+        int ey0 = entities[i].prev_y[cur_buf];
+        int ex1 = ex0 + entities[i].width;
+        int ey1 = ey0 + entities[i].height;
+
+        for (int p = 0; p < MAX_POTIONS; p++) {
+            if (!potions[p].active) continue;
+            if (potions[p].x + potions[p].sprite.width  <= ex0 || potions[p].x >= ex1) continue;
+            if (potions[p].y + potions[p].sprite.height <= ey0 || potions[p].y >= ey1) continue;
+            potions[p].needs_draw_b0 = 1;
+            potions[p].needs_draw_b1 = 1;
+            potions[p].flash_drawn   = 0;
+        }
+        //now check clouds
+        for (int c = 0; c < cloud_tile_count; c++) {
+            int cpx = cloud_tiles[c].col << 4;
+            int cpy = cloud_tiles[c].row << 4;
+            if (cpx + TILE_W <= ex0 || cpx >= ex1) continue;
+            if (cpy + TILE_H <= ey0 || cpy >= ey1) continue;
+            cloud_tiles[c].draw_b0 = 1;
+            cloud_tiles[c].draw_b1 = 1;
+        }
+    }
+
+    for (int i = 0; i < MAX_POTIONS; i++) {
+        if (!potions[i].active) continue;
+        /* tile column/row range the potion occupies */
+        int pc0 = potions[i].x >> 4;
+        int pc1 = (potions[i].x + potions[i].sprite.width  - 1) >> 4;
+        int pr0 = potions[i].y >> 4;
+        int pr1 = (potions[i].y + potions[i].sprite.height - 1) >> 4;
+
+        int hit = 0;
+        for (int t = 0; t < tile_redraw_count && !hit; t++) {
+            if (tile_redraws[t].row >= pr0 && tile_redraws[t].row <= pr1 &&
+                tile_redraws[t].col >= pc0 && tile_redraws[t].col <= pc1){
+                hit = 1;
+            }
+        }
+        for (int d = 0; d < deco_redraw_count && !hit; d++) {
+            /* deco bounding box is in tile coords */
+            if (deco_redraws[d].erase_col1 > pc0 && deco_redraws[d].erase_col0 <= pc1 &&
+                deco_redraws[d].erase_row1 > pr0 && deco_redraws[d].erase_row0 <= pr1){
+                hit = 1;
+            }
+        }
+        if (hit) {
+            potions[i].needs_draw_b0 = 1;
+            potions[i].needs_draw_b1 = 1;
+            potions[i].flash_drawn   = 0;
+        }
+    }
+    for (int c = 0; c < cloud_tile_count; c++) {
+        int cp_c = cloud_tiles[c].col;
+        int cp_r = cloud_tiles[c].row;
+
+        int hit = 0;
+        for (int t = 0; t < tile_redraw_count && !hit; t++) {
+            if (tile_redraws[t].col == cp_c && tile_redraws[t].row == cp_r){
+                hit = 1;
+            }
+        }
+        for (int d = 0; d < deco_redraw_count && !hit; d++) {
+            /* deco bounding box is in tile coords */
+            if ((deco_redraws[d].erase_col1 >= cp_c && deco_redraws[d].erase_col0 <= cp_c) &&
+                (deco_redraws[d].erase_row1 >= cp_r && deco_redraws[d].erase_row0 <= cp_r)){
+                hit = 1;
+            }
+        }
+        if (hit) {
+            cloud_tiles[c].draw_b0 = 1;
+            cloud_tiles[c].draw_b1 = 1;
+        }
+    }
+
     map_evolution_draw(cur_buf);
     entity_draw_all();
     decoration_draw_canopies_near(px1, py1, px2, py2);
@@ -438,41 +519,22 @@ void draw_game(int cur_buf){
         if(cur_buf == 0 && ct->draw_b0){
             draw_sprite(&ct->sprite, px, py, 0, 0);
             ct->draw_b0 = 0;
-            continue;
         }
         if(cur_buf == 1 && ct->draw_b1){
             draw_sprite(&ct->sprite, px, py, 0, 0);
             ct->draw_b1 = 0;
-            continue;
         }
 
-        //now only redraw the tiles the player overlaps
-        int player_overlap = 0;
-        int tile_x0 = px;
-        int tile_x1 = px + TILE_W;
-        int tile_y0 = py;
-        int tile_y1 = py + TILE_H;
+        for(int j = 0; j < MAX_POTIONS; j++){
+            if (!potions[j].active) continue;
+            /* tile column/row range the potion occupies */
+            int pc0 = potions[j].x >> 4;
+            int pr0 = potions[j].y >> 4;
 
-        Entity *players[2] = {g_p1, g_p2};
-        for(int j = 0; j < 2; j++){
-            Entity *p = players[j];
-
-             /* Current position */
-            if (p->x < tile_x1 && p->x + PLAYER_W > tile_x0 &&
-                p->y < tile_y1 && p->y + PLAYER_H > tile_y0) {
-                player_overlap = 1;
-                break;
+            if(ct->col >= pc0 && ct->row >= pr0){
+                ct->draw_b0 = 1;
+                ct->draw_b1 = 1;
             }
-            /* Previous position (cuz erases restores this region) */
-            if (p->prev_x[cur_buf] < tile_x1 && p->prev_x[cur_buf] + PLAYER_W > tile_x0 &&
-                p->prev_y[cur_buf] < tile_y1 && p->prev_y[cur_buf] + PLAYER_H > tile_y0) {
-                player_overlap = 1;
-                break;
-            }
-        }
-
-        if (player_overlap){
-            draw_sprite(&ct->sprite, px, py, 0, 0);
         }
     }
 
