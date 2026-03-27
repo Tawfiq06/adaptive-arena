@@ -8661,7 +8661,7 @@ void entity_erase_all(int cur_buf){
         if (!entities[i].active){
             continue;
         }
-        erase_sprite(entities[i].prev_x[cur_buf], entities[i].prev_y[cur_buf], entities[i].width, entities[i].height);
+        erase_sprite(entities[i].prev_x[cur_buf] - 4, entities[i].prev_y[cur_buf], entities[i].width + 4, entities[i].height);
 
         if(cur_buf == 0 && entities[i].pending_erase_b1){
             entities[i].pending_erase_b1 = 0;
@@ -9252,6 +9252,7 @@ void erase_sprite(int x, int y, int w, int h){
 /* ===========================================================================
  * src/ai/weights.h
  * =========================================================================*/
+#pragma once
 /* Auto-generated - do not edit */
 
 #define NN_INPUT_SIZE  16
@@ -9528,7 +9529,7 @@ void game_init(){
     g_p2 = spawn_entity(ENTITY_PLAYER);
     g_p2->player_cfg = &p2_cfg;
     player_init(g_p2, SPRITE_PLAYER, (short)0xDC14, &p2_cfg, SCREEN_WIDTH - 16 - TILE_W - PLAYER_W, 1);
-    g_p2->is_ai = 1; //make player 2 ai
+    //g_p2->is_ai = 1; //make player 2 ai
 
     for (int i = 0; i < MAX_POTIONS; i++) {
         potions[i].active     = 0;

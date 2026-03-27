@@ -5,49 +5,47 @@ from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from env import FightEnv
 
-# ------------------------------------------------------------------
-# Paths
-# ------------------------------------------------------------------
-CHECKPOINT_PREFIX = "fight_agent_v2_checkpoint"
-SAVE_PATH         = "fight_agent_v2"
-BEST_PATH         = "fight_agent_v2_best"
+CHECKPOINT_PREFIX = "fight_agent_v3_checkpoint"
+SAVE_PATH         = "fight_agent_v3"
+BEST_PATH         = "fight_agent_v3_best"
 
-# ------------------------------------------------------------------
-# Environments
-# ------------------------------------------------------------------
-env      = make_vec_env(FightEnv, n_envs=8)
+env      = make_vec_env(FightEnv, n_envs=16)   # more envs = more diverse experience
 eval_env = Monitor(FightEnv())
 
-# ------------------------------------------------------------------
-# Load checkpoint if resuming, otherwise start fresh
-# ------------------------------------------------------------------
-latest_checkpoint = CHECKPOINT_PREFIX + ".zip"
+latest_checkpoint = None
+for steps in [5_000_000, 4_000_000, 3_000_000, 2_000_000, 1_000_000, 500_000]:
+    path = f"{CHECKPOINT_PREFIX}_{steps}_steps.zip"
+    if os.path.exists(path):
+        latest_checkpoint = path
+        break
 
-if os.path.exists(latest_checkpoint):
+if latest_checkpoint:
     print(f"Resuming from {latest_checkpoint} ...")
     model = PPO.load(latest_checkpoint, env=env)
+    resuming = True
 else:
-    print("Starting fresh against harder enemy...")
+    print("Starting fresh...")
     model = PPO(
         "MlpPolicy",
         env,
         verbose=1,
         learning_rate=3e-4,
         n_steps=2048,
-        batch_size=64,
+        batch_size=256,         # larger batch for stability
         n_epochs=10,
-        ent_coef=0.02,
+        ent_coef=0.05,          # higher entropy — stops early action collapse
+        clip_range=0.2,
+        vf_coef=0.5,
+        max_grad_norm=0.5,
         tensorboard_log="./tb_logs/",
-        policy_kwargs=dict(net_arch=[64, 64])
+        policy_kwargs=dict(net_arch=[128, 128])  # bigger network for 17 obs
     )
+    resuming = False
 
 model.verbose = 1
 
-# ------------------------------------------------------------------
-# Callbacks
-# ------------------------------------------------------------------
 checkpoint_cb = CheckpointCallback(
-    save_freq=50_000,
+    save_freq=500_000,
     save_path=".",
     name_prefix=CHECKPOINT_PREFIX,
     verbose=1
@@ -57,21 +55,17 @@ eval_cb = EvalCallback(
     eval_env,
     best_model_save_path=f"./{BEST_PATH}",
     log_path="./eval_logs/",
-    eval_freq=25_000,
-    n_eval_episodes=20,
+    eval_freq=50_000,
+    n_eval_episodes=30,
     deterministic=True,
     verbose=1
 )
 
-# ------------------------------------------------------------------
-# Train
-# ------------------------------------------------------------------
 model.learn(
-    total_timesteps=3_000_000,
-    reset_num_timesteps=True,
+    total_timesteps=10_000_000,
+    reset_num_timesteps=not resuming,   # don't restart LR schedule on resume
     callback=[checkpoint_cb, eval_cb]
 )
 
 model.save(SAVE_PATH)
 print(f"Done! Saved {SAVE_PATH}.zip")
-print(f"Best model saved to {BEST_PATH}/best_model.zip")
