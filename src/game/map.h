@@ -32,7 +32,7 @@ typedef struct {
 } MapConfig;
 
 //to be indexed by map_index when selecting map
-#define NUM_MAPS 2
+#define NUM_MAPS 4
 extern const MapConfig MAP_CONFIGS[NUM_MAPS + 1];
 
 void map_init(int map_index);

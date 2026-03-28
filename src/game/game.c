@@ -82,10 +82,10 @@ void add_cloud_tile(int row, int col){
 }
 
 void game_init(){
-    map_init(2);
-    decoration_init(2);
+    map_init(4);
+    decoration_init(4);
     obstacle_map_init();
-    map_evolution_init(2);
+    map_evolution_init(4);
     /*Spawn Player 1*/
     //on the left, faces right
     g_p1 = spawn_entity(ENTITY_PLAYER);

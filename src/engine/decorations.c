@@ -116,17 +116,17 @@ void decoration_init(int map_index){
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_TREE_GREEN_B;     
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_TREE_GREEN_A;
     }
-    if (cfg->use_autumn_trees && cfg->use_ice_trees != 2 && cfg->use_stick_trees != 2) {
+    if ((cfg->use_autumn_trees || cfg->use_autumn_trees == 2) && cfg->use_ice_trees != 2 && cfg->use_stick_trees != 2) {
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_AUTUMN_TREE_RED_LG;
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_AUTUMN_TREE_RED_MED;
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_AUTUMN_TREE_YELLOW_LG;
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_AUTUMN_TREE_YELLOW_MED;
     }
-    if (cfg->use_ice_trees && cfg->use_autumn_trees != 2 && cfg->use_stick_trees != 2){
+    if ((cfg->use_ice_trees || cfg->use_ice_trees == 2) && cfg->use_autumn_trees != 2 && cfg->use_stick_trees != 2){
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_ICE_TREE_LG;
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_ICE_TREE_MED;
     }
-    if (cfg->use_stick_trees && cfg->use_ice_trees != 2 && cfg->use_autumn_trees != 2){
+    if ((cfg->use_stick_trees || cfg->use_stick_trees == 2) && cfg->use_ice_trees != 2 && cfg->use_autumn_trees != 2){
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_STICK_TREE_B;
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_STICK_TREE_LG;
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_STICK_TREE_MED;
@@ -135,14 +135,14 @@ void decoration_init(int map_index){
     if(cfg->use_autumn_trees != 2 && cfg->use_ice_trees != 2 && cfg->use_stick_trees != 2){
         TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_GREEN_PLANT_TREE_A;
     }
-    if (cfg->use_autumn_trees && cfg->use_ice_trees != 2 && cfg->use_stick_trees != 2) {
+    if ((cfg->use_autumn_trees || cfg->use_autumn_trees == 2) && cfg->use_ice_trees != 2 && cfg->use_stick_trees != 2) {
         TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_AUTUMN_TREE_RED_SM;
         TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_AUTUMN_TREE_YELLOW_SM;
     }
-    if(cfg->use_ice_trees && cfg->use_autumn_trees != 2 && cfg->use_stick_trees != 2){
+    if((cfg->use_ice_trees || cfg->use_ice_trees == 2) && cfg->use_autumn_trees != 2 && cfg->use_stick_trees != 2){
         TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_ICE_TREE_SM;
     }
-    if(cfg->use_stick_trees && cfg->use_autumn_trees != 2 && cfg->use_ice_trees != 2){
+    if((cfg->use_stick_trees || cfg->use_stick_trees == 2) && cfg->use_autumn_trees != 2 && cfg->use_ice_trees != 2){
         TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_STICK_TREE_SM;
     }
 
@@ -173,11 +173,12 @@ void decoration_init(int map_index){
     };
     const int BUSH_COUNT = 5;
 
-    const int SMALL_TABLE[] = {
+    const int SMALL_TABLE[7] = {
         DECO_ROCK_SM_A_BROWN, DECO_ROCK_SM_B_BROWN, DECO_ROCK_SM_C_BROWN,
         DECO_ROCK_SM_A_GREY,  DECO_ROCK_SM_B_GREY,  DECO_ROCK_SM_C_GREY,
         DECO_FLOWER_PURPLE,
     };
+
     const int SMALL_COUNT = 7;
 
     const int CATTAIL_TABLE[] = {
@@ -197,10 +198,11 @@ void decoration_init(int map_index){
     for (int r = 0; r < MAP_HEIGHT; r++) {
         for (int c = 0; c < MAP_WIDTH; c++) {
             SpriteID t = map_get_tile(r, c);
-            if (t == SPRITE_TILE_GRASS)
+            if (t == SPRITE_TILE_GRASS || t == SPRITE_TILE_SNOW){
                 grass_tiles[grass_count][0] = r,
                 grass_tiles[grass_count][1] = c,
                 grass_count++;
+            }
         }
     }
 
@@ -239,7 +241,7 @@ void decoration_init(int map_index){
         int bot_col = (px + info->w / 2) >> 4;
         int bot_row = (py + info->h - 1) >> 4;
         if (bot_col >= 0 && bot_col < MAP_WIDTH && bot_row >= 0 && bot_row < MAP_HEIGHT) {
-            if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+            if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS && map_get_tile(bot_row, bot_col) != SPRITE_TILE_SNOW) continue;
         }
         if (too_close_to_any(px, py, MIN_SPACING)) continue;
         if (!place_deco(type, px, py)) break;
@@ -274,7 +276,7 @@ void decoration_init(int map_index){
             int cbot_row = (cpy + ci_info->h - 1) >> 4;
 
             if (cbot_col >= 0 && cbot_col < MAP_WIDTH && cbot_row >= 0 && cbot_row < MAP_HEIGHT) {
-                if (map_get_tile(cbot_row, cbot_col) != SPRITE_TILE_GRASS) continue;
+                if (map_get_tile(cbot_row, cbot_col) != SPRITE_TILE_GRASS && map_get_tile(bot_row, bot_col) != SPRITE_TILE_SNOW) continue;
             }
             if (too_close_to_any(cpx, cpy, 4)) continue;
             if (place_deco(ctype, cpx, cpy)) trees_placed++;
@@ -288,7 +290,7 @@ void decoration_init(int map_index){
         int row = 1 + (rand() % (MAP_HEIGHT - 2));
         int col = 1 + (rand() % (MAP_WIDTH  - 2));
         SpriteID temp = map_get_tile(row, col);
-        if (temp != SPRITE_TILE_GRASS && temp != SPRITE_TILE_STONE) continue;
+        if (temp != SPRITE_TILE_GRASS && temp != SPRITE_TILE_STONE && temp != SPRITE_TILE_SNOW) continue;
 
         //give random offset
         int type;
@@ -315,7 +317,7 @@ void decoration_init(int map_index){
         if (bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
 
         temp = map_get_tile(bot_row, bot_col);
-        if (temp != SPRITE_TILE_GRASS && temp != SPRITE_TILE_STONE && temp != SPRITE_TILE_DIRT) continue;
+        if (temp != SPRITE_TILE_GRASS && temp != SPRITE_TILE_STONE && temp != SPRITE_TILE_DIRT && temp != SPRITE_TILE_SNOW) continue;
         if (too_close_to_any(px, py, MIN_SPACING)) continue;
 
         //place rock
@@ -344,7 +346,7 @@ void decoration_init(int map_index){
 
             if (cbot_row < 0 || cbot_row >= MAP_HEIGHT || cbot_col < 0 || cbot_col >= MAP_WIDTH) continue;
             temp = map_get_tile(cbot_row, cbot_col);
-            if (temp != SPRITE_TILE_GRASS && temp != SPRITE_TILE_DIRT && temp && SPRITE_TILE_STONE) continue;
+            if (temp != SPRITE_TILE_GRASS && temp != SPRITE_TILE_DIRT && temp != SPRITE_TILE_STONE && temp != SPRITE_TILE_SNOW) continue;
             if (too_close_to_any(cpx, cpy, 3)) continue;
             if (place_deco(ctype, cpx, cpy)) rocks_placed++;
         }
@@ -355,7 +357,7 @@ void decoration_init(int map_index){
     for (int attempts = 0; attempts < MAX_ATTEMPTS && bushes_placed < cfg->bush_budget; attempts++) {
         int row = 1 + (rand() % (MAP_HEIGHT - 2));
         int col = 1 + (rand() % (MAP_WIDTH  - 2));
-        if (map_get_tile(row, col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(row, col) != SPRITE_TILE_GRASS && map_get_tile(row, col) != SPRITE_TILE_SNOW) continue;
 
         int type = BUSH_TABLE[rand() % BUSH_COUNT];
         const DecoType *info = &DECO_LOOKUP[type];
@@ -366,7 +368,7 @@ void decoration_init(int map_index){
         int bot_row = (py + info->h - 1) >> 4;
 
         if (bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
-        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS && map_get_tile(bot_row, bot_col) != SPRITE_TILE_SNOW) continue;
         if (too_close_to_any(px, py, MIN_SPACING)) continue;
         if (place_deco(type, px, py)) bushes_placed++;
     }
@@ -376,7 +378,7 @@ void decoration_init(int map_index){
     for (int attempts = 0; attempts < MAX_ATTEMPTS && smalls_placed < cfg->small_budget; attempts++) {
         int row = 1 + (rand() % (MAP_HEIGHT - 2));
         int col = 1 + (rand() % (MAP_WIDTH  - 2));
-        if (map_get_tile(row, col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(row, col) != SPRITE_TILE_GRASS && map_get_tile(row, col) != SPRITE_TILE_SNOW) continue;
 
         int type = SMALL_TABLE[rand() % SMALL_COUNT];
         const DecoType *info = &DECO_LOOKUP[type];
@@ -386,7 +388,7 @@ void decoration_init(int map_index){
         int bot_row = (py + info->h - 1) >> 4;
 
         if (bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
-        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS && map_get_tile(bot_row, bot_col) != SPRITE_TILE_SNOW) continue;
         if (too_close_to_any(px, py, 6)) continue;
         if (place_deco(type, px, py)) smalls_placed++;
     }
@@ -396,7 +398,7 @@ void decoration_init(int map_index){
     for (int attempts = 0; attempts < MAX_ATTEMPTS && cattails_placed < cfg->cattail_budget; attempts++) {
         int row = 1 + (rand() % (MAP_HEIGHT - 2));
         int col = 1 + (rand() % (MAP_WIDTH  - 2));
-        if (map_get_tile(row, col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(row, col) != SPRITE_TILE_GRASS && map_get_tile(row, col) != SPRITE_TILE_SNOW) continue;
         if (!is_next_to_water(row, col)) continue;  /* <-- the key filter */
 
         int type = CATTAIL_TABLE[rand() % CATTAIL_COUNT];
@@ -408,7 +410,7 @@ void decoration_init(int map_index){
         int bot_row = (py + info->h - 1) >> 4;
 
         if (bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
-        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS && map_get_tile(bot_row, bot_col) != SPRITE_TILE_SNOW) continue;
         if (too_close_to_any(px, py, 4)) continue;  /* cattails can be fairly close together */
         if (place_deco(type, px, py)) cattails_placed++;
     }
@@ -418,7 +420,7 @@ void decoration_init(int map_index){
     for (int attempts = 0; attempts < MAX_ATTEMPTS && ferns_placed < cfg->fern_budget; attempts++) {
         int row = 1 + (rand() % (MAP_HEIGHT - 2));
         int col = 1 + (rand() % (MAP_WIDTH  - 2));
-        if (map_get_tile(row, col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(row, col) != SPRITE_TILE_GRASS && map_get_tile(row, col) != SPRITE_TILE_SNOW) continue;
 
         int px = col * TILE_W + (rand() % TILE_W);
         int py = row * TILE_H + (rand() % TILE_H);
@@ -430,7 +432,7 @@ void decoration_init(int map_index){
         int bot_row = (py + info->h - 1) >> 4;
 
         if (bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
-        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS && map_get_tile(bot_row, bot_col) != SPRITE_TILE_SNOW) continue;
         if (too_close_to_any(px, py, 5)) continue;
         if (place_deco(type, px, py)) ferns_placed++;
     }

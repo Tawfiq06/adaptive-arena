@@ -48,6 +48,12 @@ void obstacle_map_init(void) {
             if (tile == SPRITE_TILE_WATER) {
                 obstacle_map[r][c] |= TILE_FLAG_SLOW;
             }
+            if(tile == SPRITE_TILE_ICE){
+                obstacle_map[r][c] |= TILE_FLAG_ICE;
+            }
+            if(tile == SPRITE_TILE_LAVA){
+                obstacle_map[r][c] |= TILE_FLAG_DAMAGE;
+            }
         }
     }
 

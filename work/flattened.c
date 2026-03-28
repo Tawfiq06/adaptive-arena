@@ -697,7 +697,7 @@ typedef struct {
 } MapConfig;
 
 //to be indexed by map_index when selecting map
-#define NUM_MAPS 2
+#define NUM_MAPS 4
 const MapConfig MAP_CONFIGS[NUM_MAPS + 1];
 
 void map_init(int map_index);
@@ -988,7 +988,7 @@ void map_evolution_draw(int cur_buf);
 void map_change_tile(int row, int col, SpriteID new_id, unsigned char new_flags);
 void deco_change_type(int idx, int new_type);
 
-#define TILE_REDRAW_CAP 16
+#define TILE_REDRAW_CAP 30
 
 typedef struct{
     short row, col;
@@ -999,7 +999,7 @@ typedef struct{
 TileRedraw tile_redraws[TILE_REDRAW_CAP];
 int tile_redraw_count;
 
-#define DECO_REDRAW_CAP 8
+#define DECO_REDRAW_CAP 15
 
 
 typedef struct{
@@ -7078,6 +7078,41 @@ const MapConfig MAP_CONFIGS[] = {
         .use_grey_rocks = 1,
     },
 
+    //ice map
+    [3] = {
+        .tree_budget = 8,
+        .rock_budget = 3,
+        .bush_budget = 1,
+        .small_budget = 3,
+        .cattail_budget = 0,
+        .fern_budget = 1,
+        .tree_cluster_size = 3,
+        .rock_cluster_size = 5,
+        .prefer_big_trees = 1,
+        .prefer_big_rocks = 2,
+        .use_autumn_trees = 0,
+        .use_stick_trees = 1,
+        .use_ice_trees = 2,
+        .use_grey_rocks = 1, // Using blueish/white ice rocks
+    },
+
+    //rock map
+    [4] = {
+        .tree_budget = 4,
+        .rock_budget = 25,
+        .bush_budget = 0,
+        .small_budget = 12,
+        .cattail_budget = 0,
+        .fern_budget = 0,
+        .tree_cluster_size = 1,
+        .rock_cluster_size = 6,
+        .prefer_big_trees = 0,
+        .prefer_big_rocks = 1,
+        .use_autumn_trees = 0,
+        .use_stick_trees = 2,
+        .use_ice_trees = 0,
+        .use_grey_rocks = 2, // Traditional grey stone
+    },
 };
 
 unsigned char current_map[MAP_HEIGHT][MAP_WIDTH];
@@ -7119,8 +7154,47 @@ const unsigned char map_2[MAP_HEIGHT][MAP_WIDTH] = {
     {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_GRASS, SPRITE_TILE_GRASS}
 };
 
+//Ice map
+const unsigned char map_3[MAP_HEIGHT][MAP_WIDTH] = {
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE}, 
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW}, 
+    {SPRITE_TILE_STONE, SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_WATER, SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE}, 
+    {SPRITE_TILE_STONE, SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_WATER, SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_WATER, SPRITE_TILE_ICE,   SPRITE_TILE_WATER, SPRITE_TILE_SNOW,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE}, 
+    {SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_WATER, SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE}, 
+    {SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_WATER, SPRITE_TILE_ICE,   SPRITE_TILE_WATER, SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_WATER, SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_STONE, SPRITE_TILE_STONE}, 
+    {SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_WATER, SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_STONE}, 
+    {SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_WATER, SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW}, 
+    {SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_WATER, SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW}, 
+    {SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_STONE}, 
+    {SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_WATER, SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_WATER, SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_STONE}, 
+    {SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_WATER, SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_WATER, SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_WATER, SPRITE_TILE_SNOW,  SPRITE_TILE_STONE},
+    {SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_WATER, SPRITE_TILE_WATER, SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_STONE, SPRITE_TILE_STONE}, 
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_SNOW,  SPRITE_TILE_SNOW,  SPRITE_TILE_ICE,   SPRITE_TILE_ICE,   SPRITE_TILE_STONE}  
+};
+
+//rocky map
+const unsigned char map_4[MAP_HEIGHT][MAP_WIDTH] = {
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_LAVA,  SPRITE_TILE_LAVA,  SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_LAVA,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_LAVA,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_LAVA,  SPRITE_TILE_LAVA,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_LAVA,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_LAVA,  SPRITE_TILE_LAVA,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_LAVA,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_LAVA,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_LAVA,  SPRITE_TILE_LAVA,  SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_DIRT,  SPRITE_TILE_DIRT,  SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE},
+    {SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE, SPRITE_TILE_STONE}
+};
+
 void map_init(int map_index){
-    const unsigned char (*src)[MAP_WIDTH] = (map_index == 2) ? map_2 : map_1;
+    const unsigned char (*src)[MAP_WIDTH] = (map_index == 4) ? map_4 : (map_index == 3) ? map_3 
+                                            : (map_index == 2) ? map_2 : map_1;
 
     for (int row = 0; row < MAP_HEIGHT; row++){
         for(int col = 0; col < MAP_WIDTH; col++){
@@ -7263,17 +7337,17 @@ void decoration_init(int map_index){
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_TREE_GREEN_B;     
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_TREE_GREEN_A;
     }
-    if (cfg->use_autumn_trees && cfg->use_ice_trees != 2 && cfg->use_stick_trees != 2) {
+    if ((cfg->use_autumn_trees || cfg->use_autumn_trees == 2) && cfg->use_ice_trees != 2 && cfg->use_stick_trees != 2) {
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_AUTUMN_TREE_RED_LG;
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_AUTUMN_TREE_RED_MED;
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_AUTUMN_TREE_YELLOW_LG;
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_AUTUMN_TREE_YELLOW_MED;
     }
-    if (cfg->use_ice_trees && cfg->use_autumn_trees != 2 && cfg->use_stick_trees != 2){
+    if ((cfg->use_ice_trees || cfg->use_ice_trees == 2) && cfg->use_autumn_trees != 2 && cfg->use_stick_trees != 2){
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_ICE_TREE_LG;
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_ICE_TREE_MED;
     }
-    if (cfg->use_stick_trees && cfg->use_ice_trees != 2 && cfg->use_autumn_trees != 2){
+    if ((cfg->use_stick_trees || cfg->use_stick_trees == 2) && cfg->use_ice_trees != 2 && cfg->use_autumn_trees != 2){
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_STICK_TREE_B;
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_STICK_TREE_LG;
         TREE_TABLE_BIG[TREE_COUNT_BIG++] = DECO_STICK_TREE_MED;
@@ -7282,14 +7356,14 @@ void decoration_init(int map_index){
     if(cfg->use_autumn_trees != 2 && cfg->use_ice_trees != 2 && cfg->use_stick_trees != 2){
         TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_GREEN_PLANT_TREE_A;
     }
-    if (cfg->use_autumn_trees && cfg->use_ice_trees != 2 && cfg->use_stick_trees != 2) {
+    if ((cfg->use_autumn_trees || cfg->use_autumn_trees == 2) && cfg->use_ice_trees != 2 && cfg->use_stick_trees != 2) {
         TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_AUTUMN_TREE_RED_SM;
         TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_AUTUMN_TREE_YELLOW_SM;
     }
-    if(cfg->use_ice_trees && cfg->use_autumn_trees != 2 && cfg->use_stick_trees != 2){
+    if((cfg->use_ice_trees || cfg->use_ice_trees == 2) && cfg->use_autumn_trees != 2 && cfg->use_stick_trees != 2){
         TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_ICE_TREE_SM;
     }
-    if(cfg->use_stick_trees && cfg->use_autumn_trees != 2 && cfg->use_ice_trees != 2){
+    if((cfg->use_stick_trees || cfg->use_stick_trees == 2) && cfg->use_autumn_trees != 2 && cfg->use_ice_trees != 2){
         TREE_TABLE_SMALL[TREE_COUNT_SMALL++] = DECO_STICK_TREE_SM;
     }
 
@@ -7320,11 +7394,12 @@ void decoration_init(int map_index){
     };
     const int BUSH_COUNT = 5;
 
-    const int SMALL_TABLE[] = {
+    const int SMALL_TABLE[7] = {
         DECO_ROCK_SM_A_BROWN, DECO_ROCK_SM_B_BROWN, DECO_ROCK_SM_C_BROWN,
         DECO_ROCK_SM_A_GREY,  DECO_ROCK_SM_B_GREY,  DECO_ROCK_SM_C_GREY,
         DECO_FLOWER_PURPLE,
     };
+
     const int SMALL_COUNT = 7;
 
     const int CATTAIL_TABLE[] = {
@@ -7344,10 +7419,11 @@ void decoration_init(int map_index){
     for (int r = 0; r < MAP_HEIGHT; r++) {
         for (int c = 0; c < MAP_WIDTH; c++) {
             SpriteID t = map_get_tile(r, c);
-            if (t == SPRITE_TILE_GRASS)
+            if (t == SPRITE_TILE_GRASS || t == SPRITE_TILE_SNOW){
                 grass_tiles[grass_count][0] = r,
                 grass_tiles[grass_count][1] = c,
                 grass_count++;
+            }
         }
     }
 
@@ -7386,7 +7462,7 @@ void decoration_init(int map_index){
         int bot_col = (px + info->w / 2) >> 4;
         int bot_row = (py + info->h - 1) >> 4;
         if (bot_col >= 0 && bot_col < MAP_WIDTH && bot_row >= 0 && bot_row < MAP_HEIGHT) {
-            if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+            if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS && map_get_tile(bot_row, bot_col) != SPRITE_TILE_SNOW) continue;
         }
         if (too_close_to_any(px, py, MIN_SPACING)) continue;
         if (!place_deco(type, px, py)) break;
@@ -7421,7 +7497,7 @@ void decoration_init(int map_index){
             int cbot_row = (cpy + ci_info->h - 1) >> 4;
 
             if (cbot_col >= 0 && cbot_col < MAP_WIDTH && cbot_row >= 0 && cbot_row < MAP_HEIGHT) {
-                if (map_get_tile(cbot_row, cbot_col) != SPRITE_TILE_GRASS) continue;
+                if (map_get_tile(cbot_row, cbot_col) != SPRITE_TILE_GRASS && map_get_tile(bot_row, bot_col) != SPRITE_TILE_SNOW) continue;
             }
             if (too_close_to_any(cpx, cpy, 4)) continue;
             if (place_deco(ctype, cpx, cpy)) trees_placed++;
@@ -7435,7 +7511,7 @@ void decoration_init(int map_index){
         int row = 1 + (rand() % (MAP_HEIGHT - 2));
         int col = 1 + (rand() % (MAP_WIDTH  - 2));
         SpriteID temp = map_get_tile(row, col);
-        if (temp != SPRITE_TILE_GRASS && temp != SPRITE_TILE_STONE) continue;
+        if (temp != SPRITE_TILE_GRASS && temp != SPRITE_TILE_STONE && temp != SPRITE_TILE_SNOW) continue;
 
         //give random offset
         int type;
@@ -7462,7 +7538,7 @@ void decoration_init(int map_index){
         if (bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
 
         temp = map_get_tile(bot_row, bot_col);
-        if (temp != SPRITE_TILE_GRASS && temp != SPRITE_TILE_STONE && temp != SPRITE_TILE_DIRT) continue;
+        if (temp != SPRITE_TILE_GRASS && temp != SPRITE_TILE_STONE && temp != SPRITE_TILE_DIRT && temp != SPRITE_TILE_SNOW) continue;
         if (too_close_to_any(px, py, MIN_SPACING)) continue;
 
         //place rock
@@ -7491,7 +7567,7 @@ void decoration_init(int map_index){
 
             if (cbot_row < 0 || cbot_row >= MAP_HEIGHT || cbot_col < 0 || cbot_col >= MAP_WIDTH) continue;
             temp = map_get_tile(cbot_row, cbot_col);
-            if (temp != SPRITE_TILE_GRASS && temp != SPRITE_TILE_DIRT && temp && SPRITE_TILE_STONE) continue;
+            if (temp != SPRITE_TILE_GRASS && temp != SPRITE_TILE_DIRT && temp != SPRITE_TILE_STONE && temp != SPRITE_TILE_SNOW) continue;
             if (too_close_to_any(cpx, cpy, 3)) continue;
             if (place_deco(ctype, cpx, cpy)) rocks_placed++;
         }
@@ -7502,7 +7578,7 @@ void decoration_init(int map_index){
     for (int attempts = 0; attempts < MAX_ATTEMPTS && bushes_placed < cfg->bush_budget; attempts++) {
         int row = 1 + (rand() % (MAP_HEIGHT - 2));
         int col = 1 + (rand() % (MAP_WIDTH  - 2));
-        if (map_get_tile(row, col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(row, col) != SPRITE_TILE_GRASS && map_get_tile(row, col) != SPRITE_TILE_SNOW) continue;
 
         int type = BUSH_TABLE[rand() % BUSH_COUNT];
         const DecoType *info = &DECO_LOOKUP[type];
@@ -7513,7 +7589,7 @@ void decoration_init(int map_index){
         int bot_row = (py + info->h - 1) >> 4;
 
         if (bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
-        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS && map_get_tile(bot_row, bot_col) != SPRITE_TILE_SNOW) continue;
         if (too_close_to_any(px, py, MIN_SPACING)) continue;
         if (place_deco(type, px, py)) bushes_placed++;
     }
@@ -7523,7 +7599,7 @@ void decoration_init(int map_index){
     for (int attempts = 0; attempts < MAX_ATTEMPTS && smalls_placed < cfg->small_budget; attempts++) {
         int row = 1 + (rand() % (MAP_HEIGHT - 2));
         int col = 1 + (rand() % (MAP_WIDTH  - 2));
-        if (map_get_tile(row, col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(row, col) != SPRITE_TILE_GRASS && map_get_tile(row, col) != SPRITE_TILE_SNOW) continue;
 
         int type = SMALL_TABLE[rand() % SMALL_COUNT];
         const DecoType *info = &DECO_LOOKUP[type];
@@ -7533,7 +7609,7 @@ void decoration_init(int map_index){
         int bot_row = (py + info->h - 1) >> 4;
 
         if (bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
-        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS && map_get_tile(bot_row, bot_col) != SPRITE_TILE_SNOW) continue;
         if (too_close_to_any(px, py, 6)) continue;
         if (place_deco(type, px, py)) smalls_placed++;
     }
@@ -7543,7 +7619,7 @@ void decoration_init(int map_index){
     for (int attempts = 0; attempts < MAX_ATTEMPTS && cattails_placed < cfg->cattail_budget; attempts++) {
         int row = 1 + (rand() % (MAP_HEIGHT - 2));
         int col = 1 + (rand() % (MAP_WIDTH  - 2));
-        if (map_get_tile(row, col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(row, col) != SPRITE_TILE_GRASS && map_get_tile(row, col) != SPRITE_TILE_SNOW) continue;
         if (!is_next_to_water(row, col)) continue;  /* <-- the key filter */
 
         int type = CATTAIL_TABLE[rand() % CATTAIL_COUNT];
@@ -7555,7 +7631,7 @@ void decoration_init(int map_index){
         int bot_row = (py + info->h - 1) >> 4;
 
         if (bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
-        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS && map_get_tile(bot_row, bot_col) != SPRITE_TILE_SNOW) continue;
         if (too_close_to_any(px, py, 4)) continue;  /* cattails can be fairly close together */
         if (place_deco(type, px, py)) cattails_placed++;
     }
@@ -7565,7 +7641,7 @@ void decoration_init(int map_index){
     for (int attempts = 0; attempts < MAX_ATTEMPTS && ferns_placed < cfg->fern_budget; attempts++) {
         int row = 1 + (rand() % (MAP_HEIGHT - 2));
         int col = 1 + (rand() % (MAP_WIDTH  - 2));
-        if (map_get_tile(row, col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(row, col) != SPRITE_TILE_GRASS && map_get_tile(row, col) != SPRITE_TILE_SNOW) continue;
 
         int px = col * TILE_W + (rand() % TILE_W);
         int py = row * TILE_H + (rand() % TILE_H);
@@ -7577,7 +7653,7 @@ void decoration_init(int map_index){
         int bot_row = (py + info->h - 1) >> 4;
 
         if (bot_row < 0 || bot_row >= MAP_HEIGHT || bot_col < 0 || bot_col >= MAP_WIDTH) continue;
-        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS) continue;
+        if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS && map_get_tile(bot_row, bot_col) != SPRITE_TILE_SNOW) continue;
         if (too_close_to_any(px, py, 5)) continue;
         if (place_deco(type, px, py)) ferns_placed++;
     }
@@ -7668,6 +7744,9 @@ int deco_has_canopy(int deco_type) {
         case DECO_ROCK_BIG_BROWN:
         case DECO_ROCK_MED_BROWN:
         case DECO_ROCK_MED_GREY:
+
+        case DECO_BUSH_GREEN_LG:
+        case DECO_BUSH_OLIVE_LG:
             return 1;
         default:
             return 0;
@@ -7764,6 +7843,12 @@ void obstacle_map_init(void) {
             SpriteID tile = map_get_tile(r, c);
             if (tile == SPRITE_TILE_WATER) {
                 obstacle_map[r][c] |= TILE_FLAG_SLOW;
+            }
+            if(tile == SPRITE_TILE_ICE){
+                obstacle_map[r][c] |= TILE_FLAG_ICE;
+            }
+            if(tile == SPRITE_TILE_LAVA){
+                obstacle_map[r][c] |= TILE_FLAG_DAMAGE;
             }
         }
     }
@@ -8672,7 +8757,7 @@ void entity_erase_all(int cur_buf){
         if (!entities[i].active){
             continue;
         }
-        erase_sprite(entities[i].prev_x[cur_buf] - 8, entities[i].prev_y[cur_buf], entities[i].width + 8, entities[i].height);
+        erase_sprite(entities[i].prev_x[cur_buf] - 8, entities[i].prev_y[cur_buf], entities[i].width + 8, entities[i].height + 8);
 
         if(cur_buf == 0 && entities[i].pending_erase_b1){
             entities[i].pending_erase_b1 = 0;
@@ -9570,10 +9655,10 @@ void add_cloud_tile(int row, int col){
 }
 
 void game_init(){
-    map_init(2);
-    decoration_init(2);
+    map_init(4);
+    decoration_init(4);
     obstacle_map_init();
-    map_evolution_init(2);
+    map_evolution_init(4);
     /*Spawn Player 1*/
     //on the left, faces right
     g_p1 = spawn_entity(ENTITY_PLAYER);
