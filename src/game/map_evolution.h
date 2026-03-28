@@ -7,7 +7,7 @@ void map_evolution_draw(int cur_buf);
 void map_change_tile(int row, int col, SpriteID new_id, unsigned char new_flags);
 void deco_change_type(int idx, int new_type);
 
-#define TILE_REDRAW_CAP 16
+#define TILE_REDRAW_CAP 30
 
 typedef struct{
     short row, col;
@@ -18,7 +18,7 @@ typedef struct{
 TileRedraw tile_redraws[TILE_REDRAW_CAP];
 int tile_redraw_count;
 
-#define DECO_REDRAW_CAP 8
+#define DECO_REDRAW_CAP 15
 
 
 typedef struct{

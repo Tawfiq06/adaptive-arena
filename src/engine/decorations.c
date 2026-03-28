@@ -521,6 +521,9 @@ int deco_has_canopy(int deco_type) {
         case DECO_ROCK_BIG_BROWN:
         case DECO_ROCK_MED_BROWN:
         case DECO_ROCK_MED_GREY:
+
+        case DECO_BUSH_GREEN_LG:
+        case DECO_BUSH_OLIVE_LG:
             return 1;
         default:
             return 0;
