@@ -81,11 +81,11 @@ void add_cloud_tile(int row, int col){
     obstacle_map_set(row, col, TILE_FLAG_DAMAGE | TILE_FLAG_SLOW);
 }
 
-void game_init(){
-    map_init(4);
-    decoration_init(4);
+void game_init(int map_index){
+    map_init(map_index);
+    decoration_init(map_index);
     obstacle_map_init();
-    map_evolution_init(4);
+    map_evolution_init(map_index);
     /*Spawn Player 1*/
     //on the left, faces right
     g_p1 = spawn_entity(ENTITY_PLAYER);

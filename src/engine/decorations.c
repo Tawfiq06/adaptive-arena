@@ -173,13 +173,12 @@ void decoration_init(int map_index){
     };
     const int BUSH_COUNT = 5;
 
-    const int SMALL_TABLE[7] = {
+    const int SMALL_TABLE[] = {
         DECO_ROCK_SM_A_BROWN, DECO_ROCK_SM_B_BROWN, DECO_ROCK_SM_C_BROWN,
         DECO_ROCK_SM_A_GREY,  DECO_ROCK_SM_B_GREY,  DECO_ROCK_SM_C_GREY,
-        DECO_FLOWER_PURPLE,
     };
 
-    const int SMALL_COUNT = 7;
+    const int SMALL_COUNT = 6;
 
     const int CATTAIL_TABLE[] = {
         DECO_CATTAIL_GREEN_LG, DECO_CATTAIL_GREEN_MED, DECO_CATTAIL_GREEN_SM,

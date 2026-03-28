@@ -44,6 +44,7 @@ Entity* spawn_entity(EntityType type){
             entities[i].ice_dy = 0;
             entities[i].store_dx = 0;
             entities[i].store_dy = 0;
+            entities[i].ice_stored_reset = 0;
             return &entities[i];
         }
     }

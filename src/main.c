@@ -79,10 +79,10 @@ typedef enum{
 
 int main(void){
     //int mode = START_SCREEN; //will control if we are start screen etc
-
+    int map_index = 4;
     vga_init();
     timer_init();
-    game_init();
+    game_init(map_index);
 
     /*clear char_buf*/
     volatile char *char_buf = (volatile char *)FPGA_CHAR_BASE;

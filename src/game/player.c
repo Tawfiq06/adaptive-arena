@@ -189,21 +189,21 @@ void player_update(Entity *p, int cur_buf){
 
     int pressed_key = 0; 
     if (!p->is_dashing && key_pressed(p->player_cfg->key_up)) {
-        if(!p->on_ice || (p->store_dx == 0 && p->store_dy == 0)){
+        if(!p->on_ice || (p->store_dx == 0 && p->store_dy == 0) || p->ice_stored_reset){
             p->dy = -PLAYER_SPEED;
         }
         pressed_key = 1;
        // p->facing = 'n';
     }
     if(!p->is_dashing && key_pressed(p->player_cfg->key_down)){
-        if(!p->on_ice || (p->store_dx == 0 && p->store_dy == 0)){
+        if(!p->on_ice || (p->store_dx == 0 && p->store_dy == 0) || p->ice_stored_reset){
             p->dy = PLAYER_SPEED;
         }
         pressed_key = 1;
       //  p->facing = 's';
     }
     if (!p->is_dashing && key_pressed(p->player_cfg->key_left))  { 
-        if(!p->on_ice || (p->store_dx == 0 && p->store_dy == 0)){
+        if(!p->on_ice || (p->store_dx == 0 && p->store_dy == 0) || p->ice_stored_reset){
             p->dx = -PLAYER_SPEED;
         }
         p->facing = 'w'; 
@@ -211,7 +211,7 @@ void player_update(Entity *p, int cur_buf){
         pressed_key = 1;
     }
     if (!p->is_dashing && key_pressed(p->player_cfg->key_right)) { 
-        if(!p->on_ice || (p->store_dx == 0 && p->store_dy == 0)){
+        if(!p->on_ice || (p->store_dx == 0 && p->store_dy == 0) || p->ice_stored_reset){
             p->dx =  PLAYER_SPEED; 
         }
         p->facing = 'e'; 
@@ -288,7 +288,10 @@ void player_update(Entity *p, int cur_buf){
                     break;
                 }
             }
-            if (blocked) p->dx = 0;
+            if (blocked){
+                p->dx = 0;
+                p->ice_stored_reset = 1;
+            } 
         }
     }
 
@@ -321,18 +324,22 @@ void player_update(Entity *p, int cur_buf){
                     break;
                 }
             }
-            if (blocked) p->dy = 0;
+            if (blocked){ 
+                p->dy = 0;
+                p->ice_stored_reset = 1;
+            }
         }
     }
 
     int on_ice_now = obstacle_map_at_pixel(mid_x, feet_y) & TILE_FLAG_ICE;
     if(on_ice_now){
-        if(!p->on_ice || (p->ice_dx == 0 && p->ice_dy == 0)){
+        if(!p->on_ice || (p->ice_dx == 0 && p->ice_dy == 0) || p->ice_stored_reset){
             //just got on the ice
             p->ice_dx = p->dx;
             p->ice_dy = p->dy;
             p->store_dx = p->dx;
             p->store_dy = p->dy;
+            p->ice_stored_reset = 0;
         }
 
         if(pressed_key){
@@ -373,15 +380,22 @@ void player_update(Entity *p, int cur_buf){
     p->hitbox_x += p->dx;
     p->hitbox_y += p->dy;
 
-    if (p->hitbox_x < 0)
+    if (p->hitbox_x < 0){
         p->hitbox_x = 0;
-    if (p->hitbox_x + p->hitbox_w > SCREEN_WIDTH)
+        p->ice_stored_reset = 1;
+    }
+    if (p->hitbox_x + p->hitbox_w > SCREEN_WIDTH){
         p->hitbox_x = SCREEN_WIDTH - p->hitbox_w;
-    if (p->hitbox_y < 0)
+        p->ice_stored_reset = 1;
+    }
+    if (p->hitbox_y < 0){
         p->hitbox_y = 0;
-    if (p->hitbox_y + p->hitbox_h > SCREEN_HEIGHT)
+        p->ice_stored_reset = 1;
+    }
+    if (p->hitbox_y + p->hitbox_h > SCREEN_HEIGHT){
         p->hitbox_y = SCREEN_HEIGHT - p->hitbox_h;
-
+        p->ice_stored_reset = 1;
+    }
     // --- Derive p->x / p->y from hitbox (single source of truth) ---
     p->x = p->hitbox_x - PLAYER_HITBOX_OFFSET_X;
     p->y = p->hitbox_y - PLAYER_HITBOX_OFFSET_Y;
