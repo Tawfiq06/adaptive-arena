@@ -842,6 +842,11 @@ typedef struct{
 
     struct Entity* owner;
 
+    int on_ice;
+    int ice_dx;
+    int ice_dy;
+    int store_dx;
+    int store_dy;
 } Entity;
 
 Entity entities[MAX_ENTITIES];
@@ -8600,6 +8605,12 @@ Entity* spawn_entity(EntityType type){
             entities[i].dash_cooldown = 0;
             entities[i].dash_timer = 0;
             entities[i].is_dashing = 0;
+
+            entities[i].on_ice = 0;
+            entities[i].ice_dx = 0;
+            entities[i].ice_dy = 0;
+            entities[i].store_dx = 0;
+            entities[i].store_dy = 0;
             return &entities[i];
         }
     }
@@ -8661,7 +8672,7 @@ void entity_erase_all(int cur_buf){
         if (!entities[i].active){
             continue;
         }
-        erase_sprite(entities[i].prev_x[cur_buf] - 4, entities[i].prev_y[cur_buf], entities[i].width + 4, entities[i].height);
+        erase_sprite(entities[i].prev_x[cur_buf] - 8, entities[i].prev_y[cur_buf], entities[i].width + 8, entities[i].height);
 
         if(cur_buf == 0 && entities[i].pending_erase_b1){
             entities[i].pending_erase_b1 = 0;
@@ -8866,28 +8877,41 @@ void player_update(Entity *p, int cur_buf){
     }
 
     /* Movement */
-    if(!p->is_dashing){
+    if(!p->is_dashing && !p->on_ice){
         p->dx = 0;
         p->dy = 0;
     }
 
+    int pressed_key = 0; 
     if (!p->is_dashing && key_pressed(p->player_cfg->key_up)) {
-        p->dy = -PLAYER_SPEED;
+        if(!p->on_ice || (p->store_dx == 0 && p->store_dy == 0)){
+            p->dy = -PLAYER_SPEED;
+        }
+        pressed_key = 1;
        // p->facing = 'n';
     }
     if(!p->is_dashing && key_pressed(p->player_cfg->key_down)){
-        p->dy = PLAYER_SPEED;
+        if(!p->on_ice || (p->store_dx == 0 && p->store_dy == 0)){
+            p->dy = PLAYER_SPEED;
+        }
+        pressed_key = 1;
       //  p->facing = 's';
     }
     if (!p->is_dashing && key_pressed(p->player_cfg->key_left))  { 
-        p->dx = -PLAYER_SPEED;
+        if(!p->on_ice || (p->store_dx == 0 && p->store_dy == 0)){
+            p->dx = -PLAYER_SPEED;
+        }
         p->facing = 'w'; 
         p->anim.flip = 1;
+        pressed_key = 1;
     }
     if (!p->is_dashing && key_pressed(p->player_cfg->key_right)) { 
-        p->dx =  PLAYER_SPEED; 
+        if(!p->on_ice || (p->store_dx == 0 && p->store_dy == 0)){
+            p->dx =  PLAYER_SPEED; 
+        }
         p->facing = 'e'; 
         p->anim.flip = 0;
+        pressed_key = 1;
     }
 
     //half player movement while bow is drawn
@@ -8994,6 +9018,38 @@ void player_update(Entity *p, int cur_buf){
             }
             if (blocked) p->dy = 0;
         }
+    }
+
+    int on_ice_now = obstacle_map_at_pixel(mid_x, feet_y) & TILE_FLAG_ICE;
+    if(on_ice_now){
+        if(!p->on_ice || (p->ice_dx == 0 && p->ice_dy == 0)){
+            //just got on the ice
+            p->ice_dx = p->dx;
+            p->ice_dy = p->dy;
+            p->store_dx = p->dx;
+            p->store_dy = p->dy;
+        }
+
+        if(pressed_key){
+            p->ice_dx = p->store_dx;
+            p->ice_dy = p->store_dy;
+        }
+
+        p->on_ice = 1;
+
+        //ignore input use stored veloctiy
+        p->dx = p->ice_dx;
+        p->dy = p->ice_dy;
+
+        //add some friction
+        p->ice_dx = (p->ice_dx * 7) / 8;
+        p->ice_dy = (p->ice_dy * 7) / 8;
+
+        if (p->ice_dx > -1 && p->ice_dx < 1) p->ice_dx = 0;
+        if (p->ice_dy > -1 && p->ice_dy < 1) p->ice_dy = 0;
+    }
+    else{
+        p->on_ice = 0;
     }
 
     // Slow tiles

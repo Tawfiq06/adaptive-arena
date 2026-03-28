@@ -38,6 +38,12 @@ Entity* spawn_entity(EntityType type){
             entities[i].dash_cooldown = 0;
             entities[i].dash_timer = 0;
             entities[i].is_dashing = 0;
+
+            entities[i].on_ice = 0;
+            entities[i].ice_dx = 0;
+            entities[i].ice_dy = 0;
+            entities[i].store_dx = 0;
+            entities[i].store_dy = 0;
             return &entities[i];
         }
     }

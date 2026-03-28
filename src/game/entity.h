@@ -81,6 +81,11 @@ typedef struct{
 
     struct Entity* owner;
 
+    int on_ice;
+    int ice_dx;
+    int ice_dy;
+    int store_dx;
+    int store_dy;
 } Entity;
 
 extern Entity entities[MAX_ENTITIES];
