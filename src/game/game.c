@@ -383,10 +383,10 @@ void draw_game(int cur_buf){
     for(int i = 0; i < MAX_ENTITIES; i++){
         if(!entities[i].active && !entities[i].pending_erase) continue;
 
-        int ex0 = entities[i].prev_x[cur_buf];
+        int ex0 = entities[i].prev_x[cur_buf] - 8; //make sure this stuff matches erase sprite
         int ey0 = entities[i].prev_y[cur_buf];
-        int ex1 = ex0 + entities[i].width;
-        int ey1 = ey0 + entities[i].height;
+        int ex1 = ex0 + entities[i].width + 8;
+        int ey1 = ey0 + entities[i].height + 8;
 
         for (int p = 0; p < MAX_POTIONS; p++) {
             if (!potions[p].active) continue;
