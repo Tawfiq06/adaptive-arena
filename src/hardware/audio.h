@@ -23,14 +23,10 @@ typedef struct {
     float volume; //0.0 to 1.0
 } SoundInstance;
 
-SoundInstance active_sounds[MAX_ACTIVE_SOUNDS];
-const short *bgm_data; //pointer to current background track
-int bgm_pos;
-int bgm_len;
-
-const short *current_bgm;
-int bgm_length;
-int bgm_position;
+extern SoundInstance active_sounds[MAX_ACTIVE_SOUNDS];
+extern const short *bgm_data; //pointer to current background track
+extern int bgm_pos;
+extern int bgm_len;
 
 void play_sfx(const short *data, int len, float volume, int loop);
 void play_bgm(const short *data, int len);

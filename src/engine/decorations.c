@@ -242,6 +242,9 @@ void decoration_init(int map_index){
         if (bot_col >= 0 && bot_col < MAP_WIDTH && bot_row >= 0 && bot_row < MAP_HEIGHT) {
             if (map_get_tile(bot_row, bot_col) != SPRITE_TILE_GRASS && map_get_tile(bot_row, bot_col) != SPRITE_TILE_SNOW) continue;
         }
+        else{
+            continue;
+        }
         if (too_close_to_any(px, py, MIN_SPACING)) continue;
         if (!place_deco(type, px, py)) break;
         trees_placed++;
@@ -276,6 +279,9 @@ void decoration_init(int map_index){
 
             if (cbot_col >= 0 && cbot_col < MAP_WIDTH && cbot_row >= 0 && cbot_row < MAP_HEIGHT) {
                 if (map_get_tile(cbot_row, cbot_col) != SPRITE_TILE_GRASS && map_get_tile(bot_row, bot_col) != SPRITE_TILE_SNOW) continue;
+            }
+            else{
+                continue;
             }
             if (too_close_to_any(cpx, cpy, 4)) continue;
             if (place_deco(ctype, cpx, cpy)) trees_placed++;

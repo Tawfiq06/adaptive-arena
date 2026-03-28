@@ -2,6 +2,7 @@
 #include "vga.h"
 #include "timer.h"
 #include "game.h"
+#include "audio.h"
 
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
@@ -95,6 +96,7 @@ int main(void){
     int cur_buf = 0;
     
     while(1){
+        //audio_update();
 
         if(frame_flag){
             frame_flag = 0;

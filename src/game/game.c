@@ -12,6 +12,8 @@
 #include "decorations.h"
 #include "obstacle_map.h"
 #include "map_evolution.h"
+#include "../hardware/audio.h"
+#include "../audio_assets/bgm_1.h"
 
 #define WEAPON_OFFSET (SOLDIER_W >> 2)
 
@@ -96,7 +98,7 @@ void game_init(int map_index){
     //on the right, faces left
     g_p2 = spawn_entity(ENTITY_PLAYER);
     g_p2->player_cfg = &p2_cfg;
-    player_init(g_p2, SPRITE_PLAYER, (short)0xDC14, &p2_cfg, SCREEN_WIDTH - 16 - TILE_W - PLAYER_W, 1);
+    player_init(g_p2, SPRITE_PLAYER, (short)0xDC14, &p2_cfg, SCREEN_WIDTH - 16 - 16 - TILE_W - PLAYER_W, 1);
     //g_p2->is_ai = 1; //make player 2 ai
 
     for (int i = 0; i < MAX_POTIONS; i++) {
@@ -105,6 +107,8 @@ void game_init(int map_index){
         potions[i].erase_b1   = 0;
         potions[i].flash_drawn = 0;
     }
+
+    //play_bgm(bgm_1, BGM_1_LENGTH);
 }
 
 void update_game(int cur_buf){

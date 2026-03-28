@@ -669,22 +669,22 @@ void rocky_flood_ring_tiles(int ring) {
     for (int c = ring; c < MAP_WIDTH - ring; c++) {
         SpriteID t;
         t = map_get_tile(ring, c);
-        if (t != SPRITE_TILE_WATER && t != SPRITE_TILE_DIRT)
+        if (t != SPRITE_TILE_WATER && t != SPRITE_TILE_STONE)
             map_change_tile(ring, c, SPRITE_TILE_WATER, TILE_FLAG_SLOW);
  
         t = map_get_tile(MAP_HEIGHT - 1 - ring, c);
-        if (t != SPRITE_TILE_WATER && t != SPRITE_TILE_DIRT)
+        if (t != SPRITE_TILE_WATER && t != SPRITE_TILE_STONE)
             map_change_tile(MAP_HEIGHT - 1 - ring, c, SPRITE_TILE_WATER, TILE_FLAG_SLOW);
     }
     /* Left and right columns (skip corners already done above) */
     for (int r = ring + 1; r < MAP_HEIGHT - 1 - ring; r++) {
         SpriteID t;
         t = map_get_tile(r, ring);
-        if (t != SPRITE_TILE_WATER && t != SPRITE_TILE_DIRT)
+        if (t != SPRITE_TILE_WATER && t != SPRITE_TILE_STONE)
             map_change_tile(r, ring, SPRITE_TILE_WATER, TILE_FLAG_SLOW);
  
         t = map_get_tile(r, MAP_WIDTH - 1 - ring);
-        if (t != SPRITE_TILE_WATER && t != SPRITE_TILE_DIRT)
+        if (t != SPRITE_TILE_WATER && t != SPRITE_TILE_STONE)
             map_change_tile(r, MAP_WIDTH - 1 - ring, SPRITE_TILE_WATER, TILE_FLAG_SLOW);
     }
 }
