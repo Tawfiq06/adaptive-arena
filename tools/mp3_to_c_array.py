@@ -48,7 +48,7 @@ def convert_mp3_to_c_array(
         print(f"Normalized to {normalize:.2f} peak volume.")
 
     # Convert float32 [-1.0, 1.0] to int16
-    samples = np.clip(samples_f32 * 32767, -32768, 32767).astype(np.int16)
+    samples = np.clip(samples_f32 *  2147483647, -2147483648, 2147483647).astype(np.int32)
 
     num_samples = len(samples)
     print(f"Total samples: {num_samples} ({num_samples / sample_rate:.2f} seconds)")
@@ -65,7 +65,7 @@ def convert_mp3_to_c_array(
         f.write(f"   Length : {num_samples} samples ({num_samples / sample_rate:.2f}s)\n")
         f.write(f"*/\n\n")
         f.write(f"#define {define_name}_LENGTH {num_samples}\n\n")
-        f.write(f"static const short {var_name}[{define_name}_LENGTH] = {{\n")
+        f.write(f"static const int {var_name}[{define_name}_LENGTH] = {{\n")
 
         cols = 12
         for i, s in enumerate(samples):

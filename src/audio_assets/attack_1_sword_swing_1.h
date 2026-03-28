@@ -9,6 +9,6 @@
 
 #define ATTACK_1_SWORD_SWING_1_LENGTH 9024
 
-const short attack_1_sword_swing_1[ATTACK_1_SWORD_SWING_1_LENGTH];
+const int attack_1_sword_swing_1[ATTACK_1_SWORD_SWING_1_LENGTH];
 
 #endif /* ATTACK_1_SWORD_SWING_1_H */

@@ -15,7 +15,7 @@ struct audio_t {
 };
 
 typedef struct {
-    const short *samples;
+    const int *samples;
     int length;
     int position;
     int loop;
@@ -24,12 +24,12 @@ typedef struct {
 } SoundInstance;
 
 extern SoundInstance active_sounds[MAX_ACTIVE_SOUNDS];
-extern const short *bgm_data; //pointer to current background track
+extern const int *bgm_data; //pointer to current background track
 extern int bgm_pos;
 extern int bgm_len;
 
-void play_sfx(const short *data, int len, float volume, int loop);
-void play_bgm(const short *data, int len);
+void play_sfx(const int *data, int len, float volume, int loop);
+void play_bgm(const int *data, int len);
 void audio_update();
 
 

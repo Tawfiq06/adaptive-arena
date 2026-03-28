@@ -154,7 +154,7 @@ void player_update(Entity *p, int cur_buf){
         anim_play(&p->anim, p->anim_def, SOLDIER_ATK1);
         p->atk1_cooldown = ATK1_COOLDOWN;
         p->attack_s1 = 1;
-        //play_sfx(attack_1_sword_swing_1, ATTACK_1_SWORD_SWING_1_LENGTH, 1.0f, 0);
+        play_sfx(attack_1_sword_swing_1, ATTACK_1_SWORD_SWING_1_LENGTH, 1.0f, 0);
         return;
     }
     if (key_pressed(cfg->key_atk2) && p->atk2_cooldown == 0 && p->anim.anim != SOLDIER_ATK2) {

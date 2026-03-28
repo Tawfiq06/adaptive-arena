@@ -96,7 +96,7 @@ int main(void){
     int cur_buf = 0;
     
     while(1){
-        //audio_update();
+        audio_update();
 
         if(frame_flag){
             frame_flag = 0;
