@@ -44,6 +44,7 @@ Entity* spawn_entity(EntityType type){
             entities[i].ice_dy = 0;
             entities[i].store_dx = 0;
             entities[i].store_dy = 0;
+            entities[i].ice_stored_reset = 0;
             return &entities[i];
         }
     }
@@ -105,7 +106,7 @@ void entity_erase_all(int cur_buf){
         if (!entities[i].active){
             continue;
         }
-        erase_sprite(entities[i].prev_x[cur_buf] - 8, entities[i].prev_y[cur_buf], entities[i].width + 8, entities[i].height);
+        erase_sprite(entities[i].prev_x[cur_buf] - 8, entities[i].prev_y[cur_buf], entities[i].width + 8, entities[i].height + 8);
 
         if(cur_buf == 0 && entities[i].pending_erase_b1){
             entities[i].pending_erase_b1 = 0;

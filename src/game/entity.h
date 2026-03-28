@@ -86,6 +86,8 @@ typedef struct{
     int ice_dy;
     int store_dx;
     int store_dy;
+
+    int ice_stored_reset;
 } Entity;
 
 extern Entity entities[MAX_ENTITIES];

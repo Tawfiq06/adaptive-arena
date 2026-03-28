@@ -29,8 +29,6 @@ typedef enum {
     DECO_ICE_TREE_LG,
     DECO_ICE_TREE_MED,
     DECO_ICE_TREE_SM,
-    
-    DECO_FLOWER_PURPLE,
 
     DECO_GREEN_TREE_LG,
     DECO_TREE_GREEN_A,
@@ -114,9 +112,6 @@ static const DecoType DECO_LOOKUP[DECO_COUNT];
 #define ICE_TREE_SM_W  16
 #define ICE_TREE_SM_H  32
 
-#define FLOWER_PURPLE_W  26
-#define FLOWER_PURPLE_H  31
-
 #define GREEN_TREE_LG_W  48
 #define GREEN_TREE_LG_H  96
 
@@ -182,8 +177,6 @@ static const short stick_tree_sm[STICK_TREE_SM_W * STICK_TREE_SM_H];
 static const short ice_tree_lg[ICE_TREE_LG_W * ICE_TREE_LG_H];
 static const short ice_tree_med[ICE_TREE_MED_W * ICE_TREE_MED_H];
 static const short ice_tree_sm[ICE_TREE_SM_W * ICE_TREE_SM_H];
-
-static const short flower_purple[806];
 
 static const short green_tree_lg[GREEN_TREE_LG_W * GREEN_TREE_LG_H];
 static const short tree_green_a[TREE_GREEN_A_W * TREE_GREEN_A_H];

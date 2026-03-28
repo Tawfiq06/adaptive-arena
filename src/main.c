@@ -2,6 +2,7 @@
 #include "vga.h"
 #include "timer.h"
 #include "game.h"
+#include "audio.h"
 
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
@@ -79,10 +80,10 @@ typedef enum{
 
 int main(void){
     //int mode = START_SCREEN; //will control if we are start screen etc
-
+    int map_index = 4;
     vga_init();
     timer_init();
-    game_init();
+    game_init(map_index);
 
     /*clear char_buf*/
     volatile char *char_buf = (volatile char *)FPGA_CHAR_BASE;
@@ -95,6 +96,7 @@ int main(void){
     int cur_buf = 0;
     
     while(1){
+        //audio_update();
 
         if(frame_flag){
             frame_flag = 0;

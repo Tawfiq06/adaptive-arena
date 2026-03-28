@@ -533,7 +533,7 @@ void beach_init(void) {
 /* Ice map evolution*/
 //isolated lava vents appear and melt surrounding ice after a timer
 
-#define ICE_LAVA_MAX     12   /* max simultaneous active vents */
+#define ICE_LAVA_MAX     30   /* max simultaneous active vents */
 #define ICE_VENT_INTERVAL (EVO_TILE_INTERVAL * 3)  /* new vent every ~4.5 s */
  
 /* How long a vent stays active before cooling: 8-18 seconds */
@@ -630,7 +630,7 @@ void ice_map_update(void) {
             // Vent cools: lava → scorched dirt
             int lr = ice_lava_cells[q].row;
             int lc = ice_lava_cells[q].col;
-            map_change_tile(lr, lc, SPRITE_TILE_DIRT, 0);
+            map_change_tile(lr, lc, SPRITE_TILE_STONE, 0);
  
             // Melt orthogonal ice neighbours → warm water 
             const int dr[4] = {-1,  1,  0,  0};
@@ -658,8 +658,8 @@ void ice_map_init(void) {
  
 // Rocky Map Evolution
 //rings of land flood inward over time
-#define ROCKY_MAX_FLOOD_RINGS  4
-#define ROCKY_FLOOD_INTERVAL  1800   /* flood one ring every 30 s */
+#define ROCKY_MAX_FLOOD_RINGS  8
+#define ROCKY_FLOOD_INTERVAL  450   /* flood one ring every 30 s */
  
 int rocky_flood_ring  = 0;
 int rocky_flood_timer = 0;
@@ -732,7 +732,7 @@ void map_evolution_init(int map_index) {
             break;
         case 4:
             current_map_evo = MAP_EVO_ROCKY;
-            rocky_flood_timer = -1800;   /* first flood 30 s after start */
+            rocky_flood_timer = -450;   /* first flood 30 s after start */
             break;
         default:
             current_map_evo = MAP_EVO_NONE;
